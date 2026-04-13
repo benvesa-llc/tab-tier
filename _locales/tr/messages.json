@@ -1,0 +1,52 @@
+{
+  "extName": {
+    "message": "Tab Tier"
+  },
+  "extDescription": {
+    "message": "Tarayıcınız için akıllı sekme yaşam döngüsü yönetimi"
+  },
+  "popupTitle": {
+    "message": "Tab Tier"
+  },
+  "settingsTitle": {
+    "message": "Ayarlar"
+  },
+  "tierLabelT0": {
+    "message": "Aktif"
+  },
+  "tierLabelT1": {
+    "message": "Ilık"
+  },
+  "tierLabelT2": {
+    "message": "Serin"
+  },
+  "tierLabelT3": {
+    "message": "Soğuk"
+  },
+  "tierLabelT4": {
+    "message": "Dondurulmuş"
+  },
+  "tabsCount": {
+    "message": "$COUNT$ sekme",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "restoreTab": {
+    "message": "Sekmeyi geri yükle"
+  },
+  "noTabs": {
+    "message": "Bu kademede sekme yok"
+  },
+  "donateButton": {
+    "message": "Projeyi destekle ☕"
+  },
+  "onboardingWelcome": {
+    "message": "Tab Tier'a hoş geldiniz!"
+  },
+  "onboardingDescription": {
+    "message": "Tab Tier, tarayıcınızdaki sekmeleri otomatik olarak katmanlı bir yaşam döngüsü sistemiyle yöneterek tarayıcınızı hızlı ve düzenli tutar."
+  }
+}

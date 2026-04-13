@@ -3,12 +3,8 @@
   "name": "Tab Lifecycle Manager",
   "version": "1.0.0",
   "description": "Tier-based automatic tab lifecycle management for Edge",
-  "permissions": [
-    "tabs",
-    "tabGroups",
-    "alarms",
-    "storage"
-  ],
+  "default_locale": "en",
+  "permissions": ["tabs", "tabGroups", "alarms", "storage"],
   "background": {
     "service_worker": "background.js"
   },

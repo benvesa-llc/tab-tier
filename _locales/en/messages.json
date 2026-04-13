@@ -1,0 +1,52 @@
+{
+  "extName": {
+    "message": "Tab Tier"
+  },
+  "extDescription": {
+    "message": "Smart tab lifecycle management for your browser"
+  },
+  "popupTitle": {
+    "message": "Tab Tier"
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "tierLabelT0": {
+    "message": "Active"
+  },
+  "tierLabelT1": {
+    "message": "Warm"
+  },
+  "tierLabelT2": {
+    "message": "Cool"
+  },
+  "tierLabelT3": {
+    "message": "Cold"
+  },
+  "tierLabelT4": {
+    "message": "Frozen"
+  },
+  "tabsCount": {
+    "message": "$COUNT$ tabs",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "restoreTab": {
+    "message": "Restore tab"
+  },
+  "noTabs": {
+    "message": "No tabs in this tier"
+  },
+  "donateButton": {
+    "message": "Support this project ☕"
+  },
+  "onboardingWelcome": {
+    "message": "Welcome to Tab Tier!"
+  },
+  "onboardingDescription": {
+    "message": "Tab Tier automatically manages your browser tabs through a tiered lifecycle system, keeping your browser fast and organized."
+  }
+}
