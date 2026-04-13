@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Lifecycle Manager",
+  "version": "1.0.0",
+  "description": "Tier-based automatic tab lifecycle management for Edge",
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "alarms",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tab Lifecycle Manager"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["debug.html", "debug.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

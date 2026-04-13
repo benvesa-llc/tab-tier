@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TabTier — Debug</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", monospace, sans-serif;
+        font-size: 13px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        padding: 20px;
+      }
+      h1 { color: #cba6f7; font-size: 18px; margin-bottom: 4px; }
+      .subtitle { color: #6c7086; font-size: 12px; margin-bottom: 16px; }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      button {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .btn-primary { background: #cba6f7; color: #1e1e2e; }
+      .btn-secondary { background: #313244; color: #cdd6f4; }
+      .btn-danger { background: #45182a; color: #f38ba8; }
+      #filterInput {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 12px;
+        color: #cdd6f4;
+        outline: none;
+        width: 200px;
+      }
+      #filterInput:focus { border-color: #cba6f7; }
+      #refreshTime { font-size: 11px; color: #6c7086; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      thead th {
+        background: #181825;
+        color: #a6adc8;
+        font-weight: 600;
+        padding: 8px 10px;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        border-bottom: 1px solid #313244;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+      }
+      thead th:hover { color: #cba6f7; }
+      thead th.sorted-asc::after  { content: " ▲"; color: #cba6f7; }
+      thead th.sorted-desc::after { content: " ▼"; color: #cba6f7; }
+
+      tbody tr { border-bottom: 1px solid #1e1e2e; }
+      tbody tr:nth-child(even) { background: #181825; }
+      tbody tr:hover { background: #2a2a3d; }
+
+      td { padding: 7px 10px; vertical-align: middle; }
+
+      .tier-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e1e2e;
+      }
+      .tier-0 { background: #f38ba8; }
+      .tier-1 { background: #fab387; }
+      .tier-2 { background: #f9e2af; }
+      .tier-3 { background: #89b4fa; }
+      .tier-4 { background: #6c7086; color: #cdd6f4; }
+
+      .url-cell {
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #89dceb;
+      }
+      .domain-cell { color: #a6e3a1; font-weight: 600; }
+      .title-cell {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #cdd6f4;
+      }
+      .time-cell { color: #f9e2af; white-space: nowrap; }
+      .status-active { color: #a6e3a1; font-weight: 700; }
+      .tabid-cell { color: #6c7086; font-family: monospace; }
+
+      .summary {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .summary-item {
+        background: #181825;
+        border: 1px solid #313244;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+      .summary-item span { font-weight: 700; color: #cba6f7; }
+
+      #noData { color: #6c7086; padding: 20px 0; text-align: center; display: none; }
+
+      /* Checkbox kolonu */
+      .cb-col { width: 32px; text-align: center; cursor: default; }
+      input[type="checkbox"] { accent-color: #cba6f7; width: 14px; height: 14px; cursor: pointer; }
+      #openSelectedBtn { background: #a6e3a1; color: #1e1e2e; }
+      #openSelectedBtn:disabled { background: #313244; color: #6c7086; cursor: not-allowed; }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 TabTier Debug</h1>
+    <p class="subtitle">Tüm tab kayıtları — storage'dan canlı okuma</p>
+
+    <div class="toolbar">
+      <button class="btn-primary" id="refreshBtn">↻ Yenile</button>
+      <button class="btn-secondary" id="reconcileBtn">🔄 Uzlaştır</button>
+      <button class="btn-secondary" id="dedupBtn">🧹 Duplicate Temizle</button>
+      <button id="openSelectedBtn" disabled>📂 Seçilileri Aç (T1)</button>
+      <button class="btn-secondary" id="copyBtn">📋 JSON Kopyala</button>
+      <input type="text" id="filterInput" placeholder="URL / domain / başlık filtrele…" />
+      <span id="refreshTime"></span>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th class="cb-col"><input type="checkbox" id="selectAllT4" title="Tüm T4'leri seç"></th>
+          <th data-col="tabId">Tab ID</th>
+          <th data-col="currentTier">Tier</th>
+          <th data-col="openStatus">Durum</th>
+          <th data-col="domain">Domain</th>
+          <th data-col="title">Başlık</th>
+          <th data-col="url">URL</th>
+          <th data-col="lastFocusStart">Odak Başladı</th>
+          <th data-col="lastFocusEnd">Odak Bitti</th>
+          <th data-col="elapsed">Geçen Süre</th>
+          <th data-col="isPinned">Sabit</th>
+          <th data-col="createdAt">Oluşturuldu</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <p id="noData">Kayıt yok.</p>
+
+    <script src="debug.js"></script>
+  </body>
+</html>

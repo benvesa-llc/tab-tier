@@ -1,0 +1,200 @@
+/* ============================================================
+   Tab Lifecycle Manager — settings.css
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+/* ── Header ── */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #cba6f7;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font-size: 13px;
+  color: #6c7086;
+}
+
+/* ── Card ── */
+.card {
+  background: #181825;
+  border: 1px solid #313244;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #a6e3a1;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #313244;
+}
+.card-danger h2 { color: #f38ba8; }
+
+/* ── Field ── */
+.field {
+  margin-bottom: 18px;
+}
+.field:last-child { margin-bottom: 0; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: #cba6f7;
+  height: 4px;
+  cursor: pointer;
+}
+
+input[type="number"] {
+  width: 72px;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #cdd6f4;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+input[type="number"]:focus { border-color: #cba6f7; }
+
+.unit {
+  font-size: 12px;
+  color: #6c7086;
+  width: 24px;
+}
+
+select {
+  width: 100%;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #cdd6f4;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c7086' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+select:focus { border-color: #cba6f7; }
+
+.hint {
+  font-size: 11px;
+  color: #6c7086;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+/* ── Actions ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.btn-primary  { background: #cba6f7; color: #1e1e2e; }
+.btn-primary:hover  { opacity: 0.9; }
+.btn-secondary { background: #313244; color: #cdd6f4; }
+.btn-secondary:hover { opacity: 0.85; }
+.btn-danger { background: #45182a; color: #f38ba8; }
+.btn-danger:hover { opacity: 0.85; }
+
+.save-status {
+  font-size: 13px;
+  color: #a6e3a1;
+  font-weight: 600;
+}
+
+/* ── Danger zone ── */
+.danger-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Group Names ── */
+.group-name-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.group-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.group-name-row label {
+  width: 90px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a6adc8;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+.group-name-row input[type="text"] {
+  flex: 1;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #cdd6f4;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.group-name-row input[type="text"]:focus { border-color: #cba6f7; }
