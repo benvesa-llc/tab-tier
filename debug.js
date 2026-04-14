@@ -291,8 +291,20 @@ function updateOpenBtn() {
 
 document.getElementById("refreshBtn").addEventListener("click", loadData);
 
-document.getElementById("filterInput").addEventListener("input", (e) => {
+const filterInput = document.getElementById("filterInput");
+const filterClear = document.getElementById("filterClear");
+
+filterInput.addEventListener("input", (e) => {
   filterText = e.target.value;
+  filterClear.style.display = filterText ? "block" : "none";
+  renderTable();
+});
+
+filterClear.addEventListener("click", () => {
+  filterInput.value = "";
+  filterText = "";
+  filterClear.style.display = "none";
+  filterInput.focus();
   renderTable();
 });
 

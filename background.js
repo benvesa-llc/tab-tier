@@ -850,8 +850,44 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.url && isBrowserInternalUrl(changeInfo.url)) return;
 
   try {
-    const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
-    if (!tabRecords[tabId]) return;
+    const { tabRecords = {}, settings = DefaultSettings } =
+      await chrome.storage.local.get(["tabRecords", "settings"]);
+
+    if (!tabRecords[tabId]) {
+      // Tab was opened before the extension could track it (URL was blank on onCreated).
+      // Create a T1 record now that we have a real URL.
+      if (!changeInfo.url) return;
+      const now = Date.now();
+
+      // Duplicate check before creating a new record
+      const dup = Object.values(tabRecords).find(
+        (r) => r.url === changeInfo.url && r.tabId !== tabId && r.currentTier !== 4,
+      );
+      if (dup && settings.duplicateAction === "redirect") {
+        await chrome.tabs.remove(tabId);
+        await chrome.tabs.update(dup.tabId, { active: true });
+        await chrome.storage.local.set({ tabRecords });
+        log("onUpdated duplicate redirect", changeInfo.url);
+        return;
+      }
+
+      tabRecords[tabId] = {
+        tabId,
+        url: changeInfo.url,
+        domain: extractDomain(changeInfo.url),
+        title: tab.title || changeInfo.url,
+        favicon: tab.favIconUrl || "",
+        currentTier: 1,
+        isPinned: false,
+        lastFocusStart: now,
+        lastFocusEnd: now,
+        createdAt: now,
+      };
+      await moveTabToTierGroup(tabId, 1);
+      await chrome.storage.local.set({ tabRecords });
+      log("onUpdated created missing record T1", tabId, changeInfo.url);
+      return;
+    }
 
     if (changeInfo.url) {
       tabRecords[tabId].url = changeInfo.url;

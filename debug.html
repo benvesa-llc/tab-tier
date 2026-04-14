@@ -33,17 +33,35 @@
       .btn-primary { background: #cba6f7; color: #1e1e2e; }
       .btn-secondary { background: #313244; color: #cdd6f4; }
       .btn-danger { background: #45182a; color: #f38ba8; }
+      .filter-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+      }
       #filterInput {
         background: #313244;
         border: 1px solid #45475a;
         border-radius: 6px;
-        padding: 5px 10px;
+        padding: 5px 28px 5px 10px;
         font-size: 12px;
         color: #cdd6f4;
         outline: none;
         width: 200px;
       }
       #filterInput:focus { border-color: #cba6f7; }
+      #filterClear {
+        position: absolute;
+        right: 6px;
+        background: none;
+        border: none;
+        color: #6c7086;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        display: none;
+      }
+      #filterClear:hover { color: #cdd6f4; }
       #refreshTime { font-size: 11px; color: #6c7086; }
 
       table {
@@ -141,7 +159,10 @@
       <button class="btn-secondary" id="dedupBtn">🧹 Duplicate Temizle</button>
       <button id="openSelectedBtn" disabled>📂 Seçilileri Aç (T1)</button>
       <button class="btn-secondary" id="copyBtn">📋 JSON Kopyala</button>
-      <input type="text" id="filterInput" placeholder="URL / domain / başlık filtrele…" />
+      <div class="filter-wrap">
+        <input type="text" id="filterInput" placeholder="URL / domain / başlık filtrele…" />
+        <button id="filterClear" title="Filtreyi temizle">✕</button>
+      </div>
       <span id="refreshTime"></span>
     </div>
 
