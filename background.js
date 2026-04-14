@@ -19,6 +19,11 @@ const TIER_GROUP_COLORS = {
 const INTERNAL_GROUP_COLOR = "grey";
 const INTERNAL_GROUP_TITLE = "Diğer";
 
+// EN: Inverse of TIER_GROUP_COLORS: color → tier number | TR: TIER_GROUP_COLORS tersine çevrilmiş hali: renk → kademe numarası
+const COLOR_TO_TIER = Object.fromEntries(
+  Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [color, parseInt(tier)])
+);
+
 const DefaultSettings = {
   tier1_to_tier2_minutes: 60,
   tier2_to_tier3_hours: 24,
@@ -62,6 +67,54 @@ function log(...args) {
   console.log("[TabTier]", ...args);
 }
 
+/*
+ * EN: Sort tier groups so T0 → T1 → T2 → T3 left to right.
+ *     Only moves groups when they are out of order; tabs within groups are untouched.
+ * TR: Kademe gruplarını soldan sağa T0 → T1 → T2 → T3 sırasına dizer.
+ *     Yalnızca sıra bozuksa grupları taşır; grup içindeki sekmeler yerinde kalır.
+ */
+async function reorderGroupsInWindow(windowId) {
+  try {
+    const [allTabs, allGroups] = await Promise.all([
+      chrome.tabs.query({ windowId }),
+      chrome.tabGroups.query({ windowId }),
+    ]);
+
+    // EN: Only consider our tier groups (by color), sorted T0 → T3
+    // TR: Yalnızca renge göre tanınan kademe gruplarını al, T0 → T3 sırala
+    const tierGroups = allGroups
+      .filter((g) => COLOR_TO_TIER[g.color] !== undefined)
+      .sort((a, b) => COLOR_TO_TIER[a.color] - COLOR_TO_TIER[b.color]);
+
+    if (tierGroups.length <= 1) return; // EN: Nothing to reorder | TR: Sıralanacak grup yok
+
+    // EN: Check current first-tab index of each group | TR: Her grubun ilk sekme indeksini bul
+    const groupFirstIndex = (g) => {
+      const t = allTabs.find((tab) => tab.groupId === g.id);
+      return t ? t.index : Infinity;
+    };
+
+    const positions = tierGroups.map(groupFirstIndex);
+    const alreadySorted = positions.every((p, i) => i === 0 || p > positions[i - 1]);
+    if (alreadySorted) return;
+
+    // EN: Count tabs per group to advance the insertion cursor | TR: Grup başına sekme sayısı
+    const tabCountOf = (g) => allTabs.filter((t) => t.groupId === g.id).length;
+
+    const pinnedCount = allTabs.filter((t) => t.pinned).length;
+    let cursor = pinnedCount;
+
+    for (const group of tierGroups) {
+      await chrome.tabGroups.move(group.id, { index: cursor });
+      cursor += tabCountOf(group);
+    }
+
+    log("reorderGroupsInWindow done, window", windowId);
+  } catch (e) {
+    log("reorderGroupsInWindow error:", e?.message);
+  }
+}
+
 // =============================================================================
 // moveTabToTierGroup: Tab'ı renk kodlu gruba taşı
 // cachedSettings: storage okumaktan kaçınmak için opsiyonel
@@ -100,6 +153,8 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings) {
         color,
         collapsed: tier === 3,
       });
+      // EN: New group created — reorder all tier groups so T0 < T1 < T2 < T3 | TR: Yeni grup oluşturuldu, tüm grupları T0 < T1 < T2 < T3 sırasına diz
+      await reorderGroupsInWindow(tab.windowId);
     }
   } catch (e) {
     log("moveTabToTierGroup error:", e?.message);
@@ -552,7 +607,7 @@ async function timerCheck() {
 
     // Aktif tab (bakılıyor) → atla
     if (tab.lastFocusEnd === null) continue;
-    // Tier 0 (Fixed) — never demote
+    // EN: Tier 0 (Fixed) — never demote | TR: Tier 0 (Sabit) — asla düşürme
     if (tab.currentTier === 0) continue;
 
     const elapsed = now - tab.lastFocusEnd;
@@ -730,7 +785,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
       tabRecords[newTabId].lastFocusStart = now;
       tabRecords[newTabId].lastFocusEnd = null; // null = şu an aktif
 
-      // Promote from Tier 2/3/4 to Tier 1 (T0 is 0, already excluded by > 1)
+      // EN: Promote from Tier 2/3/4 to Tier 1 (T0 is 0, already excluded by > 1) | TR: Tier 2/3/4'ten Tier 1'e yükselt (T0=0 olduğu için > 1 koşulu onu zaten dışlar)
       if (tabRecords[newTabId].currentTier > 1) {
         tabRecords[newTabId].currentTier = 1;
         await moveTabToTierGroup(newTabId, 1);
@@ -842,11 +897,6 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   }
 });
 
-// Color → tier mapping (inverse of TIER_GROUP_COLORS)
-const COLOR_TO_TIER = Object.fromEntries(
-  Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [color, parseInt(tier)])
-);
-
 // =============================================================================
 // EVENT 4: tabs.onUpdated — URL, title or group change
 // =============================================================================
@@ -863,8 +913,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       await chrome.storage.local.get(["tabRecords", "settings"]);
 
     if (!tabRecords[tabId]) {
-      // Tab was opened before the extension could track it (URL was blank on onCreated).
-      // Create a T1 record now that we have a real URL.
+      // EN: Tab was opened before the extension could track it (URL was blank on onCreated). Create a T1 record now.
+      // TR: Sekme eklenti takip edemeden açıldı (onCreated anında URL boştu). Şimdi T1 kaydı oluştur.
       if (!changeInfo.url) return;
       const now = Date.now();
 
@@ -909,11 +959,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       tabRecords[tabId].favicon = tab.favIconUrl;
     }
 
-    // Tab was manually dragged into a different group — sync tier from group color
+    // EN: Tab was manually dragged into a different group — sync tier from group color | TR: Sekme farklı bir gruba sürüklendi, grup renginden kademeyi güncelle
     if (hasGroupId) {
       const newGroupId = changeInfo.groupId;
       if (newGroupId === -1) {
-        // Dragged out of all groups — treat as T1 if not already T0
+        // EN: Dragged out of all groups — treat as T1 if not already T0 | TR: Tüm gruplardan çıkarıldı, T0 değilse T1 yap
         if (tabRecords[tabId].currentTier !== 0) {
           tabRecords[tabId].currentTier = 1;
           tabRecords[tabId].lastFocusEnd = Date.now();
@@ -1067,7 +1117,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
               if (tier === 0) {
                 await moveTabToTierGroup(tabId, 0);
               } else {
-                // Start the inactivity timer from now
+                // EN: Start the inactivity timer from now | TR: Hareketsizlik zamanlayıcısını şu andan başlat
                 tabRecords[tabId].lastFocusEnd = now;
                 await moveTabToTierGroup(tabId, 1);
               }
