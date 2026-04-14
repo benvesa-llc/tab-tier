@@ -393,9 +393,15 @@ document.querySelectorAll("thead th[data-col]").forEach(th => {
   });
 });
 
-// ─── İlk Yükleme ─────────────────────────────────────────────────────────
+// ─── İlk Yükleme ve Anlık Güncelleme ────────────────────────────────────
 
 loadData();
 
-// 10 saniyede bir otomatik yenile
-setInterval(loadData, 10000);
+// Reload immediately whenever tabRecords changes in storage (tab closed, tier change, etc.)
+let reloadTimer = null;
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes.tabRecords) return;
+  // Debounce: rapid successive writes collapse into one reload
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(loadData, 150);
+});

@@ -842,12 +842,21 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   }
 });
 
+// Color → tier mapping (inverse of TIER_GROUP_COLORS)
+const COLOR_TO_TIER = Object.fromEntries(
+  Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [color, parseInt(tier)])
+);
+
 // =============================================================================
-// EVENT 4: tabs.onUpdated — URL veya başlık değişimi
+// EVENT 4: tabs.onUpdated — URL, title or group change
 // =============================================================================
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!changeInfo.url && !changeInfo.title) return;
-  if (changeInfo.url && isBrowserInternalUrl(changeInfo.url)) return;
+  const hasUrl     = !!changeInfo.url;
+  const hasTitle   = !!changeInfo.title;
+  const hasGroupId = changeInfo.groupId !== undefined;
+
+  if (!hasUrl && !hasTitle && !hasGroupId) return;
+  if (hasUrl && isBrowserInternalUrl(changeInfo.url)) return;
 
   try {
     const { tabRecords = {}, settings = DefaultSettings } =
@@ -889,15 +898,43 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       return;
     }
 
-    if (changeInfo.url) {
+    if (hasUrl) {
       tabRecords[tabId].url = changeInfo.url;
       tabRecords[tabId].domain = extractDomain(changeInfo.url);
     }
-    if (changeInfo.title) {
+    if (hasTitle) {
       tabRecords[tabId].title = changeInfo.title;
     }
-    if (changeInfo.url && tab.favIconUrl) {
+    if (hasUrl && tab.favIconUrl) {
       tabRecords[tabId].favicon = tab.favIconUrl;
+    }
+
+    // Tab was manually dragged into a different group — sync tier from group color
+    if (hasGroupId) {
+      const newGroupId = changeInfo.groupId;
+      if (newGroupId === -1) {
+        // Dragged out of all groups — treat as T1 if not already T0
+        if (tabRecords[tabId].currentTier !== 0) {
+          tabRecords[tabId].currentTier = 1;
+          tabRecords[tabId].lastFocusEnd = Date.now();
+          log("onUpdated ungrouped → T1", tabId);
+        }
+      } else {
+        try {
+          const group = await chrome.tabGroups.get(newGroupId);
+          const tier = COLOR_TO_TIER[group.color];
+          if (tier !== undefined && tier !== tabRecords[tabId].currentTier) {
+            tabRecords[tabId].currentTier = tier;
+            tabRecords[tabId].isPinned = tier === 0;
+            if (tier !== 0) {
+              tabRecords[tabId].lastFocusEnd = Date.now();
+            }
+            log("onUpdated group drag → T" + tier, tabId, group.color);
+          }
+        } catch (e) {
+          // Group may have been dissolved — ignore
+        }
+      }
     }
 
     await chrome.storage.local.set({ tabRecords });
