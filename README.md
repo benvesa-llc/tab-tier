@@ -51,4 +51,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 ---
 
 *Developed by [Benvesa LLC](https://github.com/benvesa-llc)*
-*This project was developed with the assistance of AI tools.*

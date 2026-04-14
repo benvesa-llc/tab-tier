@@ -2,7 +2,7 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <title>TabTier — Debug</title>
+    <title>TabTier — Tab Yönetimi</title>
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -132,8 +132,8 @@
     </style>
   </head>
   <body>
-    <h1>🔍 TabTier Debug</h1>
-    <p class="subtitle">Tüm tab kayıtları — storage'dan canlı okuma</p>
+    <h1>📋 Tab Yönetimi</h1>
+    <p class="subtitle">Tüm tab kayıtları — canlı görüntüleme</p>
 
     <div class="toolbar">
       <button class="btn-primary" id="refreshBtn">↻ Yenile</button>
@@ -151,6 +151,7 @@
       <thead>
         <tr>
           <th class="cb-col"><input type="checkbox" id="selectAllT4" title="Tüm T4'leri seç"></th>
+          <th data-col="isPinned">Sabit</th>
           <th data-col="tabId">Tab ID</th>
           <th data-col="currentTier">Tier</th>
           <th data-col="openStatus">Durum</th>
@@ -160,7 +161,6 @@
           <th data-col="lastFocusStart">Odak Başladı</th>
           <th data-col="lastFocusEnd">Odak Bitti</th>
           <th data-col="elapsed">Geçen Süre</th>
-          <th data-col="isPinned">Sabit</th>
           <th data-col="createdAt">Oluşturuldu</th>
         </tr>
       </thead>

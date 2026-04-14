@@ -129,10 +129,10 @@ function updateStats() {
 
   if (q) {
     stats.textContent =
-      `${total} tab bulundu · ${visible} gösteriliyor · ${pinned} seçildi (T0'a sabitlenecek)`;
+      `${total} tab bulundu · ${visible} gösteriliyor · ${pinned} seçildi (T0'a eklenecek)`;
   } else {
     stats.textContent =
-      `${total} tab bulundu · ${pinned} seçildi (T0'a sabitlenecek)`;
+      `${total} tab bulundu · ${pinned} seçildi (T0'a eklenecek)`;
   }
 }
 

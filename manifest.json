@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tab Lifecycle Manager",
-  "version": "1.0.0",
+  "version": "0.2.3",
   "description": "Tier-based automatic tab lifecycle management for Edge",
   "default_locale": "en",
   "permissions": ["tabs", "tabGroups", "alarms", "storage"],

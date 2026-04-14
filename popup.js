@@ -472,6 +472,11 @@ document.getElementById("settingsBtn2").addEventListener("click", () => {
   window.close();
 });
 
+document.getElementById("tabManagerBtn").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("debug.html") });
+  window.close();
+});
+
 // İlk yükleme
 render();
 

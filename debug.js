@@ -131,7 +131,7 @@ function getComparableValue(r, col) {
     case "lastFocusStart": return r.lastFocusStart ?? 0;
     case "lastFocusEnd":   return r.lastFocusEnd ?? Number.MAX_SAFE_INTEGER;
     case "elapsed":        return r.lastFocusEnd == null ? -1 : (Date.now() - r.lastFocusEnd);
-    case "isPinned":       return r.isPinned ? 0 : 1;
+    case "isPinned":       return r.currentTier === 0 ? 0 : 1;
     case "createdAt":      return r.createdAt ?? 0;
     case "openStatus":     return openTabIds.has(r.tabId) ? 0 : 1;
     default:               return "";
@@ -189,9 +189,15 @@ function renderTable() {
       ? `<input type="checkbox" class="row-cb" data-key="${key}" ${selectedKeys.has(key) ? "checked" : ""}>`
       : "";
 
+    const isT0 = r.currentTier === 0;
+
     return `
       <tr style="${rowStyle}">
         <td class="cb-col">${cbHtml}</td>
+        <td style="text-align:center">${tier !== 4
+          ? `<span class="pin-toggle" data-tabid="${r.tabId}" data-tier="${tier}" style="cursor:pointer;font-size:15px" title="${isT0 ? 'T1\'e al (sabiti kaldır)' : 'T0\'a al (sabitle)'}">${isT0 ? "📌" : "—"}</span>`
+          : "—"
+        }</td>
         <td class="tabid-cell">${r.tabId}${isStale ? ' <span style="color:#f38ba8;font-size:10px">stale</span>' : ''}</td>
         <td><span class="${badgeClass}">${label}</span></td>
         <td>${openCell}</td>
@@ -205,8 +211,7 @@ function renderTable() {
         </td>
         <td class="time-cell">${fmtTime(r.lastFocusStart)}</td>
         <td class="time-cell">${fmtTime(r.lastFocusEnd)}</td>
-        <td class="time-cell">${fmtElapsed(r.lastFocusEnd)}</td>
-        <td style="text-align:center">${r.isPinned ? "📌" : "—"}</td>
+        <td class="time-cell">${isT0 ? "—" : fmtElapsed(r.lastFocusEnd)}</td>
         <td class="time-cell">${fmtTime(r.createdAt)}</td>
       </tr>`;
   }).join("");
@@ -229,6 +234,21 @@ function renderTable() {
         await chrome.windows.update(tab.windowId, { focused: true });
       } catch (err) {
         // Tab artık açık değilse sessizce geç
+      }
+    });
+  });
+
+  // Pin toggle — T0 ↔ T1 geçişi
+  document.querySelectorAll(".pin-toggle").forEach(el => {
+    el.addEventListener("click", async () => {
+      const tabId = parseInt(el.dataset.tabid);
+      const currentTier = parseInt(el.dataset.tier);
+      const newTier = currentTier === 0 ? 1 : 0;
+      try {
+        await chrome.runtime.sendMessage({ type: "SET_TAB_TIER", tabIds: [tabId], tier: newTier });
+        await loadData();
+      } catch (e) {
+        // ignore
       }
     });
   });

@@ -552,8 +552,8 @@ async function timerCheck() {
 
     // Aktif tab (bakılıyor) → atla
     if (tab.lastFocusEnd === null) continue;
-    // Tier 0 (Pinned) → asla düşürme
-    if (tab.isPinned) continue;
+    // Tier 0 (Fixed) — never demote
+    if (tab.currentTier === 0) continue;
 
     const elapsed = now - tab.lastFocusEnd;
 
@@ -730,11 +730,8 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
       tabRecords[newTabId].lastFocusStart = now;
       tabRecords[newTabId].lastFocusEnd = null; // null = şu an aktif
 
-      // Tier 2/3/4'ten Tier 1'e yükselt (promote)
-      if (
-        tabRecords[newTabId].currentTier > 1 &&
-        !tabRecords[newTabId].isPinned
-      ) {
+      // Promote from Tier 2/3/4 to Tier 1 (T0 is 0, already excluded by > 1)
+      if (tabRecords[newTabId].currentTier > 1) {
         tabRecords[newTabId].currentTier = 1;
         await moveTabToTierGroup(newTabId, 1);
         log("promote →T1", newTabId);
@@ -989,12 +986,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       chrome.storage.local
         .get("tabRecords")
         .then(async ({ tabRecords = {} }) => {
+          const now = Date.now();
           for (const tabId of tabIds) {
             if (tabRecords[tabId]) {
               tabRecords[tabId].isPinned = tier === 0;
               tabRecords[tabId].currentTier = tier;
-              if (tier === 0) await moveTabToTierGroup(tabId, 0);
-              else await moveTabToTierGroup(tabId, 1);
+              if (tier === 0) {
+                await moveTabToTierGroup(tabId, 0);
+              } else {
+                // Start the inactivity timer from now
+                tabRecords[tabId].lastFocusEnd = now;
+                await moveTabToTierGroup(tabId, 1);
+              }
             }
           }
           await chrome.storage.local.set({ tabRecords });
