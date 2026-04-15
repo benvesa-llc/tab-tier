@@ -14,7 +14,7 @@
   "sortTierTitle":      { "message": "Tier + Başlık" },
   "sortTierUrl":        { "message": "Tier + URL" },
   "applyToTabs":        { "message": "Tab'lara Uygula" },
-  "applyToTabsTitle":   { "message": "Seçili sırayı Edge tab bar'a uygula" },
+  "applyToTabsTitle":   { "message": "Seçili sırayı tarayıcı tab bar'a uygula" },
   "clearArchiveBtn":    { "message": "🗑 Arşivi Temizle" },
   "clearArchiveBtnTitle": { "message": "Tier 4 arşivini temizle" },
   "tabManagementBtn":   { "message": "📋 Tab Yönetimi" },
@@ -87,7 +87,7 @@
   "closeActionHint":   { "message": "Kullanıcı X ile kapatırken ne yapılsın?" },
 
   "groupNamesTitle":   { "message": "🏷 Grup Adları" },
-  "groupNamesHint":    { "message": "Tab gruplarının Edge tab bar'da görünen adlarını özelleştir." },
+  "groupNamesHint":    { "message": "Tab gruplarının tarayıcı tab bar'da görünen adlarını özelleştir." },
   "applyGroupNamesBtn":{ "message": "✏️ Grupları Yeniden Adlandır" },
   "saveSettingsBtn":   { "message": "💾 Ayarları Kaydet" },
   "resetSettingsBtn":  { "message": "↩ Varsayılanlara Dön" },

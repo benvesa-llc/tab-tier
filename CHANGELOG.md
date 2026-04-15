@@ -2,9 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.2] - 2026-04-15
+## [0.3.3] - 2026-04-15
 
 ### Fixed
+- Group name input placeholders in settings now use `__MSG_defaultGroupT*__` instead of hardcoded English strings, so they display in the correct browser language
+- "Edge" replaced with "browser" in two user-facing strings (`applyToTabsTitle`, `groupNamesHint`) in both locale files — extension works on Chrome and other Chromium browsers too
 - `__MSG_*__` placeholders in HTML pages were rendered as literal text instead of translated strings — added `i18n-dom.js`, a shared script that walks the DOM on load and substitutes all `__MSG_*__` tokens via `chrome.i18n.getMessage()`; script is included in `<head>` of all four HTML pages (popup, settings, onboarding, tab-management)
 - Popup sort options replaced with three tier-first presets: "Tier + Domain", "Tier + Başlık", "Tier + URL" — all use tier as the primary sort key, eliminating the bug where applying a URL-only or domain-only sort caused Edge to auto-assign nearby tabs into the wrong tier group during the physical tab move loop
 - Popup now shows all tiers (T0–T4) in the default view, not just T3 and T4 — enables quick browsing and search across all tabs without opening Tab Management

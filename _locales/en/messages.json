@@ -16,7 +16,7 @@
   "sortTierTitle": { "message": "Tier + Title" },
   "sortTierUrl": { "message": "Tier + URL" },
   "applyToTabs": { "message": "Apply to Tabs" },
-  "applyToTabsTitle": { "message": "Apply selected sort to Edge tab bar" },
+  "applyToTabsTitle": { "message": "Apply selected sort to browser tab bar" },
   "clearArchiveBtn": { "message": "🗑 Clear Archive" },
   "clearArchiveBtnTitle": { "message": "Clear Tier 4 archive" },
   "tabManagementBtn": { "message": "📋 Tab Management" },
@@ -95,7 +95,7 @@
   "closeActionHint": { "message": "What happens when user closes with X?" },
 
   "groupNamesTitle": { "message": "🏷 Group Names" },
-  "groupNamesHint": { "message": "Customize names shown in Edge tab bar." },
+  "groupNamesHint": { "message": "Customize names shown in the browser tab bar." },
   "applyGroupNamesBtn": { "message": "✏️ Rename Groups" },
   "saveSettingsBtn": { "message": "💾 Save Settings" },
   "resetSettingsBtn": { "message": "↩ Reset to Defaults" },
