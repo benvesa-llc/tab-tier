@@ -2,7 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.5] - 2026-04-15
+## [0.3.6] - 2026-04-15
+
+### Removed
+- `debug.html` and `debug.js` deleted — fully replaced by `tab-management.html` and `tab-management.js`
 
 ### Fixed
 - Tab bar group names were created with the wrong language (e.g. "Sıcak" instead of "Hot") because `background.js` merge logic only skipped empty stored names but not old translated defaults — filter now also excludes values matching the `T0:/T1:/T2:/T3:` prefix pattern, same as the settings UI fix
