@@ -2,9 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.3] - 2026-04-15
+## [0.3.4] - 2026-04-15
 
 ### Fixed
+- Group name inputs in settings showed the wrong language (e.g. Turkish defaults when browser is English) because translated strings were previously stored in `chrome.storage.local` — `DefaultSettings.groupNames` is now `{}` in both `settings.js` and `background.js`; stored names that look like system defaults (`T0:…`, `T1:…`) are cleared on display so the i18n placeholder appears; merge logic filters out empty stored values so `DefaultGroupNames` (always resolved from current browser language) shows through
 - Group name input placeholders in settings now use `__MSG_defaultGroupT*__` instead of hardcoded English strings, so they display in the correct browser language
 - "Edge" replaced with "browser" in two user-facing strings (`applyToTabsTitle`, `groupNamesHint`) in both locale files — extension works on Chrome and other Chromium browsers too
 - `__MSG_*__` placeholders in HTML pages were rendered as literal text instead of translated strings — added `i18n-dom.js`, a shared script that walks the DOM on load and substitutes all `__MSG_*__` tokens via `chrome.i18n.getMessage()`; script is included in `<head>` of all four HTML pages (popup, settings, onboarding, tab-management)

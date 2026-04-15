@@ -21,7 +21,9 @@ const DefaultSettings = {
   timerIntervalMinutes:     5,
   duplicateAction: "redirect",
   onManualClose:   "delete",
-  groupNames: { ...DefaultGroupNames },
+  // EN: Empty by default — i18n defaults are resolved at runtime, not stored
+  // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
+  groupNames: {},
   initialized: false,
 };
 
@@ -50,11 +52,16 @@ function applyToUI(s) {
   document.getElementById("dupAction").value   = s.duplicateAction;
   document.getElementById("closeAction").value = s.onManualClose;
 
-  const gn = { ...DefaultGroupNames, ...(s.groupNames || {}) };
-  document.getElementById("gn0").value = gn[0];
-  document.getElementById("gn1").value = gn[1];
-  document.getElementById("gn2").value = gn[2];
-  document.getElementById("gn3").value = gn[3];
+  // EN: If a stored name looks like a system default (starts with T0:/T1:/T2:/T3:),
+  //     treat it as empty so the i18n placeholder shows instead.
+  // TR: Saklanan ad sistem varsayılanına benziyorsa (T0:/T1: vb. ile başlıyorsa),
+  //     boş kabul et — i18n yer tutucusu görünsün.
+  const isSystemDefault = (v) => !v || /^T[0-3]:/.test(v.trim());
+  const gn = s.groupNames || {};
+  document.getElementById("gn0").value = isSystemDefault(gn[0]) ? '' : gn[0];
+  document.getElementById("gn1").value = isSystemDefault(gn[1]) ? '' : gn[1];
+  document.getElementById("gn2").value = isSystemDefault(gn[2]) ? '' : gn[2];
+  document.getElementById("gn3").value = isSystemDefault(gn[3]) ? '' : gn[3];
 }
 
 // ─── Read from UI ─────────────────────────────────────────────────────────────

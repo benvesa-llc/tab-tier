@@ -39,7 +39,9 @@ const DefaultSettings = {
   timerIntervalMinutes: 5,
   duplicateAction: "redirect",
   onManualClose: "delete",
-  groupNames: { ...DefaultGroupNames },
+  // EN: Empty by default — i18n defaults are resolved at runtime, not stored
+  // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
+  groupNames: {},
   initialized: false,
 };
 
@@ -138,7 +140,12 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
       (await chrome.storage.local.get("settings")).settings ||
       DefaultSettings;
 
-    const groupNames = { ...DefaultGroupNames, ...(settings.groupNames || {}) };
+    // EN: Merge i18n defaults with stored custom names; skip empty stored values so defaults show through
+    // TR: i18n varsayılanlarını saklanan özel adlarla birleştir; boş kayıtlı değerleri atla, varsayılan görünsün
+    const customNames = Object.fromEntries(
+      Object.entries(settings.groupNames || {}).filter(([, v]) => v?.trim())
+    );
+    const groupNames = { ...DefaultGroupNames, ...customNames };
     const title = groupNames[tier];
     const color = TIER_GROUP_COLORS[tier];
 
@@ -300,7 +307,12 @@ async function sortTabsInWindow(windowId, sortType) {
 async function renameAllGroups() {
   const { settings = DefaultSettings } =
     await chrome.storage.local.get("settings");
-  const groupNames = { ...DefaultGroupNames, ...(settings.groupNames || {}) };
+  // EN: Merge i18n defaults with stored custom names; skip empty stored values so defaults show through
+  // TR: i18n varsayılanlarını saklanan özel adlarla birleştir; boş kayıtlı değerleri atla, varsayılan görünsün
+  const customNames = Object.fromEntries(
+    Object.entries(settings.groupNames || {}).filter(([, v]) => v?.trim())
+  );
+  const groupNames = { ...DefaultGroupNames, ...customNames };
 
   // Renk → tier eşleştirmesi: her tier'ın rengi unique
   // Böylece "Sabit", "T0: Sabit" gibi herhangi bir isimli grubu
