@@ -597,6 +597,58 @@ async function timerCheck() {
   const now = Date.now();
   let hasChanges = false;
 
+  /*
+   * EN: Mini-reconcile — runs every timer tick before tier processing.
+   *     Fixes stale records where the tabId no longer exists in the browser
+   *     (e.g. Edge sleeping-tabs feature reassigns a new tab ID on wake).
+   *     Strategy: try URL re-link first; if no match, archive to T4 immediately.
+   * TR: Mini-uzlaştırma — her zamanlayıcı döngüsünde tier işleminden önce çalışır.
+   *     tabId'si tarayıcıda artık bulunmayan kayıtları düzeltir
+   *     (örn. Edge uyuyan sekmeler özelliği uyanışta yeni tab ID atıyor).
+   *     Strateji: önce URL üzerinden yeniden bağlamayı dene; eşleşme yoksa T4'e arşivle.
+   */
+  {
+    const allOpenTabs = await chrome.tabs.query({});
+    // EN: Build set of open tab IDs and URL→tab map | TR: Açık tab ID seti ve URL→tab haritası oluştur
+    const openTabIds = new Set(allOpenTabs.map(t => t.id));
+    const urlToOpenTab = {};
+    for (const t of allOpenTabs) {
+      if (!t.url || isBrowserInternalUrl(t.url)) continue;
+      if (!urlToOpenTab[t.url] || t.id > urlToOpenTab[t.url].id) urlToOpenTab[t.url] = t;
+    }
+    // EN: Track which tabIds are already in storage to avoid re-link collisions | TR: Çakışmayı önlemek için storage'daki mevcut tabId'leri izle
+    const recordedTabIds = new Set(Object.keys(tabRecords).map(k => parseInt(k)));
+
+    for (const key of Object.keys(tabRecords)) {
+      const rec = tabRecords[key];
+      if (rec.currentTier === 4) continue;           // EN: Already archived | TR: Zaten arşivde
+      if (openTabIds.has(parseInt(key))) continue;   // EN: Tab found, no action needed | TR: Tab bulundu, işlem gerekmez
+
+      const matchTab = urlToOpenTab[rec.url];
+      if (matchTab && !recordedTabIds.has(matchTab.id)) {
+        // EN: Same URL still open but with a different tabId — re-link the record | TR: Aynı URL farklı tabId ile açık — kaydı yeniden bağla
+        delete tabRecords[key];
+        tabRecords[String(matchTab.id)] = {
+          ...rec,
+          tabId:   matchTab.id,
+          url:     matchTab.url,
+          title:   matchTab.title   || rec.title,
+          favicon: matchTab.favIconUrl || rec.favicon,
+        };
+        recordedTabIds.delete(parseInt(key));
+        recordedTabIds.add(matchTab.id);
+        hasChanges = true;
+        log(`timerCheck re-link: tabId=${key} → ${matchTab.id} url=${rec.url}`);
+      } else {
+        // EN: Tab is truly gone — archive to T4 immediately | TR: Tab gerçekten yok — hemen T4'e arşivle
+        log(`timerCheck stale→T4: tabId=${key} tier=${rec.currentTier} url=${rec.url}`);
+        rec.currentTier = 4;
+        rec.lastFocusEnd = now;
+        hasChanges = true;
+      }
+    }
+  }
+
   const TIER1_TO_2 = settings.tier1_to_tier2_minutes * 60 * 1000;
   const TIER2_TO_3 = settings.tier2_to_tier3_hours * 3600 * 1000;
   const TIER3_TO_4 = settings.tier3_to_tier4_days * 86400 * 1000;
@@ -990,6 +1042,27 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     await chrome.storage.local.set({ tabRecords });
   } catch (e) {
     log("onUpdated error:", e?.message);
+  }
+});
+
+// =============================================================================
+// EVENT 5: tabs.onReplaced — tab ID changed after Edge sleeping-tabs wake or restore
+// =============================================================================
+chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
+  try {
+    const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+    const key = String(removedTabId);
+    if (!tabRecords[key]) return; // EN: No record for old ID, nothing to do | TR: Eski ID için kayıt yok, işlem gerekmez
+
+    // EN: Move the record to the new tab ID, preserving all tier/timing data | TR: Kaydı yeni tab ID'ye taşı, tüm tier/zamanlama verilerini koru
+    const rec = tabRecords[key];
+    tabRecords[String(addedTabId)] = { ...rec, tabId: addedTabId };
+    delete tabRecords[key];
+
+    await chrome.storage.local.set({ tabRecords });
+    log(`onReplaced: re-linked tabId ${removedTabId} → ${addedTabId} url=${rec.url}`);
+  } catch (e) {
+    log("onReplaced error:", e?.message);
   }
 });
 

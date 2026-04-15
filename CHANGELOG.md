@@ -2,6 +2,12 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [0.2.9] - 2026-04-15
+
+### Fixed
+- `tabs.onReplaced` listener added: when Edge reassigns a tab ID after waking a sleeping tab, the storage record is immediately re-linked to the new ID — prevents "yok" (missing) entries in Tab Management
+- `timerCheck` now runs a mini-reconcile before processing tier transitions: stale non-T4 records whose tab ID is no longer open are either re-linked by URL or immediately archived to T4 — no more waiting days for the T3→T4 threshold to expire on a tab that is already gone
+
 ## [0.2.8] - 2026-04-14
 
 ### Added
