@@ -2,11 +2,13 @@
 // Tab Lifecycle Manager — background.js (Service Worker)
 // =============================================================================
 
+// EN: Default group names from i18n — auto-selected based on browser language
+// TR: i18n'den varsayılan grup adları — tarayıcı diline göre otomatik seçilir
 const DefaultGroupNames = {
-  0: "T0: Sabit",
-  1: "T1: Sıcak",
-  2: "T2: Ilık",
-  3: "T3: Soğuk",
+  0: chrome.i18n.getMessage("defaultGroupT0"),
+  1: chrome.i18n.getMessage("defaultGroupT1"),
+  2: chrome.i18n.getMessage("defaultGroupT2"),
+  3: chrome.i18n.getMessage("defaultGroupT3"),
 };
 
 const TIER_GROUP_COLORS = {
@@ -17,11 +19,16 @@ const TIER_GROUP_COLORS = {
 };
 
 const INTERNAL_GROUP_COLOR = "grey";
-const INTERNAL_GROUP_TITLE = "Diğer";
+// EN: Tab group title for browser-internal pages (new tab, devtools, etc.)
+// TR: Tarayıcı iç sayfaları için tab grubu başlığı (yeni sekme, devtools vb.)
+const INTERNAL_GROUP_TITLE = chrome.i18n.getMessage("internalGroupTitle");
 
 // EN: Inverse of TIER_GROUP_COLORS: color → tier number | TR: TIER_GROUP_COLORS tersine çevrilmiş hali: renk → kademe numarası
 const COLOR_TO_TIER = Object.fromEntries(
-  Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [color, parseInt(tier)])
+  Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [
+    color,
+    parseInt(tier),
+  ]),
 );
 
 const DefaultSettings = {
@@ -95,7 +102,9 @@ async function reorderGroupsInWindow(windowId) {
     };
 
     const positions = tierGroups.map(groupFirstIndex);
-    const alreadySorted = positions.every((p, i) => i === 0 || p > positions[i - 1]);
+    const alreadySorted = positions.every(
+      (p, i) => i === 0 || p > positions[i - 1],
+    );
     if (alreadySorted) return;
 
     // EN: Count tabs per group to advance the insertion cursor | TR: Grup başına sekme sayısı
@@ -166,9 +175,11 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
     //     Edge etkileşimi bitirdikten sonra promote tamamlanabilsin diye artan
     //     gecikmeyle 3 kez yeniden dene.
     if (_attempt < 3 && e?.message?.includes("cannot be edited")) {
-      const delay = ((_attempt + 1) * 300);
-      log(`moveTabToTierGroup retry ${_attempt + 1}/3 in ${delay}ms — tab ${tabId}`);
-      await new Promise(r => setTimeout(r, delay));
+      const delay = (_attempt + 1) * 300;
+      log(
+        `moveTabToTierGroup retry ${_attempt + 1}/3 in ${delay}ms — tab ${tabId}`,
+      );
+      await new Promise((r) => setTimeout(r, delay));
       return moveTabToTierGroup(tabId, tier, cachedSettings, _attempt + 1);
     }
     log("moveTabToTierGroup error:", e?.message);
@@ -209,7 +220,9 @@ async function sortTabsInWindow(windowId, sortType) {
       const ta = ra?.currentTier ?? 1;
       const tb = rb?.currentTier ?? 1;
       if (ta !== tb) return ta - tb;
-      return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
+      return (a.title || "")
+        .toLowerCase()
+        .localeCompare((b.title || "").toLowerCase());
     });
   } else if (sortType === "tierUrl") {
     sorted = [...restTabs].sort((a, b) => {
@@ -218,7 +231,9 @@ async function sortTabsInWindow(windowId, sortType) {
       const ta = ra?.currentTier ?? 1;
       const tb = rb?.currentTier ?? 1;
       if (ta !== tb) return ta - tb;
-      return (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase());
+      return (a.url || "")
+        .toLowerCase()
+        .localeCompare((b.url || "").toLowerCase());
     });
   } else {
     // tierDomain (default, also covers legacy "tierAlpha", "domain", "url"):
@@ -417,7 +432,14 @@ async function dedupRecords() {
     });
     const [keep, ...dupes] = entries;
 
-    log("dedup keep:", keep.key, "tier:", keep.rec.currentTier, "url:", keep.rec.url);
+    log(
+      "dedup keep:",
+      keep.key,
+      "tier:",
+      keep.rec.currentTier,
+      "url:",
+      keep.rec.url,
+    );
 
     for (const { key, rec } of dupes) {
       // Açık bir tab ise kapat
@@ -458,7 +480,10 @@ async function reconcileTabs() {
   const activeTabIds = new Set(activeTabs.map((t) => t.id));
 
   const now = Date.now();
-  let added = 0, archived = 0, fixed = 0, relinked = 0;
+  let added = 0,
+    archived = 0,
+    fixed = 0,
+    relinked = 0;
 
   // URL → açık tab eşlemesi: tabId değişmiş olsa bile URL üzerinden bulabilmek için
   // Aynı URL'den birden fazla açık tab varsa en yeni (en büyük id) tercih edilir
@@ -471,7 +496,9 @@ async function reconcileTabs() {
   }
 
   // Zaten hangi tabId'lerin kayıtta olduğunu bil (relink çakışmasını önle)
-  const recordedTabIds = new Set(Object.keys(tabRecords).map(k => parseInt(k)));
+  const recordedTabIds = new Set(
+    Object.keys(tabRecords).map((k) => parseInt(k)),
+  );
 
   // Kaydedilen ama tabId üzerinden açık görünmeyen kayıtları kontrol et
   for (const key of Object.keys(tabRecords)) {
@@ -496,7 +523,9 @@ async function reconcileTabs() {
       recordedTabIds.delete(parseInt(key));
       recordedTabIds.add(matchTab.id);
       relinked++;
-      log(`reconcile re-link: key=${key} → ${matchTab.id} tier=${rec.currentTier} url=${rec.url}`);
+      log(
+        `reconcile re-link: key=${key} → ${matchTab.id} tier=${rec.currentTier} url=${rec.url}`,
+      );
     } else {
       // Gerçekten açık değil → T4'e arşivle
       rec.currentTier = 4;
@@ -533,11 +562,16 @@ async function reconcileTabs() {
   }
 
   await chrome.storage.local.set({ tabRecords });
-  log(`reconcile storage done — archived:${archived} added:${added} fixed:${fixed} relinked:${relinked}`);
+  log(
+    `reconcile storage done — archived:${archived} added:${added} fixed:${fixed} relinked:${relinked}`,
+  );
 
   // Tarayıcıdaki mevcut grup renklerini topla (tier doğrulama için)
   const colorToTier = Object.fromEntries(
-    Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [color, parseInt(tier)])
+    Object.entries(TIER_GROUP_COLORS).map(([tier, color]) => [
+      color,
+      parseInt(tier),
+    ]),
   );
   const allGroupsMap = {};
   for (const win of await chrome.windows.getAll()) {
@@ -548,7 +582,8 @@ async function reconcileTabs() {
   // Açık tüm tab'ları kayıttaki tier grubuna taşı (T0–T3)
   // Önce: tab tarayıcıda zaten daha yüksek bir tier grubundaysa (timer onu
   // taşımış ama storage güncellenememiş olabilir) storage'ı düzelt.
-  let grouped = 0, tierCorrected = 0;
+  let grouped = 0,
+    tierCorrected = 0;
   for (const tab of allTabs) {
     if (isBrowserInternalUrl(tab.url)) continue;
     const rec = tabRecords[tab.id];
@@ -559,7 +594,9 @@ async function reconcileTabs() {
       const browserTier = colorToTier[allGroupsMap[tab.groupId].color];
       if (browserTier != null && browserTier > (rec.currentTier ?? 0)) {
         // Timer demote yapmış ama storage kalmış — storage'ı düzelt
-        log(`reconcile tier fix: T${rec.currentTier}→T${browserTier} tab=${tab.id}`);
+        log(
+          `reconcile tier fix: T${rec.currentTier}→T${browserTier} tab=${tab.id}`,
+        );
         rec.currentTier = browserTier;
         tierCorrected++;
       }
@@ -581,7 +618,9 @@ async function reconcileTabs() {
     await groupInternalTabs(wid);
   }
 
-  log(`reconcile done — archived:${archived} added:${added} fixed:${fixed} relinked:${relinked} tierCorrected:${tierCorrected} grouped:${grouped}`);
+  log(
+    `reconcile done — archived:${archived} added:${added} fixed:${fixed} relinked:${relinked} tierCorrected:${tierCorrected} grouped:${grouped}`,
+  );
   return { archived, added, fixed, grouped, relinked, tierCorrected };
 }
 
@@ -634,19 +673,22 @@ async function timerCheck() {
   {
     const allOpenTabs = await chrome.tabs.query({});
     // EN: Build set of open tab IDs and URL→tab map | TR: Açık tab ID seti ve URL→tab haritası oluştur
-    const openTabIds = new Set(allOpenTabs.map(t => t.id));
+    const openTabIds = new Set(allOpenTabs.map((t) => t.id));
     const urlToOpenTab = {};
     for (const t of allOpenTabs) {
       if (!t.url || isBrowserInternalUrl(t.url)) continue;
-      if (!urlToOpenTab[t.url] || t.id > urlToOpenTab[t.url].id) urlToOpenTab[t.url] = t;
+      if (!urlToOpenTab[t.url] || t.id > urlToOpenTab[t.url].id)
+        urlToOpenTab[t.url] = t;
     }
     // EN: Track which tabIds are already in storage to avoid re-link collisions | TR: Çakışmayı önlemek için storage'daki mevcut tabId'leri izle
-    const recordedTabIds = new Set(Object.keys(tabRecords).map(k => parseInt(k)));
+    const recordedTabIds = new Set(
+      Object.keys(tabRecords).map((k) => parseInt(k)),
+    );
 
     for (const key of Object.keys(tabRecords)) {
       const rec = tabRecords[key];
-      if (rec.currentTier === 4) continue;           // EN: Already archived | TR: Zaten arşivde
-      if (openTabIds.has(parseInt(key))) continue;   // EN: Tab found, no action needed | TR: Tab bulundu, işlem gerekmez
+      if (rec.currentTier === 4) continue; // EN: Already archived | TR: Zaten arşivde
+      if (openTabIds.has(parseInt(key))) continue; // EN: Tab found, no action needed | TR: Tab bulundu, işlem gerekmez
 
       const matchTab = urlToOpenTab[rec.url];
       if (matchTab && !recordedTabIds.has(matchTab.id)) {
@@ -654,9 +696,9 @@ async function timerCheck() {
         delete tabRecords[key];
         tabRecords[String(matchTab.id)] = {
           ...rec,
-          tabId:   matchTab.id,
-          url:     matchTab.url,
-          title:   matchTab.title   || rec.title,
+          tabId: matchTab.id,
+          url: matchTab.url,
+          title: matchTab.title || rec.title,
           favicon: matchTab.favIconUrl || rec.favicon,
         };
         recordedTabIds.delete(parseInt(key));
@@ -665,7 +707,9 @@ async function timerCheck() {
         log(`timerCheck re-link: tabId=${key} → ${matchTab.id} url=${rec.url}`);
       } else {
         // EN: Tab is truly gone — archive to T4 immediately | TR: Tab gerçekten yok — hemen T4'e arşivle
-        log(`timerCheck stale→T4: tabId=${key} tier=${rec.currentTier} url=${rec.url}`);
+        log(
+          `timerCheck stale→T4: tabId=${key} tier=${rec.currentTier} url=${rec.url}`,
+        );
         rec.currentTier = 4;
         rec.lastFocusEnd = now;
         hasChanges = true;
@@ -899,7 +943,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
         if (tab && tab.url && !isBrowserInternalUrl(tab.url)) {
           // EN: Look for an existing non-T4 record with the same URL | TR: Aynı URL'ye sahip T4 dışı mevcut kaydı ara
           const existingEntry = Object.entries(tabRecords).find(
-            ([, rec]) => rec.url === tab.url && rec.currentTier !== 4
+            ([, rec]) => rec.url === tab.url && rec.currentTier !== 4,
           );
           if (existingEntry) {
             // EN: Re-link old record to new tabId (sleeping-tab ID change) | TR: Eski kaydı yeni tabId'ye bağla (uyuyan tab ID değişimi)
@@ -907,12 +951,12 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
             delete tabRecords[oldKey];
             tabRecords[newTabId] = {
               ...rec,
-              tabId:   newTabId,
-              url:     tab.url,
-              title:   tab.title   || rec.title,
+              tabId: newTabId,
+              url: tab.url,
+              title: tab.title || rec.title,
               favicon: tab.favIconUrl || rec.favicon,
               lastFocusStart: now,
-              lastFocusEnd:   null,
+              lastFocusEnd: null,
             };
             if (tabRecords[newTabId].currentTier > 1) {
               tabRecords[newTabId].currentTier = 1;
@@ -922,16 +966,16 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
           } else {
             // EN: Genuinely new tab — create a T1 record and ensure it is in the T1 group | TR: Gerçekten yeni tab — T1 kaydı oluştur ve T1 grubuna taşı
             tabRecords[newTabId] = {
-              tabId:          newTabId,
-              url:            tab.url,
-              domain:         extractDomain(tab.url),
-              title:          tab.title || tab.url,
-              favicon:        tab.favIconUrl || "",
-              currentTier:    tab.pinned ? 0 : 1,
-              isPinned:       tab.pinned || false,
+              tabId: newTabId,
+              url: tab.url,
+              domain: extractDomain(tab.url),
+              title: tab.title || tab.url,
+              favicon: tab.favIconUrl || "",
+              currentTier: tab.pinned ? 0 : 1,
+              isPinned: tab.pinned || false,
               lastFocusStart: now,
-              lastFocusEnd:   null,
-              createdAt:      now,
+              lastFocusEnd: null,
+              createdAt: now,
             };
             if (!tab.pinned) await moveTabToTierGroup(newTabId, 1);
           }
@@ -960,7 +1004,8 @@ chrome.tabs.onCreated.addListener(async (newTab) => {
     // PROMOTE_TABS ile açılan tablar T4 kaydı varken tetiklenir ve
     // yanlışlıkla redirect'e düşmemeli)
     const dup = Object.values(tabRecords).find(
-      (r) => r.url === newTab.url && r.tabId !== newTab.id && r.currentTier !== 4,
+      (r) =>
+        r.url === newTab.url && r.tabId !== newTab.id && r.currentTier !== 4,
     );
 
     if (dup && settings.duplicateAction === "redirect") {
@@ -984,7 +1029,7 @@ chrome.tabs.onCreated.addListener(async (newTab) => {
       tabId: newTab.id,
       url: newTab.url,
       domain: extractDomain(newTab.url),
-      title: newTab.title || "Yükleniyor...",
+      title: newTab.title || chrome.i18n.getMessage("tabLoadingTitle"),
       favicon: newTab.favIconUrl || "",
       currentTier: 1,
       isPinned: false,
@@ -1028,8 +1073,8 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 // EVENT 4: tabs.onUpdated — URL, title or group change
 // =============================================================================
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  const hasUrl     = !!changeInfo.url;
-  const hasTitle   = !!changeInfo.title;
+  const hasUrl = !!changeInfo.url;
+  const hasTitle = !!changeInfo.title;
   const hasGroupId = changeInfo.groupId !== undefined;
 
   if (!hasUrl && !hasTitle && !hasGroupId) return;
@@ -1047,7 +1092,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
       // Duplicate check before creating a new record
       const dup = Object.values(tabRecords).find(
-        (r) => r.url === changeInfo.url && r.tabId !== tabId && r.currentTier !== 4,
+        (r) =>
+          r.url === changeInfo.url && r.tabId !== tabId && r.currentTier !== 4,
       );
       if (dup && settings.duplicateAction === "redirect") {
         await chrome.tabs.remove(tabId);
@@ -1143,7 +1189,9 @@ chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
     delete tabRecords[key];
 
     await chrome.storage.local.set({ tabRecords });
-    log(`onReplaced: re-linked tabId ${removedTabId} → ${addedTabId} url=${rec.url}`);
+    log(
+      `onReplaced: re-linked tabId ${removedTabId} → ${addedTabId} url=${rec.url}`,
+    );
   } catch (e) {
     log("onReplaced error:", e?.message);
   }

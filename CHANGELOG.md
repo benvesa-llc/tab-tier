@@ -2,7 +2,7 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.0] - 2026-04-15
+## [0.3.1] - 2026-04-15
 
 ### Fixed
 - Popup sort options replaced with three tier-first presets: "Tier + Domain", "Tier + Başlık", "Tier + URL" — all use tier as the primary sort key, eliminating the bug where applying a URL-only or domain-only sort caused Edge to auto-assign nearby tabs into the wrong tier group during the physical tab move loop
@@ -29,6 +29,7 @@ All notable changes to Tab Tier will be documented in this file.
 - `debug.html` and `debug.js` renamed to `tab-management.html` and `tab-management.js`; `debug.html` now redirects to the new URL for any existing bookmarks
 - `manifest.json` `web_accessible_resources` updated to reference `tab-management.html` and `tab-management.js`
 - Default group names in settings now use i18n (English: "T0: Fixed", "T1: Hot" etc.; Turkish: "T0: Sabit", "T1: Sıcak" etc.) — applied when settings are first initialized
+- `background.js` `DefaultGroupNames`, `INTERNAL_GROUP_TITLE` ("Other"/"Diğer" tab group for internal pages), and new-tab loading title placeholder now use `chrome.i18n.getMessage()` — all Chrome tab bar labels are fully localized
 
 ## [0.2.8] - 2026-04-14
 

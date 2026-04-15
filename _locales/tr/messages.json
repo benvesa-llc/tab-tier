@@ -116,6 +116,8 @@
   "defaultGroupT1": { "message": "T1: Sıcak" },
   "defaultGroupT2": { "message": "T2: Ilık" },
   "defaultGroupT3": { "message": "T3: Soğuk" },
+  "internalGroupTitle": { "message": "Diğer" },
+  "tabLoadingTitle": { "message": "Yükleniyor..." },
 
   "tabMgmtPageTitle":  { "message": "TabTier — Tab Yönetimi" },
   "tabMgmtH1":         { "message": "📋 Tab Yönetimi" },
