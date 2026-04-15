@@ -1,52 +1,224 @@
 {
-  "extName": {
-    "message": "Tab Tier"
+  "extName":        { "message": "Tab Tier" },
+  "extDescription": { "message": "Smart tab lifecycle management for your browser" },
+
+  "tierT0Name": { "message": "T0 Fixed" },
+  "tierT1Name": { "message": "T1 Active" },
+  "tierT2Name": { "message": "T2 Idle" },
+  "tierT3Name": { "message": "T3 Cold" },
+  "tierT4Name": { "message": "T4 Archive" },
+
+  "searchPlaceholder":  { "message": "🔍 Search tabs (title, domain, url)..." },
+  "sortLabel":          { "message": "Sort:" },
+  "sortTierDomain":     { "message": "Tier + Domain" },
+  "sortTierTitle":      { "message": "Tier + Title" },
+  "sortTierUrl":        { "message": "Tier + URL" },
+  "applyToTabs":        { "message": "Apply to Tabs" },
+  "applyToTabsTitle":   { "message": "Apply selected sort to Edge tab bar" },
+  "clearArchiveBtn":    { "message": "🗑 Clear Archive" },
+  "clearArchiveBtnTitle": { "message": "Clear Tier 4 archive" },
+  "tabManagementBtn":   { "message": "📋 Tab Management" },
+  "settingsBtn":        { "message": "⚙️ Settings" },
+
+  "timeActive":  { "message": "active" },
+  "timeDaysAgo": {
+    "message": "$COUNT$ days ago",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "extDescription": {
-    "message": "Smart tab lifecycle management for your browser"
+  "timeHoursAgo": {
+    "message": "$COUNT$ hrs ago",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "popupTitle": {
-    "message": "Tab Tier"
+  "timeMinsAgo": {
+    "message": "$COUNT$ min ago",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "settingsTitle": {
-    "message": "Settings"
+  "timeJustNow": { "message": "just now" },
+
+  "openFromArchive": { "message": "Open (from archive)" },
+  "focusTab":        { "message": "Focus tab" },
+  "unpinTab":        { "message": "Remove from fixed (T0)" },
+  "pinToT0":         { "message": "Pin to T0" },
+  "deleteRecord":    { "message": "Delete record" },
+
+  "noTabRecords":       { "message": "No tab records." },
+  "noTabsInTier":       { "message": "No tabs in this tier." },
+  "confirmClearArchive":{ "message": "All Tier 4 archive records will be deleted. Are you sure?" },
+  "sortingText":        { "message": "⏳ Sorting..." },
+  "sortDone":           { "message": "✅ Done" },
+  "noSearchResults": {
+    "message": "No results for \"$QUERY$\".",
+    "placeholders": { "query": { "content": "$1" } }
   },
-  "tierLabelT0": {
-    "message": "Active"
+  "autoDeleteInfo": {
+    "message": "⏱ Auto delete: $DAYS$ days",
+    "placeholders": { "days": { "content": "$1" } }
   },
-  "tierLabelT1": {
-    "message": "Warm"
+  "domainGroupOther": { "message": "Other" },
+  "totalCountLabel": {
+    "message": "Total: $COUNT$",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT2": {
-    "message": "Cool"
+
+  "settingsTitle":       { "message": "Settings" },
+  "settingsSubtitle":    { "message": "Customize tier durations and behavior" },
+  "tierTransitionsTitle":{ "message": "⏱ Tier Transition Durations" },
+  "t1t2Label": { "message": "🔥→⏸ Tier 1 → Tier 2 (Minutes)" },
+  "t1t2Hint":  { "message": "Inactivity time before dropping to Idle. Default: 60 min" },
+  "t2t3Label": { "message": "⏸→❄️ Tier 2 → Tier 3 (Hours)" },
+  "t2t3Hint":  { "message": "Idle to Cold transition. Default: 24 hours" },
+  "t3t4Label": { "message": "❄️→⚫ Tier 3 → Tier 4 (Days)" },
+  "t3t4Hint":  { "message": "Cold to Archive (removed from tab bar). Default: 7 days" },
+  "t4delLabel":{ "message": "⚫→🗑 Tier 4 → Delete (Days)" },
+  "t4delHint": { "message": "0 = unlimited (never deleted). Default: 60 days" },
+  "unitMin":   { "message": "min" },
+  "unitHour":  { "message": "hr" },
+  "unitDay":   { "message": "day" },
+
+  "behaviorTitle":     { "message": "🔧 Behavior" },
+  "dupActionLabel":    { "message": "When duplicate detected" },
+  "dupActionRedirect": { "message": "Redirect to existing tab (default)" },
+  "dupActionWarn":     { "message": "Show warning, let user decide" },
+  "dupActionAllow":    { "message": "Allow duplicate" },
+  "dupActionHint":     { "message": "What to do when reopening the same URL?" },
+  "closeActionLabel":  { "message": "When tab is manually closed" },
+  "closeActionDelete": { "message": "Delete record (default)" },
+  "closeActionArchive":{ "message": "Send to Tier 4 Archive" },
+  "closeActionHint":   { "message": "What happens when user closes with X?" },
+
+  "groupNamesTitle":   { "message": "🏷 Group Names" },
+  "groupNamesHint":    { "message": "Customize names shown in Edge tab bar." },
+  "applyGroupNamesBtn":{ "message": "✏️ Rename Groups" },
+  "saveSettingsBtn":   { "message": "💾 Save Settings" },
+  "resetSettingsBtn":  { "message": "↩ Reset to Defaults" },
+
+  "devToolsTitle":      { "message": "🧪 Developer Tools" },
+  "dissolveGroupsBtn":  { "message": "🔓 Dissolve All Groups" },
+  "dissolveGroupsHint": { "message": "Dissolving groups doesn't close tabs — only removes group bindings." },
+  "dataManagementTitle":{ "message": "⚠️ Data Management" },
+  "clearArchiveBtnFull":{ "message": "🗑 Clear Archive (Tier 4)" },
+  "clearAllDataBtn":    { "message": "🔥 Delete All Data" },
+  "dataManagementHint": { "message": "These actions cannot be undone." },
+
+  "savedStatus":         { "message": "✅ Saved!" },
+  "resetStatus":         { "message": "↩ Reset to defaults." },
+  "groupNamesRenamed":   { "message": "✅ Groups renamed!" },
+  "groupsDissolved":     { "message": "🔓 Groups dissolved!" },
+  "confirmResetSettings":{ "message": "All settings will be reset to defaults. Are you sure?" },
+  "archiveClearedMsg": {
+    "message": "$COUNT$ archive records deleted.",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT3": {
-    "message": "Cold"
+  "confirmClearAll":  { "message": "ALL tab records and settings will be deleted. This cannot be undone! Continue?" },
+  "allDataClearedMsg":{ "message": "All data deleted. Please restart the extension." },
+
+  "defaultGroupT0": { "message": "T0: Fixed" },
+  "defaultGroupT1": { "message": "T1: Hot" },
+  "defaultGroupT2": { "message": "T2: Warm" },
+  "defaultGroupT3": { "message": "T3: Cold" },
+
+  "tabMgmtPageTitle":  { "message": "TabTier — Tab Management" },
+  "tabMgmtH1":         { "message": "📋 Tab Management" },
+  "tabMgmtSubtitle":   { "message": "All tab records — live view" },
+  "refreshBtnLabel":   { "message": "↻ Refresh" },
+  "reconcileBtnLabel": { "message": "🔄 Reconcile" },
+  "dedupBtnLabel":     { "message": "🧹 Clean Duplicates" },
+  "openSelectedBtnLabel": { "message": "📂 Open Selected (T1)" },
+  "copyJsonBtnLabel":  { "message": "📋 Copy JSON" },
+  "filterPlaceholder": { "message": "Filter URL / domain / title…" },
+  "selectAllT4Title":  { "message": "Select all T4 records" },
+  "colFixed":      { "message": "Fixed" },
+  "colTabId":      { "message": "Tab ID" },
+  "colTier":       { "message": "Tier" },
+  "colStatus":     { "message": "Status" },
+  "colDomain":     { "message": "Domain" },
+  "colTitle":      { "message": "Title" },
+  "colUrl":        { "message": "URL" },
+  "colFocusStart": { "message": "Focus Start" },
+  "colFocusEnd":   { "message": "Focus End" },
+  "colElapsed":    { "message": "Elapsed" },
+  "colCreated":    { "message": "Created" },
+  "noRecords":     { "message": "No records." },
+
+  "statusArchive":   { "message": "archive" },
+  "statusActiveNow": { "message": "● active" },
+  "statusOpen":      { "message": "✓ open" },
+  "statusMissing":   { "message": "✗ missing" },
+  "staleLabel":      { "message": "stale" },
+  "lastUpdated":     { "message": "Last updated: " },
+  "sumTotal":        { "message": "Total" },
+  "sumInternalLabel":{ "message": "Internal pages" },
+  "sumInternalValue":{
+    "message": "$COUNT$ (not tracked)",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT4": {
-    "message": "Frozen"
+  "staleWarning": {
+    "message": "⚠️ $COUNT$ stale active",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tabsCount": {
-    "message": "$COUNT$ tabs",
+  "missingWarning": {
+    "message": "⚠️ $COUNT$ in records / missing in browser",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "reconciling": { "message": "⏳ Reconciling…" },
+  "copyDone":    { "message": "✅ Copied" },
+  "cleaning":    { "message": "⏳ Cleaning…" },
+  "openSelectedWithCount": {
+    "message": "📂 Open Selected ($COUNT$ tabs → T1)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "noDuplicates": { "message": "✅ No duplicates" },
+  "duplicatesRemoved": {
+    "message": "✅ $COUNT$ duplicates removed, $TABS$ tabs closed",
     "placeholders": {
-      "count": {
-        "content": "$1"
-      }
+      "count": { "content": "$1" },
+      "tabs":  { "content": "$2" }
     }
   },
-  "restoreTab": {
-    "message": "Restore tab"
+  "pinToggleUnpin": { "message": "Move to T1 (remove from fixed)" },
+  "pinTogglePin":   { "message": "Move to T0 (fix)" },
+  "opening":        { "message": "⏳ Opening…" },
+
+  "onboardingPageTitle":  { "message": "Tab Lifecycle Manager — Welcome" },
+  "onboardingH1":         { "message": "Tab Lifecycle Manager" },
+  "onboardingDesc1":      { "message": "You don't need to close your tabs —" },
+  "onboardingDescBold":   { "message": "let them mature" },
+  "onboardingDesc2":      { "message": "Each tab moves between tiers automatically based on usage." },
+
+  "legendT0Name": { "message": "T0 Fixed" },
+  "legendT0Desc": { "message": "In T0 group, never demoted" },
+  "legendT1Name": { "message": "T1 Active" },
+  "legendT1Desc": { "message": "Fully loaded, normal" },
+  "legendT2Name": { "message": "T2 Idle" },
+  "legendT2Desc": { "message": "Suspended (after 1 hour)" },
+  "legendT3Name": { "message": "T3 Cold" },
+  "legendT3Desc": { "message": "Collapsed group (after 24 hrs)" },
+  "legendT4Name": { "message": "T4 Archive" },
+  "legendT4Desc": { "message": "In panel, not in tab bar (after 7 days)" },
+
+  "t0SectionTitle":     { "message": "🏠 Which tabs should stay in T0 (Fixed group)?" },
+  "t0SectionHint":      { "message": "Selected tabs will be moved to T0 group and never demoted automatically. Mark tabs you always keep open like Gmail, Teams, or Notion." },
+  "tabSearchPlaceholder":{ "message": "🔍 Search by name, domain or URL..." },
+  "selectAllBtnLabel":   { "message": "Select All" },
+  "selectAllVisibleBtnLabel": { "message": "Select All (visible)" },
+  "startBtnLabel":       { "message": "🚀 Start" },
+  "skipBtnLabel":        { "message": "Skip (don't select T0)" },
+
+  "loadingText":    { "message": "Loading..." },
+  "noResultsFound": { "message": "No results found." },
+  "statsWithSearch": {
+    "message": "$TOTAL$ tabs found · $VISIBLE$ shown · $PINNED$ selected (will be added to T0)",
+    "placeholders": {
+      "total":   { "content": "$1" },
+      "visible": { "content": "$2" },
+      "pinned":  { "content": "$3" }
+    }
   },
-  "noTabs": {
-    "message": "No tabs in this tier"
-  },
-  "donateButton": {
-    "message": "Support this project ☕"
-  },
-  "onboardingWelcome": {
-    "message": "Welcome to Tab Tier!"
-  },
-  "onboardingDescription": {
-    "message": "Tab Tier automatically manages your browser tabs through a tiered lifecycle system, keeping your browser fast and organized."
+  "statsWithoutSearch": {
+    "message": "$TOTAL$ tabs found · $PINNED$ selected (will be added to T0)",
+    "placeholders": {
+      "total":  { "content": "$1" },
+      "pinned": { "content": "$2" }
+    }
   }
 }

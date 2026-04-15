@@ -2,11 +2,14 @@
 // Tab Lifecycle Manager — onboarding.js
 // =============================================================================
 
-let allTabs = [];          // Storage'dan gelen tüm tab'lar
-let filteredTabs = [];     // Arama sonrası görünenler
-let checkedIds = new Set(); // Seçili (pin'lenecek) tabId'ler
+// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
+const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
-// ─── Tab listesini storage'dan yükle ─────────────────────────────────────
+let allTabs      = []; // EN: all non-T4 tabs from storage | TR: storage'dan gelen tüm tab'lar
+let filteredTabs = []; // EN: tabs after search filter | TR: arama sonrası görünenler
+let checkedIds   = new Set(); // EN: selected tab IDs (to be set T0) | TR: seçili tabId'ler
+
+// ─── Load tabs from storage ───────────────────────────────────────────────────
 
 async function loadTabs() {
   const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
@@ -25,7 +28,7 @@ async function loadTabs() {
   updateStats();
 }
 
-// ─── Arama filtresi ───────────────────────────────────────────────────────
+// ─── Search filter ────────────────────────────────────────────────────────────
 
 function applySearch(query) {
   const q = query.trim().toLowerCase();
@@ -39,30 +42,26 @@ function applySearch(query) {
     );
   }
 
-  // Arama sayacını güncelle
   const countEl = document.getElementById("searchCount");
-  if (q) {
-    countEl.textContent = `${filteredTabs.length} / ${allTabs.length}`;
-  } else {
-    countEl.textContent = "";
-  }
+  countEl.textContent = q ? `${filteredTabs.length} / ${allTabs.length}` : "";
 
-  // "Tümünü Seç" butonu: arama varken görünenleri seçer
+  // EN: "Select All" button label changes when search is active
+  // TR: "Tümünü Seç" butonu arama aktifken değişir
   const btn = document.getElementById("selectAllBtn");
-  btn.textContent = q ? "Tümünü Seç (görünenler)" : "Tümünü Seç";
+  btn.textContent = q ? i18n("selectAllVisibleBtnLabel") : i18n("selectAllBtnLabel");
 
   renderTabList();
   updateStats();
 }
 
-// ─── Tab listesini render et ──────────────────────────────────────────────
+// ─── Render tab list ──────────────────────────────────────────────────────────
 
 function renderTabList() {
   const container = document.getElementById("tabList");
   container.innerHTML = "";
 
   if (filteredTabs.length === 0) {
-    container.innerHTML = '<div class="no-results">Sonuç bulunamadı.</div>';
+    container.innerHTML = `<div class="no-results">${i18n("noResultsFound")}</div>`;
     return;
   }
 
@@ -71,9 +70,9 @@ function renderTabList() {
     row.className = "tab-row" + (checkedIds.has(tab.tabId) ? " pinned" : "");
     row.dataset.tabId = tab.tabId;
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = checkedIds.has(tab.tabId);
+    const cb    = document.createElement("input");
+    cb.type     = "checkbox";
+    cb.checked  = checkedIds.has(tab.tabId);
     cb.addEventListener("change", () => {
       if (cb.checked) checkedIds.add(tab.tabId);
       else            checkedIds.delete(tab.tabId);
@@ -81,22 +80,22 @@ function renderTabList() {
       updateStats();
     });
 
-    const img = document.createElement("img");
-    img.src = tab.favicon ||
+    const img   = document.createElement("img");
+    img.src     = tab.favicon ||
       `https://www.google.com/s2/favicons?domain=${tab.domain}&sz=16`;
     img.onerror = () => {
       img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='2' fill='%2345475a'/></svg>";
     };
-    img.width = 16;
+    img.width  = 16;
     img.height = 16;
 
-    const title = document.createElement("span");
-    title.className = "tab-title";
+    const title       = document.createElement("span");
+    title.className   = "tab-title";
     title.textContent = tab.title || tab.url;
-    title.title = tab.url; // hover'da tam URL
+    title.title       = tab.url;
 
-    const domain = document.createElement("span");
-    domain.className = "tab-domain";
+    const domain       = document.createElement("span");
+    domain.className   = "tab-domain";
     domain.textContent = tab.domain || "";
 
     row.appendChild(cb);
@@ -104,7 +103,7 @@ function renderTabList() {
     row.appendChild(title);
     row.appendChild(domain);
 
-    // Satıra tıklayınca checkbox toggle
+    // EN: Click row to toggle checkbox | TR: Satıra tıklayınca checkbox toggle
     row.addEventListener("click", (e) => {
       if (e.target === cb) return;
       cb.checked = !cb.checked;
@@ -118,36 +117,31 @@ function renderTabList() {
   }
 }
 
-// ─── İstatistik bandını güncelle ─────────────────────────────────────────
+// ─── Stats band ───────────────────────────────────────────────────────────────
 
 function updateStats() {
-  const stats = document.getElementById("pinStats");
+  const stats   = document.getElementById("pinStats");
   const total   = allTabs.length;
   const visible = filteredTabs.length;
   const pinned  = checkedIds.size;
   const q       = document.getElementById("tabSearch").value.trim();
 
   if (q) {
-    stats.textContent =
-      `${total} tab bulundu · ${visible} gösteriliyor · ${pinned} seçildi (T0'a eklenecek)`;
+    stats.textContent = i18n("statsWithSearch", [total, visible, pinned]);
   } else {
-    stats.textContent =
-      `${total} tab bulundu · ${pinned} seçildi (T0'a eklenecek)`;
+    stats.textContent = i18n("statsWithoutSearch", [total, pinned]);
   }
 }
 
-// ─── Tümünü Seç / Kaldır ─────────────────────────────────────────────────
+// ─── Select all / deselect all ────────────────────────────────────────────────
 
 document.getElementById("selectAllBtn").addEventListener("click", () => {
-  // Arama aktifse sadece görünenler; değilse tümü
-  const targets = filteredTabs;
+  const targets   = filteredTabs;
   const allVisible = targets.every(t => checkedIds.has(t.tabId));
 
   if (allVisible) {
-    // Görünenlerin seçimini kaldır
     targets.forEach(t => checkedIds.delete(t.tabId));
   } else {
-    // Görünenleri seç
     targets.forEach(t => checkedIds.add(t.tabId));
   }
 
@@ -155,13 +149,13 @@ document.getElementById("selectAllBtn").addEventListener("click", () => {
   updateStats();
 });
 
-// ─── Arama input'u ───────────────────────────────────────────────────────
+// ─── Search input ─────────────────────────────────────────────────────────────
 
 document.getElementById("tabSearch").addEventListener("input", (e) => {
   applySearch(e.target.value);
 });
 
-// ─── Başla / Atla ─────────────────────────────────────────────────────────
+// ─── Start / Skip ─────────────────────────────────────────────────────────────
 
 async function finish(pinSelected) {
   if (pinSelected && checkedIds.size > 0) {
@@ -172,18 +166,17 @@ async function finish(pinSelected) {
     });
   }
 
-  // initialized = true
+  // EN: Mark onboarding as completed | TR: Onboarding'i tamamlandı olarak işaretle
   const { settings = {} } = await chrome.storage.local.get("settings");
   settings.initialized = true;
   await chrome.storage.local.set({ settings });
 
-  // Onboarding sekmesini kapat
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tabs[0]) await chrome.tabs.remove(tabs[0].id);
 }
 
 document.getElementById("startBtn").addEventListener("click", () => finish(true));
-document.getElementById("skipBtn").addEventListener("click", () => finish(false));
+document.getElementById("skipBtn").addEventListener("click",  () => finish(false));
 
-// ─── Init ─────────────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 loadTabs();

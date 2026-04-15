@@ -1,208 +1,153 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tab Lifecycle Manager — Ayarlar</title>
+    <title>Tab Lifecycle Manager — __MSG_settingsTitle__</title>
     <link rel="stylesheet" href="settings.css" />
   </head>
   <body>
     <div class="page">
       <header class="page-header">
         <h1>⚙️ Tab Lifecycle Manager</h1>
-        <p class="subtitle">Tier süreleri ve davranışını özelleştir</p>
+        <p class="subtitle">__MSG_settingsSubtitle__</p>
       </header>
 
       <main class="page-main">
-        <!-- Tier Süreleri -->
+        <!-- Tier Transition Durations -->
         <section class="card">
-          <h2>⏱ Tier Geçiş Süreleri</h2>
+          <h2>__MSG_tierTransitionsTitle__</h2>
 
           <div class="field">
-            <label for="t1t2">🔥→⏸ Tier 1 → Tier 2 (Dakika)</label>
+            <label for="t1t2">__MSG_t1t2Label__</label>
             <div class="input-row">
-              <input type="range" id="t1t2Range" min="15" max="480" step="15" />
+              <input type="range"  id="t1t2Range" min="15" max="480" step="15" />
               <input type="number" id="t1t2" min="1" max="1440" />
-              <span class="unit">dk</span>
+              <span class="unit">__MSG_unitMin__</span>
             </div>
-            <div class="hint">
-              Tab'ın inaktif kalması gereken süre (Beklemede'ye düşmesi için).
-              Varsayılan: 60 dk
-            </div>
+            <div class="hint">__MSG_t1t2Hint__</div>
           </div>
 
           <div class="field">
-            <label for="t2t3">⏸→❄️ Tier 2 → Tier 3 (Saat)</label>
+            <label for="t2t3">__MSG_t2t3Label__</label>
             <div class="input-row">
-              <input type="range" id="t2t3Range" min="1" max="168" step="1" />
+              <input type="range"  id="t2t3Range" min="1" max="168" step="1" />
               <input type="number" id="t2t3" min="1" max="720" />
-              <span class="unit">sa</span>
+              <span class="unit">__MSG_unitHour__</span>
             </div>
-            <div class="hint">
-              Beklemede'den Soğuk'a geçiş. Varsayılan: 24 saat
-            </div>
+            <div class="hint">__MSG_t2t3Hint__</div>
           </div>
 
           <div class="field">
-            <label for="t3t4">❄️→⚫ Tier 3 → Tier 4 (Gün)</label>
+            <label for="t3t4">__MSG_t3t4Label__</label>
             <div class="input-row">
-              <input type="range" id="t3t4Range" min="1" max="30" step="1" />
+              <input type="range"  id="t3t4Range" min="1" max="30" step="1" />
               <input type="number" id="t3t4" min="1" max="365" />
-              <span class="unit">gün</span>
+              <span class="unit">__MSG_unitDay__</span>
             </div>
-            <div class="hint">
-              Soğuk'tan Arşiv'e geçiş (tab bar'dan kaldırılır). Varsayılan: 7
-              gün
-            </div>
+            <div class="hint">__MSG_t3t4Hint__</div>
           </div>
 
           <div class="field">
-            <label for="t4del">⚫→🗑 Tier 4 → Kalıcı Silme (Gün)</label>
+            <label for="t4del">__MSG_t4delLabel__</label>
             <div class="input-row">
-              <input type="range" id="t4delRange" min="0" max="180" step="10" />
+              <input type="range"  id="t4delRange" min="0" max="180" step="10" />
               <input type="number" id="t4del" min="0" max="365" />
-              <span class="unit">gün</span>
+              <span class="unit">__MSG_unitDay__</span>
             </div>
-            <div class="hint">
-              0 = sınırsız (hiç silinmez). Seçenekler: 30, 60, 90 gün.
-              Varsayılan: 60 gün
-            </div>
+            <div class="hint">__MSG_t4delHint__</div>
           </div>
         </section>
 
-        <!-- Davranış Ayarları -->
+        <!-- Behavior -->
         <section class="card">
-          <h2>🔧 Davranış</h2>
+          <h2>__MSG_behaviorTitle__</h2>
 
           <div class="field">
-            <label for="dupAction">Duplikasyon tespit edildiğinde</label>
+            <label for="dupAction">__MSG_dupActionLabel__</label>
             <select id="dupAction">
-              <option value="redirect">
-                Mevcut tab'a yönlendir (varsayılan)
-              </option>
-              <option value="warn">Uyarı göster, kullanıcı seçsin</option>
-              <option value="allow">İzin ver, duplikasyona karışma</option>
+              <option value="redirect">__MSG_dupActionRedirect__</option>
+              <option value="warn">__MSG_dupActionWarn__</option>
+              <option value="allow">__MSG_dupActionAllow__</option>
             </select>
-            <div class="hint">
-              Aynı URL'yi tekrar açmaya çalışınca ne yapılsın?
-            </div>
+            <div class="hint">__MSG_dupActionHint__</div>
           </div>
 
           <div class="field">
-            <label for="closeAction">Tab manuel kapatıldığında</label>
+            <label for="closeAction">__MSG_closeActionLabel__</label>
             <select id="closeAction">
-              <option value="delete">Kaydı tamamen sil (varsayılan)</option>
-              <option value="archive">Tier 4 Arşiv'e gönder</option>
+              <option value="delete">__MSG_closeActionDelete__</option>
+              <option value="archive">__MSG_closeActionArchive__</option>
             </select>
-            <div class="hint">Kullanıcı X ile kapatırken ne yapılsın?</div>
+            <div class="hint">__MSG_closeActionHint__</div>
           </div>
         </section>
 
-        <!-- Grup Adları -->
+        <!-- Group Names -->
         <section class="card">
-          <h2>🏷 Grup Adları</h2>
-          <div class="hint" style="margin-bottom: 16px">
-            Tab gruplarının Edge tab bar'da görünen adlarını özelleştir.
-          </div>
+          <h2>__MSG_groupNamesTitle__</h2>
+          <div class="hint" style="margin-bottom: 16px">__MSG_groupNamesHint__</div>
           <div class="group-name-grid">
             <div class="group-name-row">
               <span class="group-dot" style="background: #f38ba8"></span>
-              <label for="gn0">T0 — Sabit</label>
-              <input
-                type="text"
-                id="gn0"
-                maxlength="30"
-                placeholder="T0: Sabit"
-              />
+              <label for="gn0">T0</label>
+              <input type="text" id="gn0" maxlength="30" placeholder="T0: Fixed" />
             </div>
             <div class="group-name-row">
               <span class="group-dot" style="background: #fab387"></span>
-              <label for="gn1">T1 — Sıcak</label>
-              <input
-                type="text"
-                id="gn1"
-                maxlength="30"
-                placeholder="T1: Sıcak"
-              />
+              <label for="gn1">T1</label>
+              <input type="text" id="gn1" maxlength="30" placeholder="T1: Hot" />
             </div>
             <div class="group-name-row">
               <span class="group-dot" style="background: #f9e2af"></span>
-              <label for="gn2">T2 — Ilık</label>
-              <input
-                type="text"
-                id="gn2"
-                maxlength="30"
-                placeholder="T2: Ilık"
-              />
+              <label for="gn2">T2</label>
+              <input type="text" id="gn2" maxlength="30" placeholder="T2: Warm" />
             </div>
             <div class="group-name-row">
               <span class="group-dot" style="background: #89b4fa"></span>
-              <label for="gn3">T3 — Soğuk</label>
-              <input
-                type="text"
-                id="gn3"
-                maxlength="30"
-                placeholder="T3: Soğuk"
-              />
+              <label for="gn3">T3</label>
+              <input type="text" id="gn3" maxlength="30" placeholder="T3: Cold" />
             </div>
           </div>
           <div class="actions" style="margin-top: 16px; margin-bottom: 0">
-            <button id="applyGroupNamesBtn" class="btn-secondary">
-              ✏️ Grupları Yeniden Adlandır
-            </button>
+            <button id="applyGroupNamesBtn" class="btn-secondary">__MSG_applyGroupNamesBtn__</button>
             <span id="groupNameStatus" class="save-status"></span>
           </div>
         </section>
 
-        <!-- Kaydet -->
+        <!-- Save -->
         <div class="actions">
-          <button id="saveBtn" class="btn-primary">💾 Ayarları Kaydet</button>
-          <button id="resetBtn" class="btn-secondary">
-            ↩ Varsayılanlara Dön
-          </button>
+          <button id="saveBtn" class="btn-primary">__MSG_saveSettingsBtn__</button>
+          <button id="resetBtn" class="btn-secondary">__MSG_resetSettingsBtn__</button>
           <span id="saveStatus" class="save-status"></span>
         </div>
 
-        <!-- Geliştirici / Test -->
+        <!-- Developer Tools -->
         <section class="card">
-          <h2>🧪 Geliştirici Araçları</h2>
+          <h2>__MSG_devToolsTitle__</h2>
           <div class="actions" style="margin-bottom: 0; flex-wrap: wrap">
-            <button id="dissolveGroupsBtn" class="btn-secondary">
-              🔓 Tüm Grupları Çöz
-            </button>
+            <button id="dissolveGroupsBtn" class="btn-secondary">__MSG_dissolveGroupsBtn__</button>
             <a
-              href="debug.html"
+              href="tab-management.html"
               target="_blank"
               class="btn-secondary"
-              style="
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-              "
+              style="text-decoration: none; display: inline-flex; align-items: center;"
             >
-              📋 Tab Yönetimi
+              __MSG_tabManagementBtn__
             </a>
             <span id="dissolveStatus" class="save-status"></span>
           </div>
-          <div class="hint" style="margin-top: 8px">
-            Grupları çözmek tab'ları kapatmaz — sadece grup bağlarını koparır.
-          </div>
+          <div class="hint" style="margin-top: 8px">__MSG_dissolveGroupsHint__</div>
         </section>
 
-        <!-- Veri Yönetimi -->
+        <!-- Data Management -->
         <section class="card card-danger">
-          <h2>⚠️ Veri Yönetimi</h2>
+          <h2>__MSG_dataManagementTitle__</h2>
           <div class="danger-actions">
-            <button id="clearArchiveBtn" class="btn-danger">
-              🗑 Arşivi Temizle (Tier 4)
-            </button>
-            <button id="clearAllBtn" class="btn-danger">
-              🔥 Tüm Verileri Sil
-            </button>
+            <button id="clearArchiveBtn" class="btn-danger">__MSG_clearArchiveBtnFull__</button>
+            <button id="clearAllBtn"     class="btn-danger">__MSG_clearAllDataBtn__</button>
           </div>
-          <div class="hint" style="margin-top: 8px">
-            Bu işlemler geri alınamaz.
-          </div>
+          <div class="hint" style="margin-top: 8px">__MSG_dataManagementHint__</div>
         </section>
       </main>
     </div>

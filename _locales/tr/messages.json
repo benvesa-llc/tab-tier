@@ -1,52 +1,224 @@
 {
-  "extName": {
-    "message": "Tab Tier"
+  "extName":        { "message": "Tab Tier" },
+  "extDescription": { "message": "Tarayıcınız için akıllı sekme yaşam döngüsü yönetimi" },
+
+  "tierT0Name": { "message": "T0 Sabit" },
+  "tierT1Name": { "message": "T1 Aktif" },
+  "tierT2Name": { "message": "T2 Beklemede" },
+  "tierT3Name": { "message": "T3 Soğuk" },
+  "tierT4Name": { "message": "T4 Arşiv" },
+
+  "searchPlaceholder":  { "message": "🔍 Tab ara (başlık, domain, url)..." },
+  "sortLabel":          { "message": "Sırala:" },
+  "sortTierDomain":     { "message": "Tier + Domain" },
+  "sortTierTitle":      { "message": "Tier + Başlık" },
+  "sortTierUrl":        { "message": "Tier + URL" },
+  "applyToTabs":        { "message": "Tab'lara Uygula" },
+  "applyToTabsTitle":   { "message": "Seçili sırayı Edge tab bar'a uygula" },
+  "clearArchiveBtn":    { "message": "🗑 Arşivi Temizle" },
+  "clearArchiveBtnTitle": { "message": "Tier 4 arşivini temizle" },
+  "tabManagementBtn":   { "message": "📋 Tab Yönetimi" },
+  "settingsBtn":        { "message": "⚙️ Ayarlar" },
+
+  "timeActive":  { "message": "aktif" },
+  "timeDaysAgo": {
+    "message": "$COUNT$ gün önce",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "extDescription": {
-    "message": "Tarayıcınız için akıllı sekme yaşam döngüsü yönetimi"
+  "timeHoursAgo": {
+    "message": "$COUNT$ saat önce",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "popupTitle": {
-    "message": "Tab Tier"
+  "timeMinsAgo": {
+    "message": "$COUNT$ dk önce",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "settingsTitle": {
-    "message": "Ayarlar"
+  "timeJustNow": { "message": "az önce" },
+
+  "openFromArchive": { "message": "Aç (arşivden)" },
+  "focusTab":        { "message": "Tab'a odaklan" },
+  "unpinTab":        { "message": "Sabiti Kaldır" },
+  "pinToT0":         { "message": "Sabitle (T0)" },
+  "deleteRecord":    { "message": "Kaydı sil" },
+
+  "noTabRecords":       { "message": "Hiç tab kaydı yok." },
+  "noTabsInTier":       { "message": "Bu katmanda tab yok." },
+  "confirmClearArchive":{ "message": "Tüm Tier 4 arşiv kayıtları silinecek. Emin misiniz?" },
+  "sortingText":        { "message": "⏳ Sıralanıyor..." },
+  "sortDone":           { "message": "✅ Tamam" },
+  "noSearchResults": {
+    "message": "\"$QUERY$\" için sonuç bulunamadı.",
+    "placeholders": { "query": { "content": "$1" } }
   },
-  "tierLabelT0": {
-    "message": "Aktif"
+  "autoDeleteInfo": {
+    "message": "⏱ Otomatik silme: $DAYS$ gün",
+    "placeholders": { "days": { "content": "$1" } }
   },
-  "tierLabelT1": {
-    "message": "Ilık"
+  "domainGroupOther": { "message": "Diğer" },
+  "totalCountLabel": {
+    "message": "Toplam: $COUNT$",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT2": {
-    "message": "Serin"
+
+  "settingsTitle":       { "message": "Ayarlar" },
+  "settingsSubtitle":    { "message": "Tier süreleri ve davranışını özelleştir" },
+  "tierTransitionsTitle":{ "message": "⏱ Tier Geçiş Süreleri" },
+  "t1t2Label": { "message": "🔥→⏸ Tier 1 → Tier 2 (Dakika)" },
+  "t1t2Hint":  { "message": "Tab'ın inaktif kalması gereken süre (Beklemede'ye düşmesi için). Varsayılan: 60 dk" },
+  "t2t3Label": { "message": "⏸→❄️ Tier 2 → Tier 3 (Saat)" },
+  "t2t3Hint":  { "message": "Beklemede'den Soğuk'a geçiş. Varsayılan: 24 saat" },
+  "t3t4Label": { "message": "❄️→⚫ Tier 3 → Tier 4 (Gün)" },
+  "t3t4Hint":  { "message": "Soğuk'tan Arşiv'e geçiş (tab bar'dan kaldırılır). Varsayılan: 7 gün" },
+  "t4delLabel":{ "message": "⚫→🗑 Tier 4 → Kalıcı Silme (Gün)" },
+  "t4delHint": { "message": "0 = sınırsız (hiç silinmez). Varsayılan: 60 gün" },
+  "unitMin":   { "message": "dk" },
+  "unitHour":  { "message": "sa" },
+  "unitDay":   { "message": "gün" },
+
+  "behaviorTitle":     { "message": "🔧 Davranış" },
+  "dupActionLabel":    { "message": "Duplikasyon tespit edildiğinde" },
+  "dupActionRedirect": { "message": "Mevcut tab'a yönlendir (varsayılan)" },
+  "dupActionWarn":     { "message": "Uyarı göster, kullanıcı seçsin" },
+  "dupActionAllow":    { "message": "İzin ver, duplikasyona karışma" },
+  "dupActionHint":     { "message": "Aynı URL'yi tekrar açmaya çalışınca ne yapılsın?" },
+  "closeActionLabel":  { "message": "Tab manuel kapatıldığında" },
+  "closeActionDelete": { "message": "Kaydı tamamen sil (varsayılan)" },
+  "closeActionArchive":{ "message": "Tier 4 Arşiv'e gönder" },
+  "closeActionHint":   { "message": "Kullanıcı X ile kapatırken ne yapılsın?" },
+
+  "groupNamesTitle":   { "message": "🏷 Grup Adları" },
+  "groupNamesHint":    { "message": "Tab gruplarının Edge tab bar'da görünen adlarını özelleştir." },
+  "applyGroupNamesBtn":{ "message": "✏️ Grupları Yeniden Adlandır" },
+  "saveSettingsBtn":   { "message": "💾 Ayarları Kaydet" },
+  "resetSettingsBtn":  { "message": "↩ Varsayılanlara Dön" },
+
+  "devToolsTitle":      { "message": "🧪 Geliştirici Araçları" },
+  "dissolveGroupsBtn":  { "message": "🔓 Tüm Grupları Çöz" },
+  "dissolveGroupsHint": { "message": "Grupları çözmek tab'ları kapatmaz — sadece grup bağlarını koparır." },
+  "dataManagementTitle":{ "message": "⚠️ Veri Yönetimi" },
+  "clearArchiveBtnFull":{ "message": "🗑 Arşivi Temizle (Tier 4)" },
+  "clearAllDataBtn":    { "message": "🔥 Tüm Verileri Sil" },
+  "dataManagementHint": { "message": "Bu işlemler geri alınamaz." },
+
+  "savedStatus":         { "message": "✅ Kaydedildi!" },
+  "resetStatus":         { "message": "↩ Varsayılanlara döndü." },
+  "groupNamesRenamed":   { "message": "✅ Gruplar yeniden adlandırıldı!" },
+  "groupsDissolved":     { "message": "🔓 Gruplar çözüldü!" },
+  "confirmResetSettings":{ "message": "Tüm ayarlar varsayılan değerlere dönecek. Emin misiniz?" },
+  "archiveClearedMsg": {
+    "message": "$COUNT$ arşiv kaydı silindi.",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT3": {
-    "message": "Soğuk"
+  "confirmClearAll":  { "message": "TÜM tab kayıtları ve ayarlar silinecek. Bu işlem geri alınamaz! Devam etmek istiyor musunuz?" },
+  "allDataClearedMsg":{ "message": "Tüm veriler silindi. Eklentiyi yeniden başlatın." },
+
+  "defaultGroupT0": { "message": "T0: Sabit" },
+  "defaultGroupT1": { "message": "T1: Sıcak" },
+  "defaultGroupT2": { "message": "T2: Ilık" },
+  "defaultGroupT3": { "message": "T3: Soğuk" },
+
+  "tabMgmtPageTitle":  { "message": "TabTier — Tab Yönetimi" },
+  "tabMgmtH1":         { "message": "📋 Tab Yönetimi" },
+  "tabMgmtSubtitle":   { "message": "Tüm tab kayıtları — canlı görüntüleme" },
+  "refreshBtnLabel":   { "message": "↻ Yenile" },
+  "reconcileBtnLabel": { "message": "🔄 Uzlaştır" },
+  "dedupBtnLabel":     { "message": "🧹 Duplicate Temizle" },
+  "openSelectedBtnLabel": { "message": "📂 Seçilileri Aç (T1)" },
+  "copyJsonBtnLabel":  { "message": "📋 JSON Kopyala" },
+  "filterPlaceholder": { "message": "URL / domain / başlık filtrele…" },
+  "selectAllT4Title":  { "message": "Tüm T4'leri seç" },
+  "colFixed":      { "message": "Sabit" },
+  "colTabId":      { "message": "Tab ID" },
+  "colTier":       { "message": "Tier" },
+  "colStatus":     { "message": "Durum" },
+  "colDomain":     { "message": "Domain" },
+  "colTitle":      { "message": "Başlık" },
+  "colUrl":        { "message": "URL" },
+  "colFocusStart": { "message": "Odak Başladı" },
+  "colFocusEnd":   { "message": "Odak Bitti" },
+  "colElapsed":    { "message": "Geçen Süre" },
+  "colCreated":    { "message": "Oluşturuldu" },
+  "noRecords":     { "message": "Kayıt yok." },
+
+  "statusArchive":   { "message": "arşiv" },
+  "statusActiveNow": { "message": "● aktif" },
+  "statusOpen":      { "message": "✓ açık" },
+  "statusMissing":   { "message": "✗ yok" },
+  "staleLabel":      { "message": "stale" },
+  "lastUpdated":     { "message": "Son güncelleme: " },
+  "sumTotal":        { "message": "Toplam" },
+  "sumInternalLabel":{ "message": "İç sayfa" },
+  "sumInternalValue":{
+    "message": "$COUNT$ (takip dışı)",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tierLabelT4": {
-    "message": "Dondurulmuş"
+  "staleWarning": {
+    "message": "⚠️ $COUNT$ stale aktif",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "tabsCount": {
-    "message": "$COUNT$ sekme",
+  "missingWarning": {
+    "message": "⚠️ $COUNT$ kayıtta var / browserde yok",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "reconciling": { "message": "⏳ Uzlaştırılıyor…" },
+  "copyDone":    { "message": "✅ Kopyalandı" },
+  "cleaning":    { "message": "⏳ Temizleniyor…" },
+  "openSelectedWithCount": {
+    "message": "📂 Seçilileri Aç ($COUNT$ tab → T1)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "noDuplicates": { "message": "✅ Duplicate yok" },
+  "duplicatesRemoved": {
+    "message": "✅ $COUNT$ duplicate silindi, $TABS$ tab kapandı",
     "placeholders": {
-      "count": {
-        "content": "$1"
-      }
+      "count": { "content": "$1" },
+      "tabs":  { "content": "$2" }
     }
   },
-  "restoreTab": {
-    "message": "Sekmeyi geri yükle"
+  "pinToggleUnpin": { "message": "T1'e al (sabiti kaldır)" },
+  "pinTogglePin":   { "message": "T0'a al (sabitle)" },
+  "opening":        { "message": "⏳ Açılıyor…" },
+
+  "onboardingPageTitle":  { "message": "Tab Lifecycle Manager — Hoş Geldin" },
+  "onboardingH1":         { "message": "Tab Lifecycle Manager" },
+  "onboardingDesc1":      { "message": "Tab'larını kapatmak zorunda değilsin —" },
+  "onboardingDescBold":   { "message": "olgunlaştır" },
+  "onboardingDesc2":      { "message": "Her tab kullanım durumuna göre otomatik olarak tier'ler arasında hareket eder." },
+
+  "legendT0Name": { "message": "T0 Sabit" },
+  "legendT0Desc": { "message": "T0 grubunda, asla düşmez" },
+  "legendT1Name": { "message": "T1 Aktif" },
+  "legendT1Desc": { "message": "Tam yüklü, normal" },
+  "legendT2Name": { "message": "T2 Beklemede" },
+  "legendT2Desc": { "message": "Askıya alınmış (1 saat sonra)" },
+  "legendT3Name": { "message": "T3 Soğuk" },
+  "legendT3Desc": { "message": "Daraltılmış grup (24 sa sonra)" },
+  "legendT4Name": { "message": "T4 Arşiv" },
+  "legendT4Desc": { "message": "Panelde, tab bar'da yok (7 gün sonra)" },
+
+  "t0SectionTitle":     { "message": "🏠 Hangi tab'lar T0'da (Sabit grupta) kalsın?" },
+  "t0SectionHint":      { "message": "Seçtiğin tab'lar T0 grubuna taşınır ve asla otomatik düşürülmez. Gmail, Teams, Notion gibi sürekli açık tuttuğun tab'ları işaretle." },
+  "tabSearchPlaceholder":{ "message": "🔍 İsim, domain veya URL ile ara..." },
+  "selectAllBtnLabel":   { "message": "Tümünü Seç" },
+  "selectAllVisibleBtnLabel": { "message": "Tümünü Seç (görünenler)" },
+  "startBtnLabel":       { "message": "🚀 Başla" },
+  "skipBtnLabel":        { "message": "Atla (T0 seçme)" },
+
+  "loadingText":    { "message": "Yükleniyor..." },
+  "noResultsFound": { "message": "Sonuç bulunamadı." },
+  "statsWithSearch": {
+    "message": "$TOTAL$ tab bulundu · $VISIBLE$ gösteriliyor · $PINNED$ seçildi (T0'a eklenecek)",
+    "placeholders": {
+      "total":   { "content": "$1" },
+      "visible": { "content": "$2" },
+      "pinned":  { "content": "$3" }
+    }
   },
-  "noTabs": {
-    "message": "Bu kademede sekme yok"
-  },
-  "donateButton": {
-    "message": "Projeyi destekle ☕"
-  },
-  "onboardingWelcome": {
-    "message": "Tab Tier'a hoş geldiniz!"
-  },
-  "onboardingDescription": {
-    "message": "Tab Tier, tarayıcınızdaki sekmeleri otomatik olarak katmanlı bir yaşam döngüsü sistemiyle yöneterek tarayıcınızı hızlı ve düzenli tutar."
+  "statsWithoutSearch": {
+    "message": "$TOTAL$ tab bulundu · $PINNED$ seçildi (T0'a eklenecek)",
+    "placeholders": {
+      "total":  { "content": "$1" },
+      "pinned": { "content": "$2" }
+    }
   }
 }

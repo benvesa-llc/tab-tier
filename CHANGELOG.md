@@ -2,11 +2,33 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.2.9] - 2026-04-15
+## [0.3.0] - 2026-04-15
 
 ### Fixed
+- Popup sort options replaced with three tier-first presets: "Tier + Domain", "Tier + Başlık", "Tier + URL" — all use tier as the primary sort key, eliminating the bug where applying a URL-only or domain-only sort caused Edge to auto-assign nearby tabs into the wrong tier group during the physical tab move loop
+- Popup now shows all tiers (T0–T4) in the default view, not just T3 and T4 — enables quick browsing and search across all tabs without opening Tab Management
+- `sortTabsInWindow` in background updated to handle new sort types (`tierDomain`, `tierTitle`, `tierUrl`); legacy sort types fall back to tier-first domain sort
+- `moveTabToTierGroup` now skips pinned tabs silently — Chrome/Edge API rejects grouping pinned tabs, which caused a silent error for regularly-pinned tabs (e.g. localhost, devtools pages)
+- `moveTabToTierGroup` retry condition broadened from `"dragging"` to `"cannot be edited"` to catch all transient Edge tab-lock errors, not just the dragging variant
+- `onActivated` now corrects pinned tabs that have T2/T3 in storage to T0, preventing a failed `moveTabToTierGroup` call on every activation
+- `moveTabToTierGroup` now retries up to 3 times (300 ms / 600 ms / 900 ms delays) when Edge rejects the group change with "Tabs cannot be edited right now (user may be dragging a tab)" — this was the root cause of T2/T3 tabs not promoting to T1 when clicked directly in the Edge tab bar
 - `tabs.onReplaced` listener added: when Edge reassigns a tab ID after waking a sleeping tab, the storage record is immediately re-linked to the new ID — prevents "yok" (missing) entries in Tab Management
 - `timerCheck` now runs a mini-reconcile before processing tier transitions: stale non-T4 records whose tab ID is no longer open are either re-linked by URL or immediately archived to T4 — no more waiting days for the T3→T4 threshold to expire on a tab that is already gone
+- `onActivated` now tries URL-based re-link before creating a new record when no record is found for the activated tab ID: fixes the race condition where `onReplaced` and `onActivated` run concurrently on sleeping-tab wake, causing the promotion to T1 and group move to be skipped
+- `onActivated` now calls `moveTabToTierGroup` even when creating a brand-new record, ensuring the tab is visually placed in the T1 group regardless of which group it was in before
+- `onUpdated` groupId handler now checks `tab.active` before setting `lastFocusEnd`: if the tab is currently active (just clicked by the user), `lastFocusEnd` stays `null` instead of being overwritten with the current timestamp — fixes a race where `onActivated` → `moveTabToTierGroup` → `onUpdated` would reset the inactivity timer on a freshly activated tab
+- "Tier + Domain" sort shows tabs grouped by domain; "Tier + Title" and "Tier + URL" sorts show a flat list sorted by title or URL respectively — no domain grouping in non-domain modes
+- Sort apply button renamed to "Apply to Tabs" for clarity
+
+### Added
+- Full i18n support: all user-facing text now uses `chrome.i18n` — browser automatically shows English or Turkish based on browser language setting; default locale is English
+- `_locales/en/messages.json` and `_locales/tr/messages.json` fully populated with keys for all pages (popup, settings, tab management, onboarding)
+- `manifest.json` now uses `__MSG_extName__` and `__MSG_extDescription__` for localized extension name and description in the browser's extension list
+
+### Changed
+- `debug.html` and `debug.js` renamed to `tab-management.html` and `tab-management.js`; `debug.html` now redirects to the new URL for any existing bookmarks
+- `manifest.json` `web_accessible_resources` updated to reference `tab-management.html` and `tab-management.js`
+- Default group names in settings now use i18n (English: "T0: Fixed", "T1: Hot" etc.; Turkish: "T0: Sabit", "T1: Sıcak" etc.) — applied when settings are first initialized
 
 ## [0.2.8] - 2026-04-14
 

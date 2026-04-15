@@ -2,48 +2,52 @@
 // Tab Lifecycle Manager — settings.js
 // =============================================================================
 
+// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
+const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
+
+// EN: Default group names from i18n (language-aware) | TR: i18n'den varsayılan grup adları
 const DefaultGroupNames = {
-  0: "T0: Sabit",
-  1: "T1: Sıcak",
-  2: "T2: Ilık",
-  3: "T3: Soğuk",
+  0: i18n("defaultGroupT0"),
+  1: i18n("defaultGroupT1"),
+  2: i18n("defaultGroupT2"),
+  3: i18n("defaultGroupT3"),
 };
 
 const DefaultSettings = {
   tier1_to_tier2_minutes: 60,
-  tier2_to_tier3_hours: 24,
-  tier3_to_tier4_days: 7,
-  tier4_delete_days: 60,
-  timerIntervalMinutes: 5,
+  tier2_to_tier3_hours:   24,
+  tier3_to_tier4_days:     7,
+  tier4_delete_days:       60,
+  timerIntervalMinutes:     5,
   duplicateAction: "redirect",
-  onManualClose: "delete",
+  onManualClose:   "delete",
   groupNames: { ...DefaultGroupNames },
   initialized: false,
 };
 
-// ─── Yükle ────────────────────────────────────────────────────────────────
+// ─── Load ──────────────────────────────────────────────────────────────────────
 
 async function loadSettings() {
   const { settings = {} } = await chrome.storage.local.get("settings");
   return { ...DefaultSettings, ...settings };
 }
 
-// ─── UI'a doldur ──────────────────────────────────────────────────────────
+// ─── Apply to UI ──────────────────────────────────────────────────────────────
 
 function applyToUI(s) {
-  document.getElementById("t1t2").value = s.tier1_to_tier2_minutes;
+  document.getElementById("t1t2").value      = s.tier1_to_tier2_minutes;
   document.getElementById("t1t2Range").value = s.tier1_to_tier2_minutes;
 
-  document.getElementById("t2t3").value = s.tier2_to_tier3_hours;
+  document.getElementById("t2t3").value      = s.tier2_to_tier3_hours;
   document.getElementById("t2t3Range").value = s.tier2_to_tier3_hours;
 
-  document.getElementById("t3t4").value = s.tier3_to_tier4_days;
+  document.getElementById("t3t4").value      = s.tier3_to_tier4_days;
   document.getElementById("t3t4Range").value = s.tier3_to_tier4_days;
 
-  document.getElementById("t4del").value = s.tier4_delete_days;
+  document.getElementById("t4del").value      = s.tier4_delete_days;
   document.getElementById("t4delRange").value = s.tier4_delete_days;
 
-  document.getElementById("dupAction").value = s.duplicateAction;
+  document.getElementById("dupAction").value   = s.duplicateAction;
   document.getElementById("closeAction").value = s.onManualClose;
 
   const gn = { ...DefaultGroupNames, ...(s.groupNames || {}) };
@@ -53,7 +57,7 @@ function applyToUI(s) {
   document.getElementById("gn3").value = gn[3];
 }
 
-// ─── UI'dan oku ──────────────────────────────────────────────────────────
+// ─── Read from UI ─────────────────────────────────────────────────────────────
 
 function readFromUI(existing) {
   return {
@@ -71,7 +75,7 @@ function readFromUI(existing) {
       parseInt(document.getElementById("t4del").value) ??
       DefaultSettings.tier4_delete_days,
     duplicateAction: document.getElementById("dupAction").value,
-    onManualClose: document.getElementById("closeAction").value,
+    onManualClose:   document.getElementById("closeAction").value,
     groupNames: {
       0: document.getElementById("gn0").value.trim() || DefaultGroupNames[0],
       1: document.getElementById("gn1").value.trim() || DefaultGroupNames[1],
@@ -81,22 +85,20 @@ function readFromUI(existing) {
   };
 }
 
-// ─── Slider ↔ Number senkronizasyonu ─────────────────────────────────────
+// ─── Slider ↔ Number sync ─────────────────────────────────────────────────────
 
 function syncSliderNumber(rangerId, numberId) {
   const ranger = document.getElementById(rangerId);
   const number = document.getElementById(numberId);
 
-  ranger.addEventListener("input", () => {
-    number.value = ranger.value;
-  });
+  ranger.addEventListener("input", () => { number.value = ranger.value; });
   number.addEventListener("input", () => {
     const v = parseInt(number.value);
     if (!isNaN(v)) ranger.value = v;
   });
 }
 
-// ─── Kaydet ───────────────────────────────────────────────────────────────
+// ─── Save ─────────────────────────────────────────────────────────────────────
 
 let currentSettings = { ...DefaultSettings };
 
@@ -106,13 +108,11 @@ async function save() {
   currentSettings = updated;
 
   const status = document.getElementById("saveStatus");
-  status.textContent = "✅ Kaydedildi!";
-  setTimeout(() => {
-    status.textContent = "";
-  }, 2500);
+  status.textContent = i18n("savedStatus");
+  setTimeout(() => { status.textContent = ""; }, 2500);
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 
 async function init() {
   currentSettings = await loadSettings();
@@ -126,72 +126,57 @@ async function init() {
   document.getElementById("saveBtn").addEventListener("click", save);
 
   document.getElementById("resetBtn").addEventListener("click", async () => {
-    if (confirm("Tüm ayarlar varsayılan değerlere dönecek. Emin misiniz?")) {
+    if (confirm(i18n("confirmResetSettings"))) {
       const reset = {
         ...DefaultSettings,
-        groupNames: { ...DefaultGroupNames },
+        groupNames:  { ...DefaultGroupNames },
         initialized: currentSettings.initialized,
       };
       await chrome.storage.local.set({ settings: reset });
       currentSettings = reset;
       applyToUI(reset);
       const status = document.getElementById("saveStatus");
-      status.textContent = "↩ Varsayılanlara döndü.";
-      setTimeout(() => {
-        status.textContent = "";
-      }, 2500);
+      status.textContent = i18n("resetStatus");
+      setTimeout(() => { status.textContent = ""; }, 2500);
     }
   });
 
-  document
-    .getElementById("applyGroupNamesBtn")
-    .addEventListener("click", async () => {
-      const updated = readFromUI(currentSettings);
-      await chrome.storage.local.set({ settings: updated });
-      currentSettings = updated;
-      chrome.runtime.sendMessage({ type: "RENAME_ALL_GROUPS" });
-      const status = document.getElementById("groupNameStatus");
-      status.textContent = "✅ Gruplar yeniden adlandırıldı!";
-      setTimeout(() => {
-        status.textContent = "";
-      }, 2500);
-    });
+  document.getElementById("applyGroupNamesBtn").addEventListener("click", async () => {
+    const updated = readFromUI(currentSettings);
+    await chrome.storage.local.set({ settings: updated });
+    currentSettings = updated;
+    chrome.runtime.sendMessage({ type: "RENAME_ALL_GROUPS" });
+    const status = document.getElementById("groupNameStatus");
+    status.textContent = i18n("groupNamesRenamed");
+    setTimeout(() => { status.textContent = ""; }, 2500);
+  });
 
   document.getElementById("dissolveGroupsBtn").addEventListener("click", () => {
     chrome.runtime.sendMessage({ type: "DISSOLVE_ALL_GROUPS" });
     const status = document.getElementById("dissolveStatus");
-    status.textContent = "🔓 Gruplar çözüldü!";
-    setTimeout(() => {
-      status.textContent = "";
-    }, 2500);
+    status.textContent = i18n("groupsDissolved");
+    setTimeout(() => { status.textContent = ""; }, 2500);
   });
 
-  document
-    .getElementById("clearArchiveBtn")
-    .addEventListener("click", async () => {
-      if (confirm("Tüm Tier 4 arşiv kayıtları silinecek. Emin misiniz?")) {
-        const { tabRecords = {} } =
-          await chrome.storage.local.get("tabRecords");
-        let count = 0;
-        for (const key of Object.keys(tabRecords)) {
-          if (tabRecords[key].currentTier === 4) {
-            delete tabRecords[key];
-            count++;
-          }
+  document.getElementById("clearArchiveBtn").addEventListener("click", async () => {
+    if (confirm(i18n("confirmClearArchive"))) {
+      const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+      let count = 0;
+      for (const key of Object.keys(tabRecords)) {
+        if (tabRecords[key].currentTier === 4) {
+          delete tabRecords[key];
+          count++;
         }
-        await chrome.storage.local.set({ tabRecords });
-        alert(`${count} arşiv kaydı silindi.`);
       }
-    });
+      await chrome.storage.local.set({ tabRecords });
+      alert(i18n("archiveClearedMsg", [count]));
+    }
+  });
 
   document.getElementById("clearAllBtn").addEventListener("click", async () => {
-    if (
-      confirm(
-        "TÜM tab kayıtları ve ayarlar silinecek. Bu işlem geri alınamaz! Devam etmek istiyor musunuz?",
-      )
-    ) {
+    if (confirm(i18n("confirmClearAll"))) {
       await chrome.storage.local.clear();
-      alert("Tüm veriler silindi. Eklentiyi yeniden başlatın.");
+      alert(i18n("allDataClearedMsg"));
     }
   });
 }

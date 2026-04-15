@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tab Lifecycle Manager</title>
+    <title>__MSG_extName__</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
@@ -12,7 +12,7 @@
       <div class="header">
         <span class="logo">Tab Tier</span>
         <div class="header-actions">
-          <button id="settingsBtn" class="icon-btn" title="Ayarlar">⚙️</button>
+          <button id="settingsBtn" class="icon-btn" title="__MSG_settingsBtn__">⚙️</button>
         </div>
       </div>
 
@@ -21,7 +21,7 @@
         <input
           id="searchInput"
           type="text"
-          placeholder="🔍 Tab ara (başlık, domain, url)..."
+          placeholder="__MSG_searchPlaceholder__"
           autocomplete="off"
         />
       </div>
@@ -31,22 +31,20 @@
 
       <!-- Sort Bar -->
       <div class="sort-bar">
-        <span class="sort-label">Sırala:</span>
-        <button class="sort-btn active" data-sort="tierAlpha">
-          Tier + A-Z
-        </button>
-        <button class="sort-btn" data-sort="domain">Domain A-Z</button>
-        <button class="sort-btn" data-sort="url">URL A-Z</button>
+        <span class="sort-label">__MSG_sortLabel__</span>
+        <button class="sort-btn active" data-sort="tierDomain">__MSG_sortTierDomain__</button>
+        <button class="sort-btn" data-sort="tierTitle">__MSG_sortTierTitle__</button>
+        <button class="sort-btn" data-sort="tierUrl">__MSG_sortTierUrl__</button>
         <button
           id="applyTabSortBtn"
           class="sort-apply-btn"
-          title="Seçili sırayı Edge tab bar'a uygula"
+          title="__MSG_applyToTabsTitle__"
         >
-          ↕ Uygula
+          ↕ __MSG_applyToTabs__
         </button>
       </div>
 
-      <!-- Main Content (Tier 3 + Tier 4 tabs, or search results) -->
+      <!-- Main Content -->
       <div id="content" class="content"></div>
 
       <!-- Footer -->
@@ -54,12 +52,12 @@
         <button
           id="clearArchiveBtn"
           class="btn-danger"
-          title="Tier 4 arşivini temizle"
+          title="__MSG_clearArchiveBtnTitle__"
         >
-          🗑 Arşivi Temizle
+          __MSG_clearArchiveBtn__
         </button>
-        <button id="tabManagerBtn" class="btn-secondary">📋 Tab Yönetimi</button>
-        <button id="settingsBtn2" class="btn-secondary">⚙️ Ayarlar</button>
+        <button id="tabManagerBtn" class="btn-secondary">__MSG_tabManagementBtn__</button>
+        <button id="settingsBtn2" class="btn-secondary">__MSG_settingsBtn__</button>
       </div>
     </div>
     <script src="popup.js"></script>

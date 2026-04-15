@@ -2,28 +2,32 @@
 // Tab Lifecycle Manager — popup.js
 // =============================================================================
 
-let currentSort = "tierAlpha"; // "tierAlpha" | "domain" | "url"
+// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
+const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
+let currentSort = "tierDomain"; // "tierDomain" | "tierTitle" | "tierUrl"
+
+// EN: Tier labels and config from i18n | TR: Tier etiketleri ve yapılandırması i18n'den
 const TIER_LABELS = {
-  0: { label: "T0 Sabit",     cls: "t0", icon: "📌" },
-  1: { label: "T1 Aktif",     cls: "t1", icon: "🔥" },
-  2: { label: "T2 Beklemede", cls: "t2", icon: "⏸" },
-  3: { label: "T3 Soğuk",    cls: "t3", icon: "❄️" },
-  4: { label: "T4 Arşiv",    cls: "t4", icon: "⚫" }
+  0: { label: i18n("tierT0Name"), cls: "t0", icon: "📌" },
+  1: { label: i18n("tierT1Name"), cls: "t1", icon: "🔥" },
+  2: { label: i18n("tierT2Name"), cls: "t2", icon: "⏸" },
+  3: { label: i18n("tierT3Name"), cls: "t3", icon: "❄️" },
+  4: { label: i18n("tierT4Name"), cls: "t4", icon: "⚫" }
 };
 
-// ─── Yardımcılar ───────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function relativeTime(ts) {
-  if (!ts) return "aktif";
+  if (!ts) return i18n("timeActive");
   const diffMs = Date.now() - ts;
-  const mins  = Math.floor(diffMs / 60000);
-  const hours = Math.floor(mins  / 60);
-  const days  = Math.floor(hours / 24);
-  if (days  > 0) return `${days} gün önce`;
-  if (hours > 0) return `${hours} saat önce`;
-  if (mins  > 0) return `${mins} dk önce`;
-  return "az önce";
+  const mins   = Math.floor(diffMs / 60000);
+  const hours  = Math.floor(mins  / 60);
+  const days   = Math.floor(hours / 24);
+  if (days  > 0) return i18n("timeDaysAgo",  [days]);
+  if (hours > 0) return i18n("timeHoursAgo", [hours]);
+  if (mins  > 0) return i18n("timeMinsAgo",  [mins]);
+  return i18n("timeJustNow");
 }
 
 function faviconEl(favicon, domain) {
@@ -38,17 +42,17 @@ async function sendMsg(type, payload = {}) {
   return chrome.runtime.sendMessage({ type, ...payload });
 }
 
-// ─── Veri yükleme ──────────────────────────────────────────────────────────
+// ─── Data loading ──────────────────────────────────────────────────────────────
 
 async function loadData() {
   const data = await chrome.storage.local.get(["tabRecords", "settings"]);
   return {
     tabRecords: data.tabRecords || {},
-    settings: data.settings || {}
+    settings:   data.settings   || {}
   };
 }
 
-// ─── Summary Band ──────────────────────────────────────────────────────────
+// ─── Summary band ─────────────────────────────────────────────────────────────
 
 function renderSummary(tabRecords) {
   const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
@@ -70,11 +74,11 @@ function renderSummary(tabRecords) {
 
   const totalBadge = document.createElement("span");
   totalBadge.className = "tier-badge total";
-  totalBadge.textContent = `Toplam: ${total}`;
+  totalBadge.textContent = i18n("totalCountLabel", [total]);
   container.appendChild(totalBadge);
 }
 
-// ─── Tab item oluştur ──────────────────────────────────────────────────────
+// ─── Tab item ─────────────────────────────────────────────────────────────────
 
 function createTabItem(record, tier) {
   const item = document.createElement("div");
@@ -97,14 +101,13 @@ function createTabItem(record, tier) {
   info.appendChild(meta);
   item.appendChild(info);
 
-  // Aksiyonlar
   const actions = document.createElement("div");
   actions.className = "tab-actions";
 
-  // Aç butonu
+  // EN: Open button | TR: Aç butonu
   const openBtn = document.createElement("button");
   openBtn.className = "tab-action-btn";
-  openBtn.title = tier === 4 ? "Aç (arşivden)" : "Tab'a odaklan";
+  openBtn.title = tier === 4 ? i18n("openFromArchive") : i18n("focusTab");
   openBtn.textContent = tier === 4 ? "↗" : "⤴";
   openBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
@@ -121,11 +124,11 @@ function createTabItem(record, tier) {
   });
   actions.appendChild(openBtn);
 
-  // Pin/Unpin butonu (Tier 4'te pin yok)
+  // EN: Pin/unpin button (not shown for T4) | TR: Pin/unpin butonu (T4'te gösterilmez)
   if (tier !== 4) {
     const pinBtn = document.createElement("button");
     pinBtn.className = "tab-action-btn";
-    pinBtn.title = record.isPinned ? "Sabiti Kaldır" : "Sabitle (T0)";
+    pinBtn.title = record.isPinned ? i18n("unpinTab") : i18n("pinToT0");
     pinBtn.textContent = record.isPinned ? "📌" : "📍";
     pinBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
@@ -139,10 +142,10 @@ function createTabItem(record, tier) {
     actions.appendChild(pinBtn);
   }
 
-  // Sil butonu
+  // EN: Delete button | TR: Sil butonu
   const delBtn = document.createElement("button");
   delBtn.className = "tab-action-btn danger";
-  delBtn.title = "Kaydı sil";
+  delBtn.title = i18n("deleteRecord");
   delBtn.textContent = "✕";
   delBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
@@ -153,7 +156,7 @@ function createTabItem(record, tier) {
 
   item.appendChild(actions);
 
-  // Tab'a tıklayınca aç
+  // EN: Click row to focus/open tab | TR: Satıra tıklayınca tabı aç/odaklan
   item.addEventListener("click", async () => {
     if (tier === 4) {
       await sendMsg("PROMOTE_TAB", { url: record.url });
@@ -170,51 +173,58 @@ function createTabItem(record, tier) {
   return item;
 }
 
-// ─── Sıralama fonksiyonları ────────────────────────────────────────────────
+// ─── Sort functions ───────────────────────────────────────────────────────────
 
 function sortRecords(records) {
-  if (currentSort === "domain") {
+  if (currentSort === "tierTitle") {
     return [...records].sort((a, b) => {
-      const da = (a.domain || "").toLowerCase();
-      const db = (b.domain || "").toLowerCase();
-      if (da !== db) return da < db ? -1 : 1;
+      if (a.currentTier !== b.currentTier) return a.currentTier - b.currentTier;
       return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
     });
   }
-  if (currentSort === "url") {
+  if (currentSort === "tierUrl") {
     return [...records].sort((a, b) => {
-      const ua = (a.url || "").toLowerCase();
-      const ub = (b.url || "").toLowerCase();
-      return ua < ub ? -1 : ua > ub ? 1 : 0;
+      if (a.currentTier !== b.currentTier) return a.currentTier - b.currentTier;
+      return (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase());
     });
   }
-  // tierAlpha (default): domain A-Z
-  return [...records].sort((a, b) =>
-    (a.domain || "").toLowerCase().localeCompare((b.domain || "").toLowerCase())
-  );
+  // EN: tierDomain (default): tier first, then domain A-Z, then title A-Z
+  // TR: tierDomain (varsayılan): tier önce, sonra domain A-Z, sonra başlık A-Z
+  return [...records].sort((a, b) => {
+    if (a.currentTier !== b.currentTier) return a.currentTier - b.currentTier;
+    const da = (a.domain || "").toLowerCase();
+    const db = (b.domain || "").toLowerCase();
+    if (da !== db) return da < db ? -1 : 1;
+    return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
+  });
 }
 
 function sortDomainGroups(byDomain) {
   const domains = Object.keys(byDomain);
-
-  if (currentSort === "url") {
+  if (currentSort === "tierUrl") {
     return domains.sort((a, b) => {
       const ua = (byDomain[a][0]?.url || "").toLowerCase();
       const ub = (byDomain[b][0]?.url || "").toLowerCase();
       return ua < ub ? -1 : ua > ub ? 1 : 0;
     });
   }
-  // tierAlpha + domain: domain A-Z
+  if (currentSort === "tierTitle") {
+    return domains.sort((a, b) => {
+      const ta = (byDomain[a][0]?.title || "").toLowerCase();
+      const tb = (byDomain[b][0]?.title || "").toLowerCase();
+      return ta < tb ? -1 : ta > tb ? 1 : 0;
+    });
+  }
+  // EN: tierDomain: sort domains A-Z | TR: tierDomain: domainleri A-Z sırala
   return domains.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }
 
-// ─── Domain Grubu oluştur ──────────────────────────────────────────────────
+// ─── Domain group ─────────────────────────────────────────────────────────────
 
 function createDomainGroup(domain, records, tier) {
   const group = document.createElement("div");
   group.className = "domain-group";
 
-  // Domain header (tıklanabilir)
   const header = document.createElement("div");
   header.className = "domain-header";
 
@@ -227,7 +237,7 @@ function createDomainGroup(domain, records, tier) {
 
   const dName = document.createElement("span");
   dName.className = "domain-name";
-  dName.textContent = domain || "Diğer";
+  dName.textContent = domain || i18n("domainGroupOther");
 
   const dCount = document.createElement("span");
   dCount.className = "domain-count";
@@ -239,7 +249,6 @@ function createDomainGroup(domain, records, tier) {
   header.appendChild(dCount);
   group.appendChild(header);
 
-  // Tab listesi (varsayılan kapalı)
   const tabList = document.createElement("div");
   tabList.className = "domain-tabs";
 
@@ -248,7 +257,6 @@ function createDomainGroup(domain, records, tier) {
   }
   group.appendChild(tabList);
 
-  // Toggle
   header.addEventListener("click", () => {
     const isOpen = tabList.classList.toggle("open");
     chevron.classList.toggle("open", isOpen);
@@ -257,12 +265,11 @@ function createDomainGroup(domain, records, tier) {
   return group;
 }
 
-// ─── Tier Bölümü oluştur ──────────────────────────────────────────────────
+// ─── Tier section ─────────────────────────────────────────────────────────────
 
 function createTierSection(tierNum, records, settings) {
   const section = document.createElement("div");
 
-  // Bölüm başlığı
   const cfg = TIER_LABELS[tierNum];
   const hdr = document.createElement("div");
   hdr.className = `section-header t${tierNum}-header`;
@@ -274,7 +281,7 @@ function createTierSection(tierNum, records, settings) {
   if (tierNum === 4 && settings.tier4_delete_days > 0) {
     const info = document.createElement("div");
     info.className = "archive-info";
-    info.textContent = `⏱ Otomatik silme: ${settings.tier4_delete_days} gün`;
+    info.textContent = i18n("autoDeleteInfo", [settings.tier4_delete_days]);
     hdr.appendChild(info);
   }
 
@@ -283,33 +290,40 @@ function createTierSection(tierNum, records, settings) {
   if (records.length === 0) {
     const empty = document.createElement("div");
     empty.style.cssText = "padding: 8px 12px; font-size: 12px; color: #6c7086;";
-    empty.textContent = "Bu katmanda tab yok.";
+    empty.textContent = i18n("noTabsInTier");
     section.appendChild(empty);
     return section;
   }
 
-  // Domain bazlı grupla
-  const byDomain = {};
-  for (const r of records) {
-    const d = r.domain || "diğer";
-    if (!byDomain[d]) byDomain[d] = [];
-    byDomain[d].push(r);
-  }
-
-  // Domain sıralama + her domain içindeki tab sıralama
-  const sortedDomains = sortDomainGroups(byDomain);
-  for (const domain of sortedDomains) {
-    byDomain[domain] = sortRecords(byDomain[domain]);
-    section.appendChild(createDomainGroup(domain, byDomain[domain], tierNum));
+  // EN: Domain mode: group by domain. Title/URL modes: flat sorted list.
+  // TR: Domain modu: domaine göre grupla. Başlık/URL modları: düz sıralı liste.
+  if (currentSort === "tierDomain") {
+    const byDomain = {};
+    for (const r of records) {
+      const d = r.domain || "other";
+      if (!byDomain[d]) byDomain[d] = [];
+      byDomain[d].push(r);
+    }
+    const sortedDomains = sortDomainGroups(byDomain);
+    for (const domain of sortedDomains) {
+      byDomain[domain] = sortRecords(byDomain[domain]);
+      section.appendChild(createDomainGroup(domain, byDomain[domain], tierNum));
+    }
+  } else {
+    // EN: Flat list sorted by title or URL | TR: Başlık veya URL'ye göre düz liste
+    const sorted = sortRecords(records);
+    for (const record of sorted) {
+      section.appendChild(createTabItem(record, tierNum));
+    }
   }
 
   return section;
 }
 
-// ─── Arama Sonuçları ──────────────────────────────────────────────────────
+// ─── Search results ───────────────────────────────────────────────────────────
 
 function renderSearchResults(tabRecords, query) {
-  const q = query.toLowerCase().trim();
+  const q       = query.toLowerCase().trim();
   const content = document.getElementById("content");
   content.innerHTML = "";
 
@@ -324,7 +338,7 @@ function renderSearchResults(tabRecords, query) {
     content.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">🔍</div>
-        <p>"${query}" için sonuç bulunamadı.</p>
+        <p>${i18n("noSearchResults", [query])}</p>
       </div>`;
     return;
   }
@@ -372,7 +386,7 @@ function renderSearchResults(tabRecords, query) {
   }
 }
 
-// ─── Ana render ───────────────────────────────────────────────────────────
+// ─── Main render ──────────────────────────────────────────────────────────────
 
 async function render() {
   const { tabRecords, settings } = await loadData();
@@ -389,37 +403,27 @@ async function render() {
 
   content.innerHTML = "";
 
-  // Tier 3 (Soğuk) — tab bar'da var ama panelde de göster
-  const tier3 = Object.values(tabRecords)
-    .filter(r => r.currentTier === 3)
-    .sort((a, b) => (b.lastFocusEnd || 0) - (a.lastFocusEnd || 0));
+  let anyContent = false;
+  for (let tier = 0; tier <= 4; tier++) {
+    const records = Object.values(tabRecords).filter(r => r.currentTier === tier);
+    if (records.length > 0) {
+      content.appendChild(createTierSection(tier, records, settings));
+      anyContent = true;
+    }
+  }
 
-  // Tier 4 (Arşiv) — sadece panelde var
-  const tier4 = Object.values(tabRecords)
-    .filter(r => r.currentTier === 4)
-    .sort((a, b) => (b.lastFocusEnd || 0) - (a.lastFocusEnd || 0));
-
-  if (tier3.length === 0 && tier4.length === 0) {
+  if (!anyContent) {
     content.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">✅</div>
-        <p>Soğuk veya arşiv tab yok.<br>Tab'lar aktif kullanımda!</p>
+        <p>${i18n("noTabRecords")}</p>
       </div>`;
-    return;
-  }
-
-  if (tier3.length > 0) {
-    content.appendChild(createTierSection(3, tier3, settings));
-  }
-
-  if (tier4.length > 0) {
-    content.appendChild(createTierSection(4, tier4, settings));
   }
 }
 
-// ─── Event Listener'lar ────────────────────────────────────────────────────
+// ─── Event listeners ──────────────────────────────────────────────────────────
 
-// Sort butonları
+// EN: Sort buttons | TR: Sort butonları
 document.querySelectorAll(".sort-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     currentSort = btn.dataset.sort;
@@ -429,34 +433,30 @@ document.querySelectorAll(".sort-btn").forEach(btn => {
   });
 });
 
-// Tab bar'a uygula
+// EN: Apply sort to tab bar | TR: Tab bar'a uygula
 document.getElementById("applyTabSortBtn").addEventListener("click", async () => {
   const applyBtn = document.getElementById("applyTabSortBtn");
   applyBtn.disabled = true;
-  applyBtn.textContent = "⏳ Sıralanıyor...";
+  applyBtn.textContent = i18n("sortingText");
 
   try {
-    const [win] = await chrome.windows.getAll({ windowTypes: ["normal"] });
     const focused = await chrome.windows.getLastFocused({ windowTypes: ["normal"] });
-    await sendMsg("SORT_TABS", {
-      windowId: focused.id,
-      sortType: currentSort
-    });
-    applyBtn.textContent = "✅ Tamam";
+    await sendMsg("SORT_TABS", { windowId: focused.id, sortType: currentSort });
+    applyBtn.textContent = i18n("sortDone");
     setTimeout(() => {
       applyBtn.disabled = false;
-      applyBtn.textContent = "↕ Uygula";
+      applyBtn.textContent = "↕ " + i18n("applyToTabs");
     }, 1800);
-  } catch (e) {
+  } catch (_) {
     applyBtn.disabled = false;
-    applyBtn.textContent = "↕ Uygula";
+    applyBtn.textContent = "↕ " + i18n("applyToTabs");
   }
 });
 
 document.getElementById("searchInput").addEventListener("input", render);
 
 document.getElementById("clearArchiveBtn").addEventListener("click", async () => {
-  if (confirm("Tüm Tier 4 arşiv kayıtları silinecek. Emin misiniz?")) {
+  if (confirm(i18n("confirmClearArchive"))) {
     await sendMsg("CLEAR_ARCHIVE");
     render();
   }
@@ -473,14 +473,14 @@ document.getElementById("settingsBtn2").addEventListener("click", () => {
 });
 
 document.getElementById("tabManagerBtn").addEventListener("click", () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("debug.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("tab-management.html") });
   window.close();
 });
 
-// İlk yükleme
+// EN: Initial load | TR: İlk yükleme
 render();
 
-// Storage değişince güncelle (başka popup örneğiyle veya background'dan)
+// EN: Re-render on storage change | TR: Storage değişince güncelle
 chrome.storage.onChanged.addListener(() => {
   if (!document.getElementById("searchInput").value.trim()) render();
 });

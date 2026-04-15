@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>__MSG_tabMgmtPageTitle__</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", monospace, sans-serif;
+        font-size: 13px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        padding: 20px;
+      }
+      h1 { color: #cba6f7; font-size: 18px; margin-bottom: 4px; }
+      .subtitle { color: #6c7086; font-size: 12px; margin-bottom: 16px; }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      button {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .btn-primary   { background: #cba6f7; color: #1e1e2e; }
+      .btn-secondary { background: #313244; color: #cdd6f4; }
+      .btn-danger    { background: #45182a; color: #f38ba8; }
+      .filter-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+      }
+      #filterInput {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 5px 28px 5px 10px;
+        font-size: 12px;
+        color: #cdd6f4;
+        outline: none;
+        width: 200px;
+      }
+      #filterInput:focus { border-color: #cba6f7; }
+      #filterClear {
+        position: absolute;
+        right: 6px;
+        background: none;
+        border: none;
+        color: #6c7086;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        display: none;
+      }
+      #filterClear:hover { color: #cdd6f4; }
+      #refreshTime { font-size: 11px; color: #6c7086; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      thead th {
+        background: #181825;
+        color: #a6adc8;
+        font-weight: 600;
+        padding: 8px 10px;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        border-bottom: 1px solid #313244;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+      }
+      thead th:hover { color: #cba6f7; }
+      thead th.sorted-asc::after  { content: " ▲"; color: #cba6f7; }
+      thead th.sorted-desc::after { content: " ▼"; color: #cba6f7; }
+
+      tbody tr { border-bottom: 1px solid #1e1e2e; }
+      tbody tr:nth-child(even) { background: #181825; }
+      tbody tr:hover { background: #2a2a3d; }
+
+      td { padding: 7px 10px; vertical-align: middle; }
+
+      .tier-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e1e2e;
+      }
+      .tier-0 { background: #f38ba8; }
+      .tier-1 { background: #fab387; }
+      .tier-2 { background: #f9e2af; }
+      .tier-3 { background: #89b4fa; }
+      .tier-4 { background: #6c7086; color: #cdd6f4; }
+
+      .url-cell {
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #89dceb;
+      }
+      .domain-cell { color: #a6e3a1; font-weight: 600; }
+      .title-cell {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #cdd6f4;
+      }
+      .time-cell { color: #f9e2af; white-space: nowrap; }
+      .status-active { color: #a6e3a1; font-weight: 700; }
+      .tabid-cell { color: #6c7086; font-family: monospace; }
+
+      .summary {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .summary-item {
+        background: #181825;
+        border: 1px solid #313244;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+      .summary-item span { font-weight: 700; color: #cba6f7; }
+
+      #noData { color: #6c7086; padding: 20px 0; text-align: center; display: none; }
+
+      .cb-col { width: 32px; text-align: center; cursor: default; }
+      input[type="checkbox"] { accent-color: #cba6f7; width: 14px; height: 14px; cursor: pointer; }
+      #openSelectedBtn { background: #a6e3a1; color: #1e1e2e; }
+      #openSelectedBtn:disabled { background: #313244; color: #6c7086; cursor: not-allowed; }
+    </style>
+  </head>
+  <body>
+    <h1>__MSG_tabMgmtH1__</h1>
+    <p class="subtitle">__MSG_tabMgmtSubtitle__</p>
+
+    <div class="toolbar">
+      <button class="btn-primary"   id="refreshBtn">__MSG_refreshBtnLabel__</button>
+      <button class="btn-secondary" id="reconcileBtn">__MSG_reconcileBtnLabel__</button>
+      <button class="btn-secondary" id="dedupBtn">__MSG_dedupBtnLabel__</button>
+      <button id="openSelectedBtn" disabled>__MSG_openSelectedBtnLabel__</button>
+      <button class="btn-secondary" id="copyBtn">__MSG_copyJsonBtnLabel__</button>
+      <div class="filter-wrap">
+        <input type="text" id="filterInput" placeholder="__MSG_filterPlaceholder__" />
+        <button id="filterClear">✕</button>
+      </div>
+      <span id="refreshTime"></span>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th class="cb-col"><input type="checkbox" id="selectAllT4" title="__MSG_selectAllT4Title__"></th>
+          <th data-col="isPinned">__MSG_colFixed__</th>
+          <th data-col="tabId">__MSG_colTabId__</th>
+          <th data-col="currentTier">__MSG_colTier__</th>
+          <th data-col="openStatus">__MSG_colStatus__</th>
+          <th data-col="domain">__MSG_colDomain__</th>
+          <th data-col="title">__MSG_colTitle__</th>
+          <th data-col="url">__MSG_colUrl__</th>
+          <th data-col="lastFocusStart">__MSG_colFocusStart__</th>
+          <th data-col="lastFocusEnd">__MSG_colFocusEnd__</th>
+          <th data-col="elapsed">__MSG_colElapsed__</th>
+          <th data-col="createdAt">__MSG_colCreated__</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <p id="noData">__MSG_noRecords__</p>
+
+    <script src="tab-management.js"></script>
+  </body>
+</html>

@@ -119,7 +119,7 @@ async function reorderGroupsInWindow(windowId) {
 // moveTabToTierGroup: Tab'ı renk kodlu gruba taşı
 // cachedSettings: storage okumaktan kaçınmak için opsiyonel
 // =============================================================================
-async function moveTabToTierGroup(tabId, tier, cachedSettings) {
+async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
   if (tier === 4) return;
   if (tier < 0 || tier > 3) return;
 
@@ -135,6 +135,8 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings) {
 
     const tab = await chrome.tabs.get(tabId);
     if (!tab) return;
+    // EN: Pinned tabs cannot be added to groups — Chrome/Edge API rejects the call | TR: Sabitlenmiş tablar gruba eklenemez — Chrome/Edge API çağrısını reddeder
+    if (tab.pinned) return;
 
     const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
     // Renk üzerinden eşleştir: title değişmiş olsa bile doğru grubu bulur
@@ -157,6 +159,18 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings) {
       await reorderGroupsInWindow(tab.windowId);
     }
   } catch (e) {
+    // EN: Edge rejects tab group changes while the user is clicking/dragging a tab.
+    //     Retry up to 3 times with increasing delay so the promotion completes after
+    //     Edge finishes processing the interaction.
+    // TR: Edge, kullanıcı taba tıklıyor/sürüklüyorken grup değişikliklerini reddeder.
+    //     Edge etkileşimi bitirdikten sonra promote tamamlanabilsin diye artan
+    //     gecikmeyle 3 kez yeniden dene.
+    if (_attempt < 3 && e?.message?.includes("cannot be edited")) {
+      const delay = ((_attempt + 1) * 300);
+      log(`moveTabToTierGroup retry ${_attempt + 1}/3 in ${delay}ms — tab ${tabId}`);
+      await new Promise(r => setTimeout(r, delay));
+      return moveTabToTierGroup(tabId, tier, cachedSettings, _attempt + 1);
+    }
     log("moveTabToTierGroup error:", e?.message);
   }
 }
@@ -181,24 +195,34 @@ async function sortTabsInWindow(windowId, sortType) {
     (t) => !tabRecords[t.id] || tabRecords[t.id].currentTier !== 0,
   );
 
+  // EN: All sort modes use tier as the primary key so tabs of different tiers
+  //     are never interleaved. This prevents Edge from auto-assigning a tab to
+  //     the wrong group due to physical proximity during the move loop.
+  // TR: Tüm sıralama modları birincil anahtar olarak tier kullanır; farklı
+  //     tierlerdeki tablar hiçbir zaman iç içe geçmez. Bu, move döngüsü sırasında
+  //     Edge'in fiziksel yakınlık nedeniyle bir tabı yanlış gruba atamasını önler.
   let sorted;
-  if (sortType === "domain") {
+  if (sortType === "tierTitle") {
     sorted = [...restTabs].sort((a, b) => {
       const ra = tabRecords[a.id];
       const rb = tabRecords[b.id];
-      const da = (ra?.domain || extractDomain(a.url || "")).toLowerCase();
-      const db = (rb?.domain || extractDomain(b.url || "")).toLowerCase();
-      if (da !== db) return da < db ? -1 : 1;
-      return (a.url || "")
-        .toLowerCase()
-        .localeCompare((b.url || "").toLowerCase());
+      const ta = ra?.currentTier ?? 1;
+      const tb = rb?.currentTier ?? 1;
+      if (ta !== tb) return ta - tb;
+      return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
     });
-  } else if (sortType === "url") {
-    sorted = [...restTabs].sort((a, b) =>
-      (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase()),
-    );
+  } else if (sortType === "tierUrl") {
+    sorted = [...restTabs].sort((a, b) => {
+      const ra = tabRecords[a.id];
+      const rb = tabRecords[b.id];
+      const ta = ra?.currentTier ?? 1;
+      const tb = rb?.currentTier ?? 1;
+      if (ta !== tb) return ta - tb;
+      return (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase());
+    });
   } else {
-    // tierAlpha (default): tier sırası, aynı tier içinde domain A-Z
+    // tierDomain (default, also covers legacy "tierAlpha", "domain", "url"):
+    // tier önce, sonra domain A-Z
     sorted = [...restTabs].sort((a, b) => {
       const ra = tabRecords[a.id];
       const rb = tabRecords[b.id];
@@ -837,6 +861,19 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
       tabRecords[newTabId].lastFocusStart = now;
       tabRecords[newTabId].lastFocusEnd = null; // null = şu an aktif
 
+      // EN: If the tab is pinned but recorded as T2/T3 (e.g. pinned after being demoted),
+      //     correct it to T0 — pinned tabs cannot be in groups, so promote would always fail.
+      // TR: Tab sabitlenmiş ama T2/T3 olarak kaydedilmişse (örn. düşürüldükten sonra sabitlendi)
+      //     T0'a düzelt — sabitlenmiş tablar gruba eklenemez, promote her zaman başarısız olur.
+      try {
+        const liveTab = await chrome.tabs.get(newTabId);
+        if (liveTab?.pinned && tabRecords[newTabId].currentTier !== 0) {
+          tabRecords[newTabId].currentTier = 0;
+          tabRecords[newTabId].isPinned = true;
+          log("onActivated pinned→T0 correction", newTabId);
+        }
+      } catch (_) {}
+
       // EN: Promote from Tier 2/3/4 to Tier 1 (T0 is 0, already excluded by > 1) | TR: Tier 2/3/4'ten Tier 1'e yükselt (T0=0 olduğu için > 1 koşulu onu zaten dışlar)
       if (tabRecords[newTabId].currentTier > 1) {
         tabRecords[newTabId].currentTier = 1;
@@ -844,22 +881,60 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
         log("promote →T1", newTabId);
       }
     } else {
-      // Kayıt yok — yeni kayıt oluştur
+      /*
+       * EN: No record found for this tabId.
+       *     First try URL-based re-link: handles the race between onReplaced and
+       *     onActivated when Edge wakes a sleeping tab (both fire concurrently, so
+       *     onActivated may read stale storage before onReplaced has written the new ID).
+       *     If re-link succeeds, promote to T1 and move to T1 group.
+       *     If no match, create a fresh T1 record.
+       * TR: Bu tabId için kayıt bulunamadı.
+       *     Önce URL üzerinden yeniden bağlamayı dene: Edge uyuyan sekmeyi uyandırınca
+       *     onReplaced ve onActivated eş zamanlı çalışır; onActivated yeni ID yazılmadan
+       *     eski storage'ı okuyabilir. Re-link başarılıysa T1'e yükselt ve grubu taşı.
+       *     Eşleşme yoksa yeni T1 kaydı oluştur.
+       */
       try {
         const tab = await chrome.tabs.get(newTabId);
         if (tab && tab.url && !isBrowserInternalUrl(tab.url)) {
-          tabRecords[newTabId] = {
-            tabId: newTabId,
-            url: tab.url,
-            domain: extractDomain(tab.url),
-            title: tab.title || tab.url,
-            favicon: tab.favIconUrl || "",
-            currentTier: tab.pinned ? 0 : 1,
-            isPinned: tab.pinned || false,
-            lastFocusStart: now,
-            lastFocusEnd: null,
-            createdAt: now,
-          };
+          // EN: Look for an existing non-T4 record with the same URL | TR: Aynı URL'ye sahip T4 dışı mevcut kaydı ara
+          const existingEntry = Object.entries(tabRecords).find(
+            ([, rec]) => rec.url === tab.url && rec.currentTier !== 4
+          );
+          if (existingEntry) {
+            // EN: Re-link old record to new tabId (sleeping-tab ID change) | TR: Eski kaydı yeni tabId'ye bağla (uyuyan tab ID değişimi)
+            const [oldKey, rec] = existingEntry;
+            delete tabRecords[oldKey];
+            tabRecords[newTabId] = {
+              ...rec,
+              tabId:   newTabId,
+              url:     tab.url,
+              title:   tab.title   || rec.title,
+              favicon: tab.favIconUrl || rec.favicon,
+              lastFocusStart: now,
+              lastFocusEnd:   null,
+            };
+            if (tabRecords[newTabId].currentTier > 1) {
+              tabRecords[newTabId].currentTier = 1;
+              await moveTabToTierGroup(newTabId, 1);
+              log("onActivated re-link+promote →T1", newTabId, tab.url);
+            }
+          } else {
+            // EN: Genuinely new tab — create a T1 record and ensure it is in the T1 group | TR: Gerçekten yeni tab — T1 kaydı oluştur ve T1 grubuna taşı
+            tabRecords[newTabId] = {
+              tabId:          newTabId,
+              url:            tab.url,
+              domain:         extractDomain(tab.url),
+              title:          tab.title || tab.url,
+              favicon:        tab.favIconUrl || "",
+              currentTier:    tab.pinned ? 0 : 1,
+              isPinned:       tab.pinned || false,
+              lastFocusStart: now,
+              lastFocusEnd:   null,
+              createdAt:      now,
+            };
+            if (!tab.pinned) await moveTabToTierGroup(newTabId, 1);
+          }
         }
       } catch (e) {}
     }
@@ -1029,7 +1104,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             tabRecords[tabId].currentTier = tier;
             tabRecords[tabId].isPinned = tier === 0;
             if (tier !== 0) {
-              tabRecords[tabId].lastFocusEnd = Date.now();
+              // EN: If the tab is currently active (just clicked), keep lastFocusEnd=null so the
+              //     inactivity timer does not start. This prevents a race where onActivated calls
+              //     moveTabToTierGroup → onUpdated fires → onUpdated overwrites lastFocusEnd=now
+              //     on a tab the user just activated.
+              // TR: Tab şu an aktifse (yeni tıklandıysa) lastFocusEnd=null olarak bırak; böylece
+              //     hareketsizlik zamanlayıcısı başlamaz. Bu, onActivated'ın moveTabToTierGroup
+              //     çağırması → onUpdated tetiklenmesi → onUpdated'ın yeni aktif edilen tab için
+              //     lastFocusEnd=now yazması yarış koşulunu önler.
+              tabRecords[tabId].lastFocusEnd = tab.active ? null : Date.now();
             }
             log("onUpdated group drag → T" + tier, tabId, group.color);
           }
