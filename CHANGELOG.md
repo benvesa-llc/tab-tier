@@ -2,9 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.4] - 2026-04-15
+## [0.3.5] - 2026-04-15
 
 ### Fixed
+- Tab bar group names were created with the wrong language (e.g. "Sıcak" instead of "Hot") because `background.js` merge logic only skipped empty stored names but not old translated defaults — filter now also excludes values matching the `T0:/T1:/T2:/T3:` prefix pattern, same as the settings UI fix
 - Group name inputs in settings showed the wrong language (e.g. Turkish defaults when browser is English) because translated strings were previously stored in `chrome.storage.local` — `DefaultSettings.groupNames` is now `{}` in both `settings.js` and `background.js`; stored names that look like system defaults (`T0:…`, `T1:…`) are cleared on display so the i18n placeholder appears; merge logic filters out empty stored values so `DefaultGroupNames` (always resolved from current browser language) shows through
 - Group name input placeholders in settings now use `__MSG_defaultGroupT*__` instead of hardcoded English strings, so they display in the correct browser language
 - "Edge" replaced with "browser" in two user-facing strings (`applyToTabsTitle`, `groupNamesHint`) in both locale files — extension works on Chrome and other Chromium browsers too

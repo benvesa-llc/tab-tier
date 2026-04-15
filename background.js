@@ -142,8 +142,12 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
 
     // EN: Merge i18n defaults with stored custom names; skip empty stored values so defaults show through
     // TR: i18n varsayılanlarını saklanan özel adlarla birleştir; boş kayıtlı değerleri atla, varsayılan görünsün
+    // EN: Skip empty values and old translated defaults (T0:/T1:/T2:/T3: prefix) so i18n defaults show through
+    // TR: Boş değerleri ve eski çevrilmiş varsayılanları (T0:/T1: vb. öneki) atla; i18n varsayılanları görünsün
     const customNames = Object.fromEntries(
-      Object.entries(settings.groupNames || {}).filter(([, v]) => v?.trim())
+      Object.entries(settings.groupNames || {}).filter(
+        ([, v]) => v?.trim() && !/^T[0-3]:/.test(v.trim())
+      )
     );
     const groupNames = { ...DefaultGroupNames, ...customNames };
     const title = groupNames[tier];
