@@ -2,7 +2,7 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [0.3.6] - 2026-04-15
+## [1.0.0] - 2026-04-15
 
 ### Removed
 - `debug.html` and `debug.js` deleted — fully replaced by `tab-management.html` and `tab-management.js`
