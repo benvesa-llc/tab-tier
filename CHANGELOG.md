@@ -2,6 +2,17 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.2] - 2026-04-16
+
+### Fixed
+- Elapsed sort in Tab Management now places T0 (fixed) tabs first — previously T0 tabs had a real `lastFocusEnd` timestamp so they sorted randomly among other tabs
+- Secondary sort by title added: when two rows have equal primary sort values, they are sorted alphabetically by title
+
+## [1.0.1] - 2026-04-16
+
+### Fixed
+- Reconcile result was shown as a hardcoded English string in the button text and disappeared after a few seconds — result is now displayed in a persistent panel below the toolbar, grouped as labeled metric cards (Archived / New records / Fixed / Re-linked / Tier corrected / Grouped), dismissible with a ✕ button; all labels are fully i18n
+
 ## [1.0.0] - 2026-04-15
 
 ### Removed

@@ -179,6 +179,13 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "reconciling": { "message": "⏳ Reconciling…" },
+  "reconcileResultTitle": { "message": "Reconcile Result" },
+  "reconcileArchived":     { "message": "Archived" },
+  "reconcileAdded":        { "message": "New records" },
+  "reconcileFixed":        { "message": "Fixed" },
+  "reconcileRelinked":     { "message": "Re-linked" },
+  "reconcileTierFixed":    { "message": "Tier corrected" },
+  "reconcileGrouped":      { "message": "Grouped" },
   "copyDone": { "message": "✅ Copied" },
   "cleaning": { "message": "⏳ Cleaning…" },
   "openSelectedWithCount": {

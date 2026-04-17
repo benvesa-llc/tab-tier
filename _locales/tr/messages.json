@@ -163,6 +163,13 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "reconciling": { "message": "⏳ Uzlaştırılıyor…" },
+  "reconcileResultTitle": { "message": "Uzlaştırma Sonucu" },
+  "reconcileArchived":     { "message": "Arşivlendi" },
+  "reconcileAdded":        { "message": "Yeni kayıt" },
+  "reconcileFixed":        { "message": "Düzeltildi" },
+  "reconcileRelinked":     { "message": "Yeniden bağlandı" },
+  "reconcileTierFixed":    { "message": "Tier düzeltildi" },
+  "reconcileGrouped":      { "message": "Gruplandı" },
   "copyDone":    { "message": "✅ Kopyalandı" },
   "cleaning":    { "message": "⏳ Temizleniyor…" },
   "openSelectedWithCount": {

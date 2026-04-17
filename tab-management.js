@@ -150,6 +150,9 @@ function getComparableValue(r, col) {
     case "lastFocusEnd":
       return r.lastFocusEnd ?? Number.MAX_SAFE_INTEGER;
     case "elapsed":
+      // EN: T0 (fixed) tabs always sort first; active tabs (null lastFocusEnd) second
+      // TR: T0 (sabit) tablar her zaman en başa; aktif (null lastFocusEnd) sonra
+      if (r.currentTier === 0) return -2;
       return r.lastFocusEnd == null ? -1 : Date.now() - r.lastFocusEnd;
     case "isPinned":
       return r.currentTier === 0 ? 0 : 1;
@@ -177,7 +180,8 @@ function renderTable() {
     const vb = getComparableValue(b, sortCol);
     if (va < vb) return -sortDir;
     if (va > vb) return sortDir;
-    return 0;
+    // EN: Secondary sort: title ascending | TR: İkincil sıralama: başlık artan
+    return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
   });
 
   document.getElementById("noData").style.display =
@@ -362,14 +366,44 @@ document.getElementById("reconcileBtn").addEventListener("click", async () => {
   try {
     const res = await chrome.runtime.sendMessage({ type: "RECONCILE_TABS" });
     await loadData();
-    btn.textContent = `✅ archived:${res.archived} new:${res.added} fixed:${res.fixed} relinked:${res.relinked} tier:${res.tierCorrected} grouped:${res.grouped}`;
+    // EN: Show structured result panel | TR: Yapılandırılmış sonuç panelini göster
+    showReconcileResult(res);
   } catch (e) {
     btn.textContent = "❌ " + (e?.message || "");
+    setTimeout(() => { btn.disabled = false; }, 3000);
   }
-  setTimeout(() => {
-    btn.textContent = i18n("reconcileBtnLabel");
-    btn.disabled = false;
-  }, 4000);
+  btn.textContent = i18n("reconcileBtnLabel");
+  btn.disabled = false;
+});
+
+function showReconcileResult(res) {
+  const panel  = document.getElementById("reconcileResult");
+  const title  = document.getElementById("reconcileResultTitle");
+  const items  = document.getElementById("reconcileItems");
+
+  title.textContent = i18n("reconcileResultTitle");
+
+  const metrics = [
+    { key: "reconcileArchived",  val: res.archived       ?? 0 },
+    { key: "reconcileAdded",     val: res.added          ?? 0 },
+    { key: "reconcileFixed",     val: res.fixed          ?? 0 },
+    { key: "reconcileRelinked",  val: res.relinked       ?? 0 },
+    { key: "reconcileTierFixed", val: res.tierCorrected  ?? 0 },
+    { key: "reconcileGrouped",   val: res.grouped        ?? 0 },
+  ];
+
+  items.innerHTML = metrics.map(({ key, val }) => `
+    <div class="reconcile-item">
+      <span class="ri-val ${val === 0 ? 'zero' : ''}">${val}</span>
+      <span class="ri-lbl">${i18n(key)}</span>
+    </div>
+  `).join("");
+
+  panel.style.display = "block";
+}
+
+document.getElementById("reconcileClose").addEventListener("click", () => {
+  document.getElementById("reconcileResult").style.display = "none";
 });
 
 document.getElementById("dedupBtn").addEventListener("click", async () => {

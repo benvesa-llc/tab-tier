@@ -146,6 +146,55 @@
       input[type="checkbox"] { accent-color: #cba6f7; width: 14px; height: 14px; cursor: pointer; }
       #openSelectedBtn { background: #a6e3a1; color: #1e1e2e; }
       #openSelectedBtn:disabled { background: #313244; color: #6c7086; cursor: not-allowed; }
+
+      .reconcile-result {
+        display: none;
+        background: #1e2a1e;
+        border: 1px solid #a6e3a1;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        font-size: 12px;
+      }
+      .reconcile-result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .reconcile-result-title {
+        font-weight: 700;
+        color: #a6e3a1;
+        font-size: 13px;
+      }
+      .reconcile-close {
+        background: none;
+        border: none;
+        color: #6c7086;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+      }
+      .reconcile-close:hover { color: #cdd6f4; }
+      .reconcile-items {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .reconcile-item {
+        background: #181825;
+        border: 1px solid #313244;
+        border-radius: 6px;
+        padding: 5px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .reconcile-item .ri-val  { font-size: 18px; font-weight: 700; color: #cba6f7; }
+      .reconcile-item .ri-val.zero { color: #45475a; }
+      .reconcile-item .ri-lbl  { font-size: 10px; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
     <script src="i18n-dom.js"></script>
   </head>
@@ -164,6 +213,14 @@
         <button id="filterClear">✕</button>
       </div>
       <span id="refreshTime"></span>
+    </div>
+
+    <div class="reconcile-result" id="reconcileResult">
+      <div class="reconcile-result-header">
+        <span class="reconcile-result-title" id="reconcileResultTitle"></span>
+        <button class="reconcile-close" id="reconcileClose">✕</button>
+      </div>
+      <div class="reconcile-items" id="reconcileItems"></div>
     </div>
 
     <div class="summary" id="summary"></div>
