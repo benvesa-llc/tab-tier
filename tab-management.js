@@ -42,14 +42,18 @@ function fmtElapsed(lastFocusEnd) {
     return `<span class="status-active">${i18n("statusActiveNow")}</span>`;
   const ms = Date.now() - lastFocusEnd;
   if (ms < 0) return "—";
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  const h = Math.floor(m / 60);
-  const d = Math.floor(h / 24);
-  if (d > 0) return `${d}d ${h % 24}h`;
-  if (h > 0) return `${h}h ${m % 60}m`;
-  if (m > 0) return `${m}m ${s % 60}s`;
-  return `${s}s`;
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const hr  = Math.floor(min / 60);
+  const day = Math.floor(hr / 24);
+  const g = i18n("unitAbbrDay");
+  const s = i18n("unitAbbrHour");
+  const d = i18n("unitAbbrMin");
+  const sn = i18n("unitAbbrSec");
+  if (day > 0) return `${day}${g} ${hr % 24}${s}`;
+  if (hr  > 0) return `${hr}${s} ${min % 60}${d}`;
+  if (min > 0) return `${min}${d} ${sec % 60}${sn}`;
+  return `${sec}${sn}`;
 }
 
 // ─── Data loading ─────────────────────────────────────────────────────────────

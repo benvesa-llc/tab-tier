@@ -74,6 +74,10 @@
   "unitMin":   { "message": "dk" },
   "unitHour":  { "message": "sa" },
   "unitDay":   { "message": "gün" },
+  "unitAbbrDay":  { "message": "g" },
+  "unitAbbrHour": { "message": "s" },
+  "unitAbbrMin":  { "message": "d" },
+  "unitAbbrSec":  { "message": "sn" },
 
   "behaviorTitle":     { "message": "🔧 Davranış" },
   "dupActionLabel":    { "message": "Duplikasyon tespit edildiğinde" },

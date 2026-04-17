@@ -82,6 +82,10 @@
   "unitMin": { "message": "min" },
   "unitHour": { "message": "hr" },
   "unitDay": { "message": "day" },
+  "unitAbbrDay":  { "message": "d" },
+  "unitAbbrHour": { "message": "h" },
+  "unitAbbrMin":  { "message": "m" },
+  "unitAbbrSec":  { "message": "s" },
 
   "behaviorTitle": { "message": "🔧 Behavior" },
   "dupActionLabel": { "message": "When duplicate detected" },

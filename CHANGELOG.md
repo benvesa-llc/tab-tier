@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.3] - 2026-04-16
+
+### Changed
+- Elapsed time units in Tab Management are now localized: English `2h 34m`, Turkish `2s 34d` (g/s/d/sn for gün/saat/dakika/saniye)
+
 ## [1.0.2] - 2026-04-16
 
 ### Fixed
