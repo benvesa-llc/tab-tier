@@ -2,6 +2,13 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.4] - 2026-04-18
+
+### Fixed
+- Elapsed time was reset to near-zero after PC sleep/wake: `moveTabToTierGroup` (called by `timerCheck` for tier transitions) was triggering `onUpdated` groupId event, which overwrote `lastFocusEnd` with the current time — added `extensionMovingTabs` Set; when the extension moves a tab, `lastFocusEnd` is preserved; only user-initiated group drags update it
+- Tab Management and browser tab bar were out of sync after sleep/wake: service worker restarts on wake and may miss tab events — startup IIFE now calls `reconcileTabs()` before `timerCheck()` to register any tabs that were opened while the worker was stopped
+- Tab Management page now auto-reconciles on open to catch any drift between storage and the live browser state
+
 ## [1.0.3] - 2026-04-16
 
 ### Changed

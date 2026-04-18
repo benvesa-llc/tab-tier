@@ -484,7 +484,16 @@ document.querySelectorAll("thead th[data-col]").forEach((th) => {
 
 // ─── Init and live update ────────────────────────────────────────────────────
 
-loadData();
+// EN: On page open, auto-reconcile to catch any tabs that drifted out of sync
+//     (e.g. after PC sleep/wake or service worker restart)
+// TR: Sayfa açılışında otomatik uzlaştır — senkron dışı kalan tabları yakala
+//     (örn. PC uyku/açılış veya servis worker yeniden başlatma sonrası)
+(async () => {
+  try {
+    await chrome.runtime.sendMessage({ type: "RECONCILE_TABS" });
+  } catch (_) {}
+  await loadData();
+})();
 
 // EN: Reload on storage change (tab closed, tier change, etc.) | TR: Storage değişince yenile
 let reloadTimer = null;

@@ -45,8 +45,12 @@ const DefaultSettings = {
   initialized: false,
 };
 
-// Şu an aktif olan tab'ın ID'si (sadece bellekte, storage'da değil)
+// EN: Currently active tab ID (in-memory only, not in storage) | TR: Şu an aktif tab ID'si (sadece bellekte)
 let currentActiveTabId = null;
+
+// EN: Tab IDs currently being moved by the extension — onUpdated must not overwrite lastFocusEnd for these
+// TR: Extension tarafından taşınan tab ID'leri — bunlar için onUpdated lastFocusEnd yazmamalı
+const extensionMovingTabs = new Set();
 
 // =============================================================================
 // Yardımcı Fonksiyonlar
@@ -157,6 +161,10 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
     if (!tab) return;
     // EN: Pinned tabs cannot be added to groups — Chrome/Edge API rejects the call | TR: Sabitlenmiş tablar gruba eklenemez — Chrome/Edge API çağrısını reddeder
     if (tab.pinned) return;
+
+    // EN: Mark this tab as being moved by the extension so onUpdated won't reset lastFocusEnd
+    // TR: Bu tab'ı extension tarafından taşınıyor olarak işaretle; onUpdated lastFocusEnd'i sıfırlamasın
+    extensionMovingTabs.add(tabId);
 
     const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
     // Renk üzerinden eşleştir: title değişmiş olsa bile doğru grubu bulur
@@ -894,6 +902,10 @@ chrome.alarms.get("tierCheck", (alarm) => {
       log("startup: fixed", fixCount, "stale active(null) records");
     }
 
+    // EN: Reconcile browser tabs with storage — catches tabs opened while service worker was stopped
+    // TR: Tarayıcı tablarını storage ile uzlaştır — servis worker duruyorken açılan tabları yakala
+    await reconcileTabs();
+
     // Birikmiş tier geçişlerini işle (Edge kapalıyken geçen süre)
     await timerCheck();
   } catch (e) {
@@ -1166,15 +1178,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             tabRecords[tabId].currentTier = tier;
             tabRecords[tabId].isPinned = tier === 0;
             if (tier !== 0) {
-              // EN: If the tab is currently active (just clicked), keep lastFocusEnd=null so the
-              //     inactivity timer does not start. This prevents a race where onActivated calls
-              //     moveTabToTierGroup → onUpdated fires → onUpdated overwrites lastFocusEnd=now
-              //     on a tab the user just activated.
-              // TR: Tab şu an aktifse (yeni tıklandıysa) lastFocusEnd=null olarak bırak; böylece
-              //     hareketsizlik zamanlayıcısı başlamaz. Bu, onActivated'ın moveTabToTierGroup
-              //     çağırması → onUpdated tetiklenmesi → onUpdated'ın yeni aktif edilen tab için
-              //     lastFocusEnd=now yazması yarış koşulunu önler.
-              tabRecords[tabId].lastFocusEnd = tab.active ? null : Date.now();
+              if (extensionMovingTabs.has(tabId)) {
+                // EN: Extension moved this tab (tier transition) — do NOT touch lastFocusEnd,
+                //     the original inactivity timestamp must be preserved.
+                // TR: Bu tab'ı extension taşıdı (tier geçişi) — lastFocusEnd'e dokunma,
+                //     orijinal hareketsizlik zaman damgası korunmalı.
+                extensionMovingTabs.delete(tabId);
+              } else {
+                // EN: User manually dragged tab to a different group — sync lastFocusEnd
+                // TR: Kullanıcı tab'ı farklı gruba sürükledi — lastFocusEnd'i senkronize et
+                tabRecords[tabId].lastFocusEnd = tab.active ? null : Date.now();
+              }
             }
             log("onUpdated group drag → T" + tier, tabId, group.color);
           }
