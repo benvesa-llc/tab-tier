@@ -231,46 +231,50 @@ async function sortTabsInWindow(windowId, sortType) {
   // TR: Tüm sıralama modları birincil anahtar olarak tier kullanır; farklı
   //     tierlerdeki tablar hiçbir zaman iç içe geçmez. Bu, move döngüsü sırasında
   //     Edge'in fiziksel yakınlık nedeniyle bir tabı yanlış gruba atamasını önler.
+  // EN: Sort T0 tabs by the same secondary key so the fixed group is also ordered
+  // TR: T0 tablarını da aynı ikincil anahtara göre sırala; sabit grup da düzenli olsun
+  let sortedT0;
   let sorted;
+
   if (sortType === "tierTitle") {
+    const byTitle = (a, b) =>
+      (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
+    sortedT0 = [...t0Tabs].sort(byTitle);
     sorted = [...restTabs].sort((a, b) => {
-      const ra = tabRecords[a.id];
-      const rb = tabRecords[b.id];
-      const ta = ra?.currentTier ?? 1;
-      const tb = rb?.currentTier ?? 1;
+      const ta = tabRecords[a.id]?.currentTier ?? 1;
+      const tb = tabRecords[b.id]?.currentTier ?? 1;
       if (ta !== tb) return ta - tb;
-      return (a.title || "")
-        .toLowerCase()
-        .localeCompare((b.title || "").toLowerCase());
+      return byTitle(a, b);
     });
   } else if (sortType === "tierUrl") {
+    const byUrl = (a, b) =>
+      (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase());
+    sortedT0 = [...t0Tabs].sort(byUrl);
     sorted = [...restTabs].sort((a, b) => {
-      const ra = tabRecords[a.id];
-      const rb = tabRecords[b.id];
-      const ta = ra?.currentTier ?? 1;
-      const tb = rb?.currentTier ?? 1;
+      const ta = tabRecords[a.id]?.currentTier ?? 1;
+      const tb = tabRecords[b.id]?.currentTier ?? 1;
       if (ta !== tb) return ta - tb;
-      return (a.url || "")
-        .toLowerCase()
-        .localeCompare((b.url || "").toLowerCase());
+      return byUrl(a, b);
     });
   } else {
-    // tierDomain (default, also covers legacy "tierAlpha", "domain", "url"):
-    // tier önce, sonra domain A-Z
-    sorted = [...restTabs].sort((a, b) => {
-      const ra = tabRecords[a.id];
-      const rb = tabRecords[b.id];
-      const ta = ra?.currentTier ?? 1;
-      const tb = rb?.currentTier ?? 1;
-      if (ta !== tb) return ta - tb;
-      const da = (ra?.domain || extractDomain(a.url || "")).toLowerCase();
-      const db = (rb?.domain || extractDomain(b.url || "")).toLowerCase();
+    // EN: tierDomain (default) — tier first, then domain A-Z | TR: tierDomain (varsayılan) — önce tier, sonra domain A-Z
+    const byDomain = (a, b) => {
+      const da = (tabRecords[a.id]?.domain || extractDomain(a.url || "")).toLowerCase();
+      const db = (tabRecords[b.id]?.domain || extractDomain(b.url || "")).toLowerCase();
       return da < db ? -1 : da > db ? 1 : 0;
+    };
+    sortedT0 = [...t0Tabs].sort(byDomain);
+    sorted = [...restTabs].sort((a, b) => {
+      const ta = tabRecords[a.id]?.currentTier ?? 1;
+      const tb = tabRecords[b.id]?.currentTier ?? 1;
+      if (ta !== tb) return ta - tb;
+      return byDomain(a, b);
     });
   }
 
-  // Sıra: [t0] [sorted T1/T2/T3] [internal — en sonda, grubun dışında]
-  const finalOrder = [...t0Tabs, ...sorted, ...internalTabs];
+  // EN: Final order: [sorted T0] [sorted T1/T2/T3] [internal pages — always last, ungrouped]
+  // TR: Nihai sıra: [sıralı T0] [sıralı T1/T2/T3] [iç sayfalar — her zaman en sonda, grupsuz]
+  const finalOrder = [...sortedT0, ...sorted, ...internalTabs];
   const startIndex = browserPinned.length;
 
   for (let i = 0; i < finalOrder.length; i++) {

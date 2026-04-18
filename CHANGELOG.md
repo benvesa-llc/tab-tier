@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.5] - 2026-04-18
+
+### Fixed
+- "Apply to Tabs" sort did not sort T0 (fixed) tabs — `t0Tabs` was inserted into the final order unsorted; all three sort modes (`tierDomain`, `tierTitle`, `tierUrl`) now also sort T0 tabs by the same secondary key
+
 ## [1.0.4] - 2026-04-18
 
 ### Fixed
