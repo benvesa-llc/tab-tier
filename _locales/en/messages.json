@@ -97,6 +97,10 @@
   "closeActionDelete": { "message": "Delete record (default)" },
   "closeActionArchive": { "message": "Send to Tier 4 Archive" },
   "closeActionHint": { "message": "What happens when user closes with X?" },
+  "themeLabel": { "message": "Theme" },
+  "themeDark":  { "message": "🌙 Dark" },
+  "themeLight": { "message": "☀️ Light" },
+  "themeToggleTitle": { "message": "Toggle theme" },
 
   "groupNamesTitle": { "message": "🏷 Group Names" },
   "groupNamesHint": { "message": "Customize names shown in the browser tab bar." },

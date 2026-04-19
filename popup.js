@@ -462,6 +462,21 @@ document.getElementById("clearArchiveBtn").addEventListener("click", async () =>
   }
 });
 
+// EN: Theme toggle button — reads current theme, toggles, saves, updates icon
+// TR: Tema değiştirme düğmesi — mevcut temayı okur, değiştirir, kaydeder, ikonu günceller
+(async function initThemeToggle() {
+  const btn = document.getElementById("themeToggleBtn");
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  btn.textContent = (settings.theme === "light") ? "☀️" : "🌙";
+
+  btn.addEventListener("click", async () => {
+    const { settings: s = {} } = await chrome.storage.local.get("settings");
+    const newTheme = s.theme === "light" ? "dark" : "light";
+    await chrome.storage.local.set({ settings: { ...s, theme: newTheme } });
+    btn.textContent = newTheme === "light" ? "☀️" : "🌙";
+  });
+})();
+
 document.getElementById("settingsBtn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("settings.html") });
   window.close();

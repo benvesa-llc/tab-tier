@@ -39,6 +39,7 @@ const DefaultSettings = {
   timerIntervalMinutes: 1,
   duplicateAction: "redirect",
   onManualClose: "delete",
+  theme: "dark",
   // EN: Empty by default — i18n defaults are resolved at runtime, not stored
   // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
   groupNames: {},

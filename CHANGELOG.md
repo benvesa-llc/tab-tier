@@ -2,9 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.27] - 2026-04-19
+## [1.1.0] - 2026-04-19
 
 ### Added
+- Dark/light theme support across all pages (Popup, Settings, Tab Management, Onboarding); Catppuccin Mocha (dark) and Catppuccin Latte (light) palettes; toggle with 🌙/☀️ button in popup header or Theme selector in Settings; preference saved to storage and applied instantly via `theme.js`
 - Clicking an open tab URL in Tab Management now expands the tab group if it is collapsed before focusing the tab — the tab is always visible after clicking
 - Favicon column (20×20) in Tab Management between Title and URL columns
 - Fixed column toggle restored: clicking 📌 unfixes a tab (T0→T1, timer starts), clicking — fixes it (T1→T0)

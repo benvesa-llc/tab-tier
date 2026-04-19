@@ -89,6 +89,10 @@
   "closeActionDelete": { "message": "Kaydı tamamen sil (varsayılan)" },
   "closeActionArchive":{ "message": "Tier 4 Arşiv'e gönder" },
   "closeActionHint":   { "message": "Kullanıcı X ile kapatırken ne yapılsın?" },
+  "themeLabel": { "message": "Tema" },
+  "themeDark":  { "message": "🌙 Koyu" },
+  "themeLight": { "message": "☀️ Açık" },
+  "themeToggleTitle": { "message": "Temayı değiştir" },
 
   "groupNamesTitle":   { "message": "🏷 Grup Adları" },
   "groupNamesHint":    { "message": "Tab gruplarının tarayıcı tab bar'da görünen adlarını özelleştir." },

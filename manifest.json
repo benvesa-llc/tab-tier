@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.0.27",
+  "version": "1.1.0",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "permissions": ["tabs", "tabGroups", "alarms", "storage"],
@@ -23,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js"],
+      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js", "theme.js"],
       "matches": ["<all_urls>"]
     }
   ]

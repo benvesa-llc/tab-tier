@@ -1,14 +1,51 @@
 /* ============================================================
    Tab Lifecycle Manager — settings.css
+   Catppuccin Mocha (dark) / Latte (light) via CSS variables
    ============================================================ */
 
+/* ── Theme variables ─────────────────────────────────────── */
+:root {
+  --bg:       #1e1e2e;
+  --mantle:   #181825;
+  --surface0: #313244;
+  --surface1: #45475a;
+  --overlay:  #6c7086;
+  --text:     #cdd6f4;
+  --subtext:  #a6adc8;
+  --accent:   #cba6f7;
+  --blue:     #89b4fa;
+  --green:    #a6e3a1;
+  --red:      #f38ba8;
+  --t0-bg:    #45182a;
+
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c7086' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] {
+  --bg:       #eff1f5;
+  --mantle:   #e6e9ef;
+  --surface0: #ccd0da;
+  --surface1: #bcc0cc;
+  --overlay:  #9ca0b0;
+  --text:     #4c4f69;
+  --subtext:  #6c6f85;
+  --accent:   #8839ef;
+  --blue:     #1e66f5;
+  --green:    #40a02b;
+  --red:      #d20f39;
+  --t0-bg:    #fcdede;
+
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca0b0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: "Segoe UI", Arial, sans-serif;
   font-size: 14px;
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
 }
 
@@ -25,18 +62,18 @@ body {
 .page-header h1 {
   font-size: 22px;
   font-weight: 700;
-  color: #cba6f7;
+  color: var(--accent);
   margin-bottom: 4px;
 }
 .subtitle {
   font-size: 13px;
-  color: #6c7086;
+  color: var(--overlay);
 }
 
 /* ── Card ── */
 .card {
-  background: #181825;
-  border: 1px solid #313244;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
@@ -44,12 +81,12 @@ body {
 .card h2 {
   font-size: 14px;
   font-weight: 700;
-  color: #a6e3a1;
+  color: var(--green);
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #313244;
+  border-bottom: 1px solid var(--surface0);
 }
-.card-danger h2 { color: #f38ba8; }
+.card-danger h2 { color: var(--red); }
 
 /* ── Field ── */
 .field {
@@ -61,7 +98,7 @@ body {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
@@ -73,52 +110,52 @@ body {
 
 input[type="range"] {
   flex: 1;
-  accent-color: #cba6f7;
+  accent-color: var(--accent);
   height: 4px;
   cursor: pointer;
 }
 
 input[type="number"] {
   width: 72px;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 14px;
-  color: #cdd6f4;
+  color: var(--text);
   outline: none;
   text-align: center;
   transition: border-color 0.15s;
 }
-input[type="number"]:focus { border-color: #cba6f7; }
+input[type="number"]:focus { border-color: var(--accent); }
 
 .unit {
   font-size: 12px;
-  color: #6c7086;
+  color: var(--overlay);
   width: 24px;
 }
 
 select {
   width: 100%;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
-  color: #cdd6f4;
+  color: var(--text);
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c7086' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: var(--select-arrow);
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
-select:focus { border-color: #cba6f7; }
+select:focus { border-color: var(--accent); }
 
 .hint {
   font-size: 11px;
-  color: #6c7086;
+  color: var(--overlay);
   margin-top: 5px;
   line-height: 1.4;
 }
@@ -141,16 +178,16 @@ select:focus { border-color: #cba6f7; }
   font-weight: 600;
   transition: opacity 0.15s;
 }
-.btn-primary  { background: #cba6f7; color: #1e1e2e; }
+.btn-primary  { background: var(--accent); color: var(--bg); }
 .btn-primary:hover  { opacity: 0.9; }
-.btn-secondary { background: #313244; color: #cdd6f4; }
+.btn-secondary { background: var(--surface0); color: var(--text); }
 .btn-secondary:hover { opacity: 0.85; }
-.btn-danger { background: #45182a; color: #f38ba8; }
+.btn-danger { background: var(--t0-bg); color: var(--red); }
 .btn-danger:hover { opacity: 0.85; }
 
 .save-status {
   font-size: 13px;
-  color: #a6e3a1;
+  color: var(--green);
   font-weight: 600;
 }
 
@@ -182,19 +219,19 @@ select:focus { border-color: #cba6f7; }
   width: 90px;
   font-size: 13px;
   font-weight: 600;
-  color: #a6adc8;
+  color: var(--subtext);
   flex-shrink: 0;
   margin-bottom: 0;
 }
 .group-name-row input[type="text"] {
   flex: 1;
-  background: #313244;
-  border: 1px solid #45475a;
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
-  color: #cdd6f4;
+  color: var(--text);
   outline: none;
   transition: border-color 0.15s;
 }
-.group-name-row input[type="text"]:focus { border-color: #cba6f7; }
+.group-name-row input[type="text"]:focus { border-color: var(--accent); }

@@ -21,6 +21,7 @@ const DefaultSettings = {
   timerIntervalMinutes:     1,
   duplicateAction: "redirect",
   onManualClose:   "delete",
+  theme:           "dark",
   // EN: Empty by default — i18n defaults are resolved at runtime, not stored
   // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
   groupNames: {},
@@ -49,8 +50,9 @@ function applyToUI(s) {
   document.getElementById("t4del").value      = s.tier4_delete_days;
   document.getElementById("t4delRange").value = s.tier4_delete_days;
 
-  document.getElementById("dupAction").value   = s.duplicateAction;
-  document.getElementById("closeAction").value = s.onManualClose;
+  document.getElementById("dupAction").value    = s.duplicateAction;
+  document.getElementById("closeAction").value  = s.onManualClose;
+  document.getElementById("themeSelect").value  = s.theme || "dark";
 
   // EN: If a stored name looks like a system default (starts with T0:/T1:/T2:/T3:),
   //     treat it as empty so the i18n placeholder shows instead.
@@ -83,6 +85,7 @@ function readFromUI(existing) {
       DefaultSettings.tier4_delete_days,
     duplicateAction: document.getElementById("dupAction").value,
     onManualClose:   document.getElementById("closeAction").value,
+    theme:           document.getElementById("themeSelect").value,
     groupNames: {
       0: document.getElementById("gn0").value.trim() || DefaultGroupNames[0],
       1: document.getElementById("gn1").value.trim() || DefaultGroupNames[1],
