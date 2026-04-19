@@ -80,10 +80,10 @@
   "unitAbbrSec":  { "message": "sn" },
 
   "behaviorTitle":     { "message": "🔧 Davranış" },
-  "dupActionLabel":    { "message": "Duplikasyon tespit edildiğinde" },
+  "dupActionLabel":    { "message": "Kopya sekme tespit edildiğinde" },
   "dupActionRedirect": { "message": "Mevcut tab'a yönlendir (varsayılan)" },
   "dupActionWarn":     { "message": "Uyarı göster, kullanıcı seçsin" },
-  "dupActionAllow":    { "message": "İzin ver, duplikasyona karışma" },
+  "dupActionAllow":    { "message": "İzin ver, kopyaya karışma" },
   "dupActionHint":     { "message": "Aynı URL'yi tekrar açmaya çalışınca ne yapılsın?" },
   "closeActionLabel":  { "message": "Tab manuel kapatıldığında" },
   "closeActionDelete": { "message": "Kaydı tamamen sil (varsayılan)" },
@@ -132,7 +132,7 @@
   "tabMgmtSubtitle":   { "message": "Tüm tab kayıtları — canlı görüntüleme" },
   "refreshBtnLabel":   { "message": "↻ Yenile" },
   "reconcileBtnLabel": { "message": "🔄 Uzlaştır" },
-  "dedupBtnLabel":     { "message": "🧹 Duplicate Temizle" },
+  "dedupBtnLabel":     { "message": "🧹 Kopyaları Temizle" },
   "openSelectedBtnLabel": { "message": "📂 Seçilileri Aç (T1)" },
   "copyJsonBtnLabel":  { "message": "📋 JSON Kopyala" },
   "filterPlaceholder": { "message": "URL / domain / başlık filtrele…" },
@@ -186,9 +186,9 @@
     "message": "📂 Seçilileri Aç ($COUNT$ tab → T1)",
     "placeholders": { "count": { "content": "$1" } }
   },
-  "noDuplicates": { "message": "✅ Duplicate yok" },
+  "noDuplicates": { "message": "✅ Kopya yok" },
   "duplicatesRemoved": {
-    "message": "✅ $COUNT$ duplicate silindi, $TABS$ tab kapandı",
+    "message": "✅ $COUNT$ kopya silindi, $TABS$ sekme kapandı",
     "placeholders": {
       "count": { "content": "$1" },
       "tabs":  { "content": "$2" }
