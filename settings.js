@@ -18,7 +18,7 @@ const DefaultSettings = {
   tier2_to_tier3_hours:   24,
   tier3_to_tier4_days:     7,
   tier4_delete_days:       60,
-  timerIntervalMinutes:     5,
+  timerIntervalMinutes:     1,
   duplicateAction: "redirect",
   onManualClose:   "delete",
   // EN: Empty by default — i18n defaults are resolved at runtime, not stored

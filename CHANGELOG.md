@@ -2,6 +2,12 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.7] - 2026-04-18
+
+### Changed
+- Tier check alarm interval reduced from 5 minutes to 1 minute — tab bar and Tab Management now reflect tier transitions within 1 minute of the threshold being crossed
+- Confirmed: tier timers are cumulative from `lastFocusEnd` and do not reset on tier transitions (T1→T2 does not restart the clock; T2→T3 fires at 24h total inactivity, meaning ~23h after entering T2 with default 60 min T1 threshold)
+
 ## [1.0.6] - 2026-04-18
 
 ### Changed
