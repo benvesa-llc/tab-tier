@@ -2,6 +2,12 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.8] - 2026-04-18
+
+### Fixed
+- `lastFocusEnd` was being reset to current time during extension-initiated tier transitions: Edge fires two `onUpdated` groupId events when moving a tab between groups — first `groupId: -1` (ungroup), then the target group. The intermediate ungroup event bypassed the `extensionMovingTabs` guard and reset `lastFocusEnd`. The guard now also applies to the `groupId: -1` branch
+- 1-minute alarm interval was not taking effect after update: alarm was only recreated if missing (`if (!alarm)`), so the old 5-minute alarm persisted. Startup now always clears and recreates the alarm to ensure the configured interval is applied
+
 ## [1.0.7] - 2026-04-18
 
 ### Changed

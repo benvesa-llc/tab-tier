@@ -867,13 +867,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 // =============================================================================
 // Service Worker Başlangıç: Timer garanti et + aktif tab'ı bul
 // =============================================================================
-chrome.alarms.get("tierCheck", (alarm) => {
-  if (!alarm) {
-    chrome.alarms.create("tierCheck", {
-      periodInMinutes: DefaultSettings.timerIntervalMinutes,
-    });
-    log("alarm re-created on startup");
-  }
+// EN: Always clear and recreate the alarm on startup so interval changes take effect immediately
+// TR: Interval değişikliklerinin hemen geçerli olması için alarm her başlangıçta silinip yeniden oluşturulur
+chrome.alarms.clear("tierCheck", () => {
+  chrome.alarms.create("tierCheck", {
+    periodInMinutes: DefaultSettings.timerIntervalMinutes,
+  });
+  log("alarm recreated on startup, interval:", DefaultSettings.timerIntervalMinutes, "min");
 });
 
 (async () => {
@@ -1168,8 +1168,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (hasGroupId) {
       const newGroupId = changeInfo.groupId;
       if (newGroupId === -1) {
-        // EN: Dragged out of all groups — treat as T1 if not already T0 | TR: Tüm gruplardan çıkarıldı, T0 değilse T1 yap
-        if (tabRecords[tabId].currentTier !== 0) {
+        if (extensionMovingTabs.has(tabId)) {
+          // EN: Extension is moving this tab between groups — Edge fires groupId:-1 first,
+          //     then the target groupId. Ignore this intermediate event; do NOT reset
+          //     lastFocusEnd or tier. The follow-up event will handle the final state.
+          // TR: Extension bu tab'ı gruplar arasında taşıyor — Edge önce groupId:-1 sonra
+          //     hedef groupId'yi tetikler. Bu ara olayı yoksay; lastFocusEnd veya tier
+          //     sıfırlanmasın. Asıl durum sonraki event'te işlenecek.
+          log("onUpdated ungrouped (extension move, ignored)", tabId);
+        } else if (tabRecords[tabId].currentTier !== 0) {
+          // EN: User manually dragged tab out of all groups — treat as T1 | TR: Kullanıcı tab'ı tüm gruplardan çıkardı — T1 yap
           tabRecords[tabId].currentTier = 1;
           tabRecords[tabId].lastFocusEnd = Date.now();
           log("onUpdated ungrouped → T1", tabId);
