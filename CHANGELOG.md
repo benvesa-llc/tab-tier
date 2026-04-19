@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.10] - 2026-04-19
+
+### Fixed
+- T2/T3 group not created in tab bar when `moveTabToTierGroup` failed with a stale tab ID: the `extensionMovingTabs` flag was never cleaned up in the catch block, causing all subsequent `onUpdated` events for that tab to be silently ignored — flag is now always removed at the start of the catch block before any retry logic
+
 ## [1.0.9] - 2026-04-18
 
 ### Changed

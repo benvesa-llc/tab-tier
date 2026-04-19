@@ -187,21 +187,19 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
       await reorderGroupsInWindow(tab.windowId);
     }
   } catch (e) {
-    // EN: Edge rejects tab group changes while the user is clicking/dragging a tab.
-    //     Retry up to 3 times with increasing delay so the promotion completes after
-    //     Edge finishes processing the interaction.
-    // TR: Edge, kullanıcı taba tıklıyor/sürüklüyorken grup değişikliklerini reddeder.
-    //     Edge etkileşimi bitirdikten sonra promote tamamlanabilsin diye artan
-    //     gecikmeyle 3 kez yeniden dene.
+    // EN: Always clean up the moving-flag on error so future onUpdated events are not ignored
+    // TR: Hata durumunda taşıma bayrağını temizle; sonraki onUpdated olayları yoksayılmasın
+    extensionMovingTabs.delete(tabId);
+
+    // EN: Retry up to 3 times if the browser rejects the group change (tab being dragged/edited)
+    // TR: Tarayıcı grup değişikliğini reddederse (sürükleme vb.) 3 kez yeniden dene
     if (_attempt < 3 && e?.message?.includes("cannot be edited")) {
       const delay = (_attempt + 1) * 300;
-      log(
-        `moveTabToTierGroup retry ${_attempt + 1}/3 in ${delay}ms — tab ${tabId}`,
-      );
+      log(`moveTabToTierGroup retry ${_attempt + 1}/3 in ${delay}ms — tab ${tabId}`);
       await new Promise((r) => setTimeout(r, delay));
       return moveTabToTierGroup(tabId, tier, cachedSettings, _attempt + 1);
     }
-    log("moveTabToTierGroup error:", e?.message);
+    log("moveTabToTierGroup error:", e?.message, "tab", tabId);
   }
 }
 
