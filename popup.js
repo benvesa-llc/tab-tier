@@ -472,8 +472,12 @@ document.getElementById("clearArchiveBtn").addEventListener("click", async () =>
   btn.addEventListener("click", async () => {
     const { settings: s = {} } = await chrome.storage.local.get("settings");
     const newTheme = s.theme === "light" ? "dark" : "light";
-    await chrome.storage.local.set({ settings: { ...s, theme: newTheme } });
+    // EN: Apply immediately to this popup window, don't wait for onChanged
+    // TR: Popup'a anında uygula, onChanged beklemeden
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('tabtier-theme', newTheme);
     btn.textContent = newTheme === "light" ? "☀️" : "🌙";
+    await chrome.storage.local.set({ settings: { ...s, theme: newTheme } });
   });
 })();
 

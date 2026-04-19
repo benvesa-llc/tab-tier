@@ -217,19 +217,19 @@ function renderTable() {
 
       let openCell;
       if (r.currentTier === 4) {
-        openCell = `<span style="color:#6c7086">${i18n("statusArchive")}</span>`;
+        openCell = `<span class="status-archive">${i18n("statusArchive")}</span>`;
       } else if (isActive) {
         openCell = `<span class="status-active">${i18n("statusActiveNow")}</span>`;
       } else if (isOpen) {
-        openCell = `<span style="color:#a6e3a1">${i18n("statusOpen")}</span>`;
+        openCell = `<span class="status-open">${i18n("statusOpen")}</span>`;
       } else {
-        openCell = `<span style="color:#f38ba8">${i18n("statusMissing")}</span>`;
+        openCell = `<span class="status-missing">${i18n("statusMissing")}</span>`;
       }
 
-      const rowStyle = isStale
-        ? "background: #2d1b1b;"
+      const rowClass = isStale
+        ? "row-stale"
         : !isOpen && tier !== 4
-          ? "background: #1e1b2d;"
+          ? "row-missing"
           : "";
 
       const key = String(r.tabId);
@@ -241,10 +241,10 @@ function renderTable() {
       const isT0 = r.currentTier === 0;
 
       return `
-      <tr style="${rowStyle}">
+      <tr class="${rowClass}">
         <td class="cb-col">${cbHtml}</td>
         <td style="text-align:center;font-size:15px;cursor:pointer" class="toggle-fixed" data-tabid="${r.tabId}" data-tier="${tier}" title="${isT0 ? i18n('unfixTab') : i18n('fixTab')}">${isT0 ? "📌" : "—"}</td>
-        <td class="tabid-cell">${r.tabId}${isStale ? ` <span style="color:#f38ba8;font-size:10px">${i18n("staleLabel")}</span>` : ""}</td>
+        <td class="tabid-cell">${r.tabId}${isStale ? ` <span class="status-stale">${i18n("staleLabel")}</span>` : ""}</td>
         <td><span class="${badgeClass}">${label}</span></td>
         <td>${openCell}</td>
         <td class="domain-cell">${escHtml(r.domain || "—")}</td>
@@ -253,8 +253,8 @@ function renderTable() {
         <td class="url-cell" title="${escHtml(r.url || "")}">
           ${
             isOpen
-              ? `<a href="#" class="activate-tab" data-tabid="${r.tabId}" style="color:#89dceb">${escHtml(r.url || "—")}</a>`
-              : `<a href="#" class="open-archived" data-url="${escHtml(r.url || "")}" data-key="${key}" style="color:#a6adc8">${escHtml(r.url || "—")}</a>`
+              ? `<a href="#" class="activate-tab url-open" data-tabid="${r.tabId}">${escHtml(r.url || "—")}</a>`
+              : `<a href="#" class="open-archived url-closed" data-url="${escHtml(r.url || "")}" data-key="${key}">${escHtml(r.url || "—")}</a>`
           }
         </td>
         <td class="time-cell">${fmtTime(r.lastFocusStart)}</td>
