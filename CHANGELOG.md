@@ -2,9 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.25] - 2026-04-19
+## [1.0.26] - 2026-04-19
 
 ### Added
+- Clicking an open tab URL in Tab Management now expands the tab group if it is collapsed before focusing the tab — the tab is always visible after clicking
 - Favicon column (20×20) in Tab Management between Title and URL columns
 - Fixed column toggle restored: clicking 📌 unfixes a tab (T0→T1, timer starts), clicking — fixes it (T1→T0)
 - Clicking a closed/archived URL in Tab Management deletes the stale record and opens the URL as a new T1 tab; Tab Management auto-refreshes via `storage.onChanged`

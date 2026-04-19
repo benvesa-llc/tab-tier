@@ -273,13 +273,17 @@ function renderTable() {
     }
   });
 
-  // EN: Activate-tab links — focus the open tab (onActivated promotes to T1) | TR: Açık tab linkleri — tıklayınca aktif et (onActivated T1'e yükseltir)
+  // EN: Activate-tab links — expand collapsed group if needed, then focus tab | TR: Açık tab linkleri — kapalı grup varsa aç, sonra taba odaklan
   document.querySelectorAll(".activate-tab").forEach((a) => {
     a.addEventListener("click", async (e) => {
       e.preventDefault();
       const tabId = parseInt(a.dataset.tabid);
       try {
-        const tab = await chrome.tabs.update(tabId, { active: true });
+        const tab = await chrome.tabs.get(tabId);
+        if (tab.groupId && tab.groupId !== -1) {
+          await chrome.tabGroups.update(tab.groupId, { collapsed: false });
+        }
+        await chrome.tabs.update(tabId, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
       } catch (_) {}
     });
