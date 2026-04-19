@@ -52,6 +52,13 @@ let currentActiveTabId = null;
 // TR: Extension tarafından taşınan tab ID'leri — bunlar için onUpdated lastFocusEnd yazmamalı
 const extensionMovingTabs = new Set();
 
+// EN: URLs currently being restored from T4 — prevents mini-reconcile from
+//     immediately re-archiving a tab that was just reopened (anti-loop guard).
+// TR: T4'ten geri yüklenen URL'ler — yeni açılan tab'ı mini-reconcile'ın hemen
+//     tekrar arşivlemesini önler (döngü karşıtı koruma).
+const restoringUrls = new Map(); // url → restoredAt timestamp
+const RESTORE_COOLDOWN_MS = 5 * 60 * 1000; // EN: 5-minute cooldown | TR: 5 dakika bekleme
+
 // =============================================================================
 // Yardımcı Fonksiyonlar
 // =============================================================================
@@ -543,7 +550,40 @@ async function reconcileTabs() {
   // Kaydedilen ama tabId üzerinden açık görünmeyen kayıtları kontrol et
   for (const key of Object.keys(tabRecords)) {
     const rec = tabRecords[key];
-    if (rec.currentTier === 4) continue; // zaten arşivde
+
+    if (rec.currentTier === 4) {
+      // EN: T4 tab: check if elapsed time says it should be in a lower tier (incorrectly archived)
+      //     Restore with same cooldown guard used by timerCheck.
+      // TR: T4 tab: geçen süre daha düşük bir tier'da olması gerektiğini söylüyorsa (yanlış arşivlenmiş)
+      //     timerCheck ile aynı bekleme korumasını kullanarak geri yükle.
+      if (rec.lastFocusEnd) {
+        const elapsedT4 = now - rec.lastFocusEnd;
+        const expectedTier = calcExpectedTier(elapsedT4, settings);
+        if (expectedTier < 4) {
+          const restoredAt = restoringUrls.get(rec.url);
+          if (!restoredAt || (now - restoredAt) >= RESTORE_COOLDOWN_MS) {
+            try {
+              const newTab = await chrome.tabs.create({ url: rec.url, active: false });
+              await new Promise((r) => setTimeout(r, 500));
+              restoringUrls.set(rec.url, now);
+              delete tabRecords[key];
+              tabRecords[String(newTab.id)] = {
+                ...rec,
+                tabId: newTab.id,
+                currentTier: expectedTier,
+              };
+              recordedTabIds.add(newTab.id);
+              await moveTabToTierGroup(newTab.id, expectedTier, settings);
+              relinked++;
+              log(`reconcile restore T4→T${expectedTier}`, key, rec.url);
+            } catch (e) {
+              log("reconcile restore T4 error:", e?.message, "tab", key);
+            }
+          }
+        }
+      }
+      continue;
+    }
 
     if (openTabIds.has(parseInt(key))) continue; // tabId eşleşti, sorun yok
 
@@ -567,6 +607,12 @@ async function reconcileTabs() {
         `reconcile re-link: key=${key} → ${matchTab.id} tier=${rec.currentTier} url=${rec.url}`,
       );
     } else {
+      // EN: Before archiving, check restore cooldown | TR: Arşivlemeden önce bekleme süresini kontrol et
+      const restoredAt = restoringUrls.get(rec.url);
+      if (restoredAt && (now - restoredAt) < RESTORE_COOLDOWN_MS) {
+        log(`reconcile skip re-archive (restore cooldown): url=${rec.url}`);
+        continue;
+      }
       // Gerçekten açık değil → T4'e arşivle
       rec.currentTier = 4;
       rec.lastFocusEnd = now;
@@ -765,6 +811,15 @@ async function timerCheck() {
         hasChanges = true;
         log(`timerCheck re-link: tabId=${key} → ${matchTab.id} url=${rec.url}`);
       } else {
+        // EN: Before archiving, check restore cooldown — if we just reopened this URL
+        //     it may still be loading; don't re-archive it immediately.
+        // TR: Arşivlemeden önce restore bekleme süresini kontrol et — bu URL'yi yeni
+        //     açtıysak hâlâ yükleniyor olabilir; hemen tekrar arşivleme.
+        const restoredAt = restoringUrls.get(rec.url);
+        if (restoredAt && (now - restoredAt) < RESTORE_COOLDOWN_MS) {
+          log(`timerCheck skip re-archive (restore cooldown): url=${rec.url}`);
+          continue;
+        }
         // EN: Tab is truly gone — archive to T4 immediately | TR: Tab gerçekten yok — hemen T4'e arşivle
         log(
           `timerCheck stale→T4: tabId=${key} tier=${rec.currentTier} url=${rec.url}`,
@@ -792,11 +847,35 @@ async function timerCheck() {
     const elapsed = now - tab.lastFocusEnd;
 
     if (tab.currentTier === 4) {
-      // EN: T4 (archived) — only action is permanent deletion after the retention period.
-      //     Restoration from T4 is a manual user action via Tab Management.
-      // TR: T4 (arşiv) — yalnızca saklama süresi sonunda kalıcı silme yapılır.
-      //     T4'ten geri yükleme kullanıcının Tab Management üzerinden yaptığı manuel işlemdir.
-      if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
+      const expectedTier = calcExpectedTier(elapsed, settings);
+      if (expectedTier < 4) {
+        // EN: Tab is T4 but elapsed time says it should be T1/T2/T3 — incorrectly archived.
+        //     Reopen and place in the correct tier. Guard against re-archive loops
+        //     using restoringUrls cooldown.
+        // TR: Tab T4 ama geçen süre T1/T2/T3 olması gerektiğini söylüyor — yanlış arşivlenmiş.
+        //     Yeniden aç ve doğru tiere yerleştir. restoringUrls bekleme süresiyle
+        //     tekrar arşivleme döngüsüne karşı koru.
+        const restoredAt = restoringUrls.get(tab.url);
+        if (!restoredAt || (now - restoredAt) >= RESTORE_COOLDOWN_MS) {
+          try {
+            const newTab = await chrome.tabs.create({ url: tab.url, active: false });
+            await new Promise((r) => setTimeout(r, 500));
+            restoringUrls.set(tab.url, now);
+            delete tabRecords[tabId];
+            tabRecords[String(newTab.id)] = {
+              ...tab,
+              tabId: newTab.id,
+              currentTier: expectedTier,
+            };
+            await moveTabToTierGroup(newTab.id, expectedTier);
+            hasChanges = true;
+            log(`timerCheck restore T4→T${expectedTier}`, tabId, tab.url);
+          } catch (e) {
+            log("timerCheck restore T4 error:", e?.message, "tab", tabId);
+          }
+        }
+      } else if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
+        // EN: Permanently delete from storage after the configured retention period | TR: Yapılandırılmış saklama süresi sonunda storage'dan kalıcı sil
         delete tabRecords[tabId];
         hasChanges = true;
       }
