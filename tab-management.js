@@ -231,14 +231,7 @@ function renderTable() {
       return `
       <tr style="${rowStyle}">
         <td class="cb-col">${cbHtml}</td>
-        <td style="text-align:center">${
-          tier !== 4
-            ? `<span class="pin-toggle" data-tabid="${r.tabId}" data-tier="${tier}"
-              style="cursor:pointer;font-size:15px"
-              title="${isT0 ? i18n("pinToggleUnpin") : i18n("pinTogglePin")}"
-            >${isT0 ? "📌" : "—"}</span>`
-            : "—"
-        }</td>
+        <td style="text-align:center;font-size:15px">${isT0 ? "📌" : "—"}</td>
         <td class="tabid-cell">${r.tabId}${isStale ? ` <span style="color:#f38ba8;font-size:10px">${i18n("staleLabel")}</span>` : ""}</td>
         <td><span class="${badgeClass}">${label}</span></td>
         <td>${openCell}</td>
@@ -275,23 +268,6 @@ function renderTable() {
       try {
         const tab = await chrome.tabs.update(tabId, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
-      } catch (_) {}
-    });
-  });
-
-  // EN: Pin toggle — switch between T0 ↔ T1 | TR: Pin toggle — T0 ↔ T1 geçişi
-  document.querySelectorAll(".pin-toggle").forEach((el) => {
-    el.addEventListener("click", async () => {
-      const tabId = parseInt(el.dataset.tabid);
-      const currentTier = parseInt(el.dataset.tier);
-      const newTier = currentTier === 0 ? 1 : 0;
-      try {
-        await chrome.runtime.sendMessage({
-          type: "SET_TAB_TIER",
-          tabIds: [tabId],
-          tier: newTier,
-        });
-        await loadData();
       } catch (_) {}
     });
   });

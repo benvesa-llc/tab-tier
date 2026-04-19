@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.6] - 2026-04-18
+
+### Changed
+- Fixed column in Tab Management is now a read-only indicator (📌 for T0, — for others) — the click-to-toggle interaction has been removed; tier changes should be made by dragging tabs between groups in the browser tab bar, which is already synced automatically via `onUpdated` groupId
+
 ## [1.0.5] - 2026-04-18
 
 ### Fixed
