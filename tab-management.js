@@ -233,7 +233,7 @@ function renderTable() {
       return `
       <tr style="${rowStyle}">
         <td class="cb-col">${cbHtml}</td>
-        <td style="text-align:center;font-size:15px">${isT0 ? "📌" : "—"}</td>
+        <td style="text-align:center;font-size:15px;cursor:pointer" class="toggle-fixed" data-tabid="${r.tabId}" data-tier="${tier}" title="${isT0 ? i18n('unfixTab') : i18n('fixTab')}">${isT0 ? "📌" : "—"}</td>
         <td class="tabid-cell">${r.tabId}${isStale ? ` <span style="color:#f38ba8;font-size:10px">${i18n("staleLabel")}</span>` : ""}</td>
         <td><span class="${badgeClass}">${label}</span></td>
         <td>${openCell}</td>
@@ -243,7 +243,7 @@ function renderTable() {
           ${
             isOpen
               ? `<a href="#" class="activate-tab" data-tabid="${r.tabId}" style="color:#89dceb">${escHtml(r.url || "—")}</a>`
-              : `<a href="${escHtml(r.url || "#")}" target="_blank" style="color:#a6adc8">${escHtml(r.url || "—")}</a>`
+              : `<a href="#" class="open-archived" data-url="${escHtml(r.url || "")}" data-key="${key}" style="color:#a6adc8">${escHtml(r.url || "—")}</a>`
           }
         </td>
         <td class="time-cell">${fmtTime(r.lastFocusStart)}</td>
@@ -262,7 +262,7 @@ function renderTable() {
     }
   });
 
-  // EN: Activate-tab links — click to focus the open tab | TR: Açık tab linkleri — tıklayınca aktif et
+  // EN: Activate-tab links — focus the open tab (onActivated promotes to T1) | TR: Açık tab linkleri — tıklayınca aktif et (onActivated T1'e yükseltir)
   document.querySelectorAll(".activate-tab").forEach((a) => {
     a.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -271,6 +271,27 @@ function renderTable() {
         const tab = await chrome.tabs.update(tabId, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
       } catch (_) {}
+    });
+  });
+
+  // EN: Fixed column toggle — click 📌 to unfix (T0→T1) or — to fix (T1→T0) | TR: Sabit sütun toggle — 📌 T0→T1, — T1→T0
+  document.querySelectorAll(".toggle-fixed").forEach((td) => {
+    td.addEventListener("click", async () => {
+      const tabId = parseInt(td.dataset.tabid);
+      const currentTier = parseInt(td.dataset.tier);
+      if (isNaN(tabId) || currentTier === 4) return;
+      const newTier = currentTier === 0 ? 1 : 0;
+      await chrome.runtime.sendMessage({ type: "SET_TAB_TIER", tabIds: [tabId], tier: newTier });
+    });
+  });
+
+  // EN: Open-archived links — delete old record, open URL as new T1 tab | TR: Arşiv/kapalı linkleri — eski kaydı sil, URL'yi yeni T1 tab olarak aç
+  document.querySelectorAll(".open-archived").forEach((a) => {
+    a.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const { url, key } = a.dataset;
+      if (!url) return;
+      await chrome.runtime.sendMessage({ type: "OPEN_AS_T1", url, oldKey: key });
     });
   });
 
@@ -289,6 +310,88 @@ function renderTable() {
   selectAll.checked = t4Count > 0 && selectedKeys.size === t4Count;
   selectAll.indeterminate =
     selectedKeys.size > 0 && selectedKeys.size < t4Count;
+
+  bindHoverCard();
+}
+
+// ─── Hover preview card ──────────────────────────────────────────────────────
+
+const hoverCard  = document.getElementById("hoverCard");
+const hcFavicon  = document.getElementById("hcFavicon");
+const hcTitle    = document.getElementById("hcTitle");
+const hcUrl      = document.getElementById("hcUrl");
+const hcMeta     = document.getElementById("hcMeta");
+let hoverTimeout = null;
+
+function showCard(rec, anchorEl) {
+  const rect = anchorEl.getBoundingClientRect();
+  const cardW = 300, margin = 10;
+  let left = rect.left;
+  if (left + cardW + margin > window.innerWidth) left = window.innerWidth - cardW - margin;
+  let top = rect.bottom + 6;
+  if (top + 160 > window.innerHeight) top = rect.top - 160 - 6;
+
+  hcFavicon.src = rec.favicon || "";
+  hcFavicon.style.display = rec.favicon ? "block" : "none";
+  hcTitle.textContent = rec.title || "—";
+  hcUrl.textContent   = rec.url   || "—";
+
+  const tier   = rec.currentTier ?? "?";
+  const label  = TIER_LABELS[tier] || `T${tier}`;
+  const elapsed = rec.currentTier === 0 ? "—"
+    : rec.lastFocusEnd == null ? i18n("statusActiveNow")
+    : fmtElapsed(rec.lastFocusEnd).replace(/<[^>]+>/g, "");
+
+  hcMeta.innerHTML = [
+    `<span class="hc-chip"><b>${i18n("colTier") || "Tier"}</b> ${label}</span>`,
+    `<span class="hc-chip"><b>${i18n("colDomain") || "Domain"}</b> ${escHtml(rec.domain || "—")}</span>`,
+    `<span class="hc-chip"><b>${i18n("colElapsed") || "Elapsed"}</b> ${elapsed}</span>`,
+  ].join("");
+
+  hoverCard.style.left = left + "px";
+  hoverCard.style.top  = top  + "px";
+  hoverCard.classList.add("visible");
+}
+
+function hideCard() {
+  hoverCard.classList.remove("visible");
+}
+
+function bindHoverCard() {
+  document.querySelectorAll("#tableBody tr").forEach((tr, i) => {
+    const rec = (() => {
+      // EN: Match row back to record by index in rendered order | TR: Render sırasına göre kaydı bul
+      const tbody = document.getElementById("tableBody");
+      const rows  = Array.from(tbody.querySelectorAll("tr"));
+      const idx   = rows.indexOf(tr);
+      const filter = filterText.toLowerCase();
+      const visible = allRecords.filter(
+        (r) =>
+          !filter ||
+          (r.url || "").toLowerCase().includes(filter) ||
+          (r.domain || "").toLowerCase().includes(filter) ||
+          (r.title || "").toLowerCase().includes(filter),
+      );
+      visible.sort((a, b) => {
+        const va = getComparableValue(a, sortCol);
+        const vb = getComparableValue(b, sortCol);
+        if (va < vb) return -sortDir;
+        if (va > vb) return sortDir;
+        return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
+      });
+      return visible[idx];
+    })();
+    if (!rec) return;
+
+    tr.addEventListener("mouseenter", () => {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => showCard(rec, tr), 200);
+    });
+    tr.addEventListener("mouseleave", () => {
+      clearTimeout(hoverTimeout);
+      hideCard();
+    });
+  });
 }
 
 function escHtml(str) {

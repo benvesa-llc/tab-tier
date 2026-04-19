@@ -1510,6 +1510,32 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         .catch((e) => sendResponse({ ok: false, error: e?.message }));
       return true;
 
+    case "OPEN_AS_T1": {
+      // EN: Open a closed/archived tab as T1: delete the old record so the stale
+      //     entry is gone, then create a new active tab — onActivated will create
+      //     the T1 record automatically and trigger a Tab Management refresh.
+      // TR: Kapalı/arşiv tab'ı T1 olarak aç: eski kaydı sil (stale giriş kalmasın),
+      //     sonra yeni aktif tab oluştur — onActivated T1 kaydını otomatik oluşturup
+      //     Tab Management'i yeniler.
+      (async () => {
+        try {
+          const { url, oldKey } = request;
+          if (oldKey) {
+            const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+            if (tabRecords[oldKey]) {
+              delete tabRecords[oldKey];
+              await chrome.storage.local.set({ tabRecords });
+            }
+          }
+          const newTab = await chrome.tabs.create({ url, active: true });
+          sendResponse({ ok: true, tabId: newTab.id });
+        } catch (e) {
+          sendResponse({ ok: false, error: e?.message });
+        }
+      })();
+      return true;
+    }
+
     case "RECONCILE_TABS":
       reconcileTabs()
         .then((result) => sendResponse({ ok: true, ...result }))
