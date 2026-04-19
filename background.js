@@ -792,23 +792,26 @@ async function timerCheck() {
     const elapsed = now - tab.lastFocusEnd;
 
     if (tab.currentTier === 4) {
-      const expectedTier = calcExpectedTier(elapsed, settings);
-      if (expectedTier < 4) {
+      if (calcExpectedTier(elapsed, settings) < 4) {
         // EN: Tab was incorrectly archived — elapsed time is shorter than T3→T4 threshold.
-        //     Reopen the tab and place it in the correct tier group.
+        //     Reopen the tab in T1 (treat restoration as a fresh activation) and reset
+        //     the inactivity timer. Add a small delay so the tab is ready before grouping.
         // TR: Tab yanlışlıkla arşivlendi — geçen süre T3→T4 eşiğinden kısa.
-        //     Tab'ı yeniden aç ve doğru tier grubuna yerleştir.
+        //     Tab'ı T1'de yeniden aç (restorasyon = yeni aktifleşme gibi davranılır)
+        //     ve hareketsizlik zamanlayıcısını sıfırla. Gruplama öncesi küçük gecikme ekle.
         try {
           const newTab = await chrome.tabs.create({ url: tab.url, active: false });
+          await new Promise((r) => setTimeout(r, 500));
           delete tabRecords[tabId];
           tabRecords[String(newTab.id)] = {
             ...tab,
             tabId: newTab.id,
-            currentTier: expectedTier,
+            currentTier: 1,
+            lastFocusEnd: now,
           };
-          await moveTabToTierGroup(newTab.id, expectedTier);
+          await moveTabToTierGroup(newTab.id, 1);
           hasChanges = true;
-          log(`restore T4→T${expectedTier}`, tabId, tab.url);
+          log(`restore T4→T1`, tabId, tab.url);
         } catch (e) {
           log("restore T4 error:", e?.message, "tab", tabId);
         }
