@@ -2,10 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.12] - 2026-04-19
+## [1.0.13] - 2026-04-19
 
 ### Fixed
-- `timerCheck` now calculates the expected tier directly from elapsed time and corrects the tab in both storage and the tab bar — replaces the previous one-direction-only demotion logic; tabs incorrectly stuck in a too-high tier (e.g. T2 with only 9 minutes elapsed) are now promoted back to the correct tier within 1 minute
+- Added `calcExpectedTier(elapsed, settings)` helper: single source of truth for tier thresholds — `timerCheck` and `reconcileTabs` both use it to place every tab in the correct tier based solely on elapsed inactive time; tabs that were incorrectly in T2 with 9 minutes elapsed are corrected to T1 both on startup/Reconcile and within 1 minute by the alarm
 - Tab incorrectly stuck in T2 with a recent `lastFocusEnd` (e.g. 9 minutes): race condition between `timerCheck` and `onActivated` — `timerCheck` reads all records, processes, then writes all back; if the user clicked the tab during processing, `onActivated` would write T1 first, then `timerCheck` would overwrite it with T2 — fixed by re-reading storage just before the final write and restoring any tabs that became active in the meantime
 - T2/T3 group not created in tab bar when `moveTabToTierGroup` failed with a stale tab ID: the `extensionMovingTabs` flag was never cleaned up in the catch block, causing all subsequent `onUpdated` events for that tab to be silently ignored — flag is now always removed at the start of the catch block before any retry logic
 

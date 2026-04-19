@@ -56,6 +56,20 @@ const extensionMovingTabs = new Set();
 // Yardımcı Fonksiyonlar
 // =============================================================================
 
+// EN: Calculate the expected tier from elapsed inactive time (ms) and settings.
+//     T0 is never calculated here — callers must skip T0 tabs before calling.
+// TR: Geçen hareketsizlik süresi (ms) ve ayarlara göre beklenen tier'ı hesapla.
+//     T0 burada hesaplanmaz — çağıranlar T0 tabları atlamalı.
+function calcExpectedTier(elapsed, settings) {
+  const T1_2 = settings.tier1_to_tier2_minutes * 60 * 1000;
+  const T2_3 = settings.tier2_to_tier3_hours   * 3600 * 1000;
+  const T3_4 = settings.tier3_to_tier4_days    * 86400 * 1000;
+  if (elapsed >= T3_4) return 4;
+  if (elapsed >= T2_3) return 3;
+  if (elapsed >= T1_2) return 2;
+  return 1;
+}
+
 function extractDomain(url) {
   try {
     return new URL(url).hostname;
@@ -605,37 +619,51 @@ async function reconcileTabs() {
     for (const g of gs) allGroupsMap[g.id] = g;
   }
 
-  // Açık tüm tab'ları kayıttaki tier grubuna taşı (T0–T3)
-  // Önce: tab tarayıcıda zaten daha yüksek bir tier grubundaysa (timer onu
-  // taşımış ama storage güncellenememiş olabilir) storage'ı düzelt.
-  let grouped = 0,
-    tierCorrected = 0;
+  // EN: Place every open tab in the correct tier group.
+  //     Expected tier is calculated from elapsed inactive time — same logic as timerCheck.
+  //     T0 tabs are never moved by this calculation.
+  // TR: Her açık tab'ı doğru tier grubuna taşı.
+  //     Beklenen tier, hareketsizlik süresinden hesaplanır — timerCheck ile aynı mantık.
+  //     T0 tablar bu hesaplamayla hiçbir zaman taşınmaz.
+  let grouped = 0, tierCorrected = 0;
+  const reconcileNow = Date.now();
   for (const tab of allTabs) {
     if (isBrowserInternalUrl(tab.url)) continue;
     const rec = tabRecords[tab.id];
     if (!rec) continue;
-
-    // Tarayıcıdaki gerçek tier: tab'ın bulunduğu grubun renginden çıkar
-    if (tab.groupId !== -1 && allGroupsMap[tab.groupId]) {
-      const browserTier = colorToTier[allGroupsMap[tab.groupId].color];
-      if (browserTier != null && browserTier > (rec.currentTier ?? 0)) {
-        // Timer demote yapmış ama storage kalmış — storage'ı düzelt
-        log(
-          `reconcile tier fix: T${rec.currentTier}→T${browserTier} tab=${tab.id}`,
-        );
-        rec.currentTier = browserTier;
-        tierCorrected++;
-      }
-    }
-
-    if (rec.currentTier >= 0 && rec.currentTier <= 3) {
-      await moveTabToTierGroup(tab.id, rec.currentTier, settings);
+    if (rec.currentTier === 0) {
+      await moveTabToTierGroup(tab.id, 0, settings);
       grouped++;
+      continue;
     }
+
+    // EN: Active tab — no elapsed time, stays in T1 group | TR: Aktif tab — geçen süre yok, T1 grubunda kalır
+    if (rec.lastFocusEnd === null) {
+      if (rec.currentTier !== 1) { rec.currentTier = 1; tierCorrected++; }
+      await moveTabToTierGroup(tab.id, 1, settings);
+      grouped++;
+      continue;
+    }
+
+    // EN: Calculate expected tier from elapsed time and correct if needed | TR: Geçen süreden beklenen tier'ı hesapla, gerekirse düzelt
+    const elapsed = reconcileNow - rec.lastFocusEnd;
+    const expectedTier = calcExpectedTier(elapsed, settings);
+    if (expectedTier === 4) {
+      // EN: Should already be archived — mark T4, will be removed by timerCheck | TR: Zaten arşivde olmalı — T4 işaretle, timerCheck kaldırır
+      if (rec.currentTier !== 4) { rec.currentTier = 4; tierCorrected++; }
+      continue;
+    }
+    if (rec.currentTier !== expectedTier) {
+      log(`reconcile tier fix: T${rec.currentTier}→T${expectedTier} tab=${tab.id}`);
+      rec.currentTier = expectedTier;
+      tierCorrected++;
+    }
+    await moveTabToTierGroup(tab.id, expectedTier, settings);
+    grouped++;
   }
 
   if (tierCorrected > 0) {
-    await chrome.storage.local.set({ tabRecords }); // düzeltilmiş tier'ları kaydet
+    await chrome.storage.local.set({ tabRecords });
   }
 
   // İç sayfaları "Diğer" grubuna topla (pencere başına)
@@ -767,17 +795,8 @@ async function timerCheck() {
       continue;
     }
 
-    // EN: Calculate the expected tier purely from elapsed time.
-    //     This handles both demotions AND corrections (e.g. a tab stuck in T2
-    //     with only 9 minutes elapsed will be promoted back to T1).
-    // TR: Beklenen tier'ı yalnızca geçen süreden hesapla.
-    //     Hem düşürme hem düzeltme yapar (örn. 9 dk geçen süreyle T2'de kalan
-    //     bir tab T1'e geri yükseltilir).
-    let expectedTier;
-    if (elapsed >= TIER3_TO_4) expectedTier = 4;
-    else if (elapsed >= TIER2_TO_3) expectedTier = 3;
-    else if (elapsed >= TIER1_TO_2) expectedTier = 2;
-    else expectedTier = 1;
+    // EN: Expected tier from elapsed time — same helper used by reconcileTabs | TR: Geçen süreden beklenen tier — reconcileTabs ile aynı yardımcı
+    const expectedTier = calcExpectedTier(elapsed, settings);
 
     if (tab.currentTier === expectedTier) continue; // EN: Already correct | TR: Zaten doğru
 
