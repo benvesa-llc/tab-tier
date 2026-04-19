@@ -649,8 +649,13 @@ async function reconcileTabs() {
     const elapsed = reconcileNow - rec.lastFocusEnd;
     const expectedTier = calcExpectedTier(elapsed, settings);
     if (expectedTier === 4) {
-      // EN: Should already be archived — mark T4, will be removed by timerCheck | TR: Zaten arşivde olmalı — T4 işaretle, timerCheck kaldırır
-      if (rec.currentTier !== 4) { rec.currentTier = 4; tierCorrected++; }
+      // EN: Tab should be archived but is still open — leave it in its current group
+      //     and let timerCheck close it on the next alarm tick (within 1 minute).
+      //     Marking T4 here without closing causes Tab Management to show it as
+      //     archived while the browser tab is still visible.
+      // TR: Tab arşivlenmeli ama hâlâ açık — mevcut grubunda bırak, timerCheck
+      //     bir sonraki alarm tick'inde (1 dk içinde) kapatır.
+      //     Burada kapatmadan T4 işaretlemek Tab Management'te açık tab'ı arşivde gösterir.
       continue;
     }
     if (rec.currentTier !== expectedTier) {
