@@ -799,6 +799,19 @@ async function timerCheck() {
   }
 
   if (hasChanges) {
+    // EN: Re-read before writing to catch race with onActivated.
+    //     If a tab was activated while we were processing (lastFocusEnd flipped to null),
+    //     our in-memory copy would overwrite that with the old tier/timestamp.
+    //     Restore any such tabs from the freshly-read records before saving.
+    // TR: Kaydetmeden önce storage'ı tekrar oku — onActivated ile race condition'ı yakala.
+    //     İşlem sırasında bir tab aktif olduysa (lastFocusEnd → null),
+    //     eski tier/zaman damgasıyla üzerine yazmayız; fresh kayıttan geri al.
+    const { tabRecords: fresh = {} } = await chrome.storage.local.get("tabRecords");
+    for (const id of Object.keys(tabRecords)) {
+      if (fresh[id]?.lastFocusEnd === null && tabRecords[id]?.lastFocusEnd !== null) {
+        tabRecords[id] = fresh[id];
+      }
+    }
     await chrome.storage.local.set({ tabRecords });
   }
 }
