@@ -613,10 +613,15 @@ async function reconcileTabs() {
         log(`reconcile skip re-archive (restore cooldown): url=${rec.url}`);
         continue;
       }
-      // Gerçekten açık değil → T4'e arşivle
-      rec.currentTier = 4;
-      rec.lastFocusEnd = now;
-      archived++;
+      // EN: Tab is truly gone — apply onManualClose setting | TR: Tab gerçekten yok — onManualClose ayarını uygula
+      if (settings.onManualClose === "delete") {
+        log(`reconcile delete (onManualClose=delete): key=${key} url=${rec.url}`);
+        delete tabRecords[key];
+      } else {
+        rec.currentTier = 4;
+        rec.lastFocusEnd = now;
+        archived++;
+      }
     }
   }
 
@@ -820,12 +825,16 @@ async function timerCheck() {
           log(`timerCheck skip re-archive (restore cooldown): url=${rec.url}`);
           continue;
         }
-        // EN: Tab is truly gone — archive to T4 immediately | TR: Tab gerçekten yok — hemen T4'e arşivle
+        // EN: Tab is truly gone — apply onManualClose setting | TR: Tab gerçekten yok — onManualClose ayarını uygula
         log(
-          `timerCheck stale→T4: tabId=${key} tier=${rec.currentTier} url=${rec.url}`,
+          `timerCheck stale (onManualClose=${settings.onManualClose}): tabId=${key} tier=${rec.currentTier} url=${rec.url}`,
         );
-        rec.currentTier = 4;
-        rec.lastFocusEnd = now;
+        if (settings.onManualClose === "delete") {
+          delete tabRecords[key];
+        } else {
+          rec.currentTier = 4;
+          rec.lastFocusEnd = now;
+        }
         hasChanges = true;
       }
     }

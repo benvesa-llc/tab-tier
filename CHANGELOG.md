@@ -2,7 +2,7 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.26] - 2026-04-19
+## [1.0.27] - 2026-04-19
 
 ### Added
 - Clicking an open tab URL in Tab Management now expands the tab group if it is collapsed before focusing the tab — the tab is always visible after clicking
@@ -16,6 +16,7 @@ All notable changes to Tab Tier will be documented in this file.
 - T4 tabs incorrectly archived (elapsed shorter than T3→T4 threshold) are automatically restored and placed in the correct tier group; a 5-minute cooldown per URL prevents reopen loops on redirecting or failing URLs
 
 ### Fixed
+- Missing tabs (status "missing" in Tab Management) now respect the "On Manual Close" setting: "archive" moves to T4, "delete" removes the record entirely — applied by both `timerCheck` (within 1 minute) and `reconcileTabs`
 - Tabs incorrectly showing as T4 (archived) in Tab Management while still open in the browser — `reconcileTabs` was marking tabs T4 without closing them; archiving is now left entirely to `timerCheck`
 - Tab stuck in T2 with only 9 minutes elapsed: race condition where `timerCheck` overwrote an `onActivated` T1 promotion — storage is re-read just before saving and any tab activated during processing is restored from the fresh copy
 - T2/T3 group not appearing in tab bar after a failed `moveTabToTierGroup` call: `extensionMovingTabs` flag was never cleared on error, silently blocking all future `onUpdated` events for that tab
