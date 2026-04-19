@@ -21,7 +21,6 @@ All notable changes to Tab Tier will be documented in this file.
 
 ## [1.0.9] - 2026-04-18
 
-
 ### Added
 - Startup now always calls `reconcileTabs()` before `timerCheck()` to catch tabs opened while the service worker was stopped (e.g. after sleep/wake)
 - Tab Management auto-reconciles on open to fix any drift between storage and browser state
@@ -97,3 +96,7 @@ All notable changes to Tab Tier will be documented in this file.
 
 ### Fixed
 - Tabs manually moved out of T0 group were still shown as fixed in Tab Management
+
+## [0.0.0] - 2026-04-12
+
+- Project created
