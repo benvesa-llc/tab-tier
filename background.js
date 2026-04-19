@@ -751,50 +751,49 @@ async function timerCheck() {
   for (const tabId of Object.keys(tabRecords)) {
     const tab = tabRecords[tabId];
 
-    // Aktif tab (bakılıyor) → atla
+    // EN: Active tab (currently viewed) — skip | TR: Aktif tab (şu an bakılıyor) — atla
     if (tab.lastFocusEnd === null) continue;
-    // EN: Tier 0 (Fixed) — never demote | TR: Tier 0 (Sabit) — asla düşürme
+    // EN: Tier 0 (Fixed) — never move | TR: Tier 0 (Sabit) — asla taşıma
     if (tab.currentTier === 0) continue;
 
     const elapsed = now - tab.lastFocusEnd;
 
-    // Tier 4 → Kalıcı silme
-    if (tab.currentTier === 4 && TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
-      delete tabRecords[tabId];
-      hasChanges = true;
+    // EN: T4: only action is permanent deletion after the configured delay | TR: T4: sadece yapılacak işlem yapılandırılmış gecikme sonrası kalıcı silme
+    if (tab.currentTier === 4) {
+      if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
+        delete tabRecords[tabId];
+        hasChanges = true;
+      }
       continue;
     }
 
-    // Tier 3 → Tier 4: tab bar'dan kaldır, panelde sakla
-    if (tab.currentTier === 3 && elapsed >= TIER3_TO_4) {
-      tab.currentTier = 4;
-      try {
-        await chrome.tabs.remove(parseInt(tabId));
-      } catch (e) {}
-      hasChanges = true;
-      log("demote T3→T4", tabId, tab.url);
-      continue;
-    }
+    // EN: Calculate the expected tier purely from elapsed time.
+    //     This handles both demotions AND corrections (e.g. a tab stuck in T2
+    //     with only 9 minutes elapsed will be promoted back to T1).
+    // TR: Beklenen tier'ı yalnızca geçen süreden hesapla.
+    //     Hem düşürme hem düzeltme yapar (örn. 9 dk geçen süreyle T2'de kalan
+    //     bir tab T1'e geri yükseltilir).
+    let expectedTier;
+    if (elapsed >= TIER3_TO_4) expectedTier = 4;
+    else if (elapsed >= TIER2_TO_3) expectedTier = 3;
+    else if (elapsed >= TIER1_TO_2) expectedTier = 2;
+    else expectedTier = 1;
 
-    // Tier 2 → Tier 3: soğuk grubuna taşı
-    if (tab.currentTier === 2 && elapsed >= TIER2_TO_3) {
-      tab.currentTier = 3;
-      await moveTabToTierGroup(parseInt(tabId), 3);
-      hasChanges = true;
-      log("demote T2→T3", tabId, tab.url);
-      continue;
-    }
+    if (tab.currentTier === expectedTier) continue; // EN: Already correct | TR: Zaten doğru
 
-    // Tier 1 → Tier 2: T2 grubuna taşı
-    // Not: chrome.tabs.discard() kaldırıldı — Edge bazen discard'dan sonra
-    // tab'a yeni bir ID atıyor; eski ID storage'da kalınca debug "yok" gösteriyor.
-    // Memory yönetimini Chrome/Edge kendi yapıyor (memory baskısında auto-discard).
-    if (tab.currentTier === 1 && elapsed >= TIER1_TO_2) {
-      tab.currentTier = 2;
-      await moveTabToTierGroup(parseInt(tabId), 2);
-      hasChanges = true;
-      log("demote T1→T2", tabId, tab.url);
-      continue;
+    const prevTier = tab.currentTier;
+    tab.currentTier = expectedTier;
+    hasChanges = true;
+
+    if (expectedTier === 4) {
+      // EN: Archive: close the tab | TR: Arşiv: tab'ı kapat
+      try { await chrome.tabs.remove(parseInt(tabId)); } catch (e) {}
+      log(`tier T${prevTier}→T4 (archive)`, tabId, tab.url);
+    } else {
+      // EN: Move to the correct group — works for both demotions and corrections
+      // TR: Doğru gruba taşı — hem düşürme hem düzeltme için çalışır
+      await moveTabToTierGroup(parseInt(tabId), expectedTier);
+      log(`tier T${prevTier}→T${expectedTier}`, tabId, tab.url);
     }
   }
 
