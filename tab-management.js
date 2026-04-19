@@ -89,7 +89,7 @@ async function loadData() {
   const gn = settings.groupNames || {};
   const isSystemDefault = (v) => !v || /^T[0-3]:/.test(v.trim());
   for (const tier of [0, 1, 2, 3]) {
-    TIER_LABELS[tier] = isSystemDefault(gn[tier]) ? i18n(`tierT${tier}Name`) : gn[tier];
+    TIER_LABELS[tier] = isSystemDefault(gn[tier]) ? i18n(`defaultGroupT${tier}`) : gn[tier];
   }
   // EN: T4 always uses the i18n label — it has no browser group | TR: T4 her zaman i18n etiketini kullanır — tab bar grubu yoktur
 
