@@ -2,13 +2,13 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.21] - 2026-04-19
+## [1.0.22] - 2026-04-19
 
 ### Fixed
 ### Added
 - Fixed column in Tab Management is clickable again: clicking 📌 unfixes the tab (T0→T1, timer starts), clicking — fixes it (T1→T0, moves to T0 group); tooltip shows the action in the browser language
 - Clicking a closed/archived URL in Tab Management now deletes the stale record and opens the URL as a new T1 tab (previously opened via `target="_blank"` leaving the old T4 record in storage); Tab Management auto-refreshes via `storage.onChanged`
-- Hover preview card in Tab Management: hovering over any row shows a popup with favicon, title, URL, tier, domain, and elapsed time — appears after 200 ms, positioned to avoid viewport edges, no additional permissions required
+- Replaced hover preview card with a dedicated 20×20 favicon column in Tab Management, positioned between Title and URL; broken favicons hide gracefully via `onerror`
 
 ### Fixed
 - T4 tabs incorrectly archived (elapsed shorter than T3→T4 threshold) are now automatically restored in both `timerCheck` (every minute) and `reconcileTabs` (startup/Reconcile button): tab is reopened and placed directly in the correct tier group based on elapsed time; a 5-minute `restoringUrls` cooldown prevents mini-reconcile from immediately re-archiving the restored tab and causing a reopen loop: reopening archived tabs every minute caused an infinite loop when the tab URL redirected or closed immediately (tab archived again → reopened → loop); T4 restoration remains a manual action via Tab Management

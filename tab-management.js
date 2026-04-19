@@ -239,6 +239,7 @@ function renderTable() {
         <td>${openCell}</td>
         <td class="domain-cell">${escHtml(r.domain || "—")}</td>
         <td class="title-cell" title="${escHtml(r.title || "")}">${escHtml(r.title || "—")}</td>
+        <td style="width:28px;text-align:center;padding:4px 6px">${r.favicon ? `<img src="${escHtml(r.favicon)}" width="20" height="20" style="border-radius:3px;vertical-align:middle;object-fit:contain" onerror="this.style.display='none'">` : ""}</td>
         <td class="url-cell" title="${escHtml(r.url || "")}">
           ${
             isOpen
@@ -311,87 +312,6 @@ function renderTable() {
   selectAll.indeterminate =
     selectedKeys.size > 0 && selectedKeys.size < t4Count;
 
-  bindHoverCard();
-}
-
-// ─── Hover preview card ──────────────────────────────────────────────────────
-
-const hoverCard  = document.getElementById("hoverCard");
-const hcFavicon  = document.getElementById("hcFavicon");
-const hcTitle    = document.getElementById("hcTitle");
-const hcUrl      = document.getElementById("hcUrl");
-const hcMeta     = document.getElementById("hcMeta");
-let hoverTimeout = null;
-
-function showCard(rec, anchorEl) {
-  const rect = anchorEl.getBoundingClientRect();
-  const cardW = 300, margin = 10;
-  let left = rect.left;
-  if (left + cardW + margin > window.innerWidth) left = window.innerWidth - cardW - margin;
-  let top = rect.bottom + 6;
-  if (top + 160 > window.innerHeight) top = rect.top - 160 - 6;
-
-  hcFavicon.src = rec.favicon || "";
-  hcFavicon.style.display = rec.favicon ? "block" : "none";
-  hcTitle.textContent = rec.title || "—";
-  hcUrl.textContent   = rec.url   || "—";
-
-  const tier   = rec.currentTier ?? "?";
-  const label  = TIER_LABELS[tier] || `T${tier}`;
-  const elapsed = rec.currentTier === 0 ? "—"
-    : rec.lastFocusEnd == null ? i18n("statusActiveNow")
-    : fmtElapsed(rec.lastFocusEnd).replace(/<[^>]+>/g, "");
-
-  hcMeta.innerHTML = [
-    `<span class="hc-chip"><b>${i18n("colTier") || "Tier"}</b> ${label}</span>`,
-    `<span class="hc-chip"><b>${i18n("colDomain") || "Domain"}</b> ${escHtml(rec.domain || "—")}</span>`,
-    `<span class="hc-chip"><b>${i18n("colElapsed") || "Elapsed"}</b> ${elapsed}</span>`,
-  ].join("");
-
-  hoverCard.style.left = left + "px";
-  hoverCard.style.top  = top  + "px";
-  hoverCard.classList.add("visible");
-}
-
-function hideCard() {
-  hoverCard.classList.remove("visible");
-}
-
-function bindHoverCard() {
-  document.querySelectorAll("#tableBody tr").forEach((tr, i) => {
-    const rec = (() => {
-      // EN: Match row back to record by index in rendered order | TR: Render sırasına göre kaydı bul
-      const tbody = document.getElementById("tableBody");
-      const rows  = Array.from(tbody.querySelectorAll("tr"));
-      const idx   = rows.indexOf(tr);
-      const filter = filterText.toLowerCase();
-      const visible = allRecords.filter(
-        (r) =>
-          !filter ||
-          (r.url || "").toLowerCase().includes(filter) ||
-          (r.domain || "").toLowerCase().includes(filter) ||
-          (r.title || "").toLowerCase().includes(filter),
-      );
-      visible.sort((a, b) => {
-        const va = getComparableValue(a, sortCol);
-        const vb = getComparableValue(b, sortCol);
-        if (va < vb) return -sortDir;
-        if (va > vb) return sortDir;
-        return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
-      });
-      return visible[idx];
-    })();
-    if (!rec) return;
-
-    tr.addEventListener("mouseenter", () => {
-      clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(() => showCard(rec, tr), 200);
-    });
-    tr.addEventListener("mouseleave", () => {
-      clearTimeout(hoverTimeout);
-      hideCard();
-    });
-  });
 }
 
 function escHtml(str) {

@@ -196,64 +196,6 @@
       .reconcile-item .ri-val.zero { color: #45475a; }
       .reconcile-item .ri-lbl  { font-size: 10px; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; }
 
-      /* ── Hover preview card ── */
-      #hoverCard {
-        position: fixed;
-        z-index: 9999;
-        background: #181825;
-        border: 1px solid #45475a;
-        border-radius: 10px;
-        padding: 12px 14px;
-        width: 300px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.12s ease;
-      }
-      #hoverCard.visible { opacity: 1; }
-      .hc-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-      }
-      .hc-favicon {
-        width: 28px;
-        height: 28px;
-        border-radius: 4px;
-        object-fit: contain;
-        flex-shrink: 0;
-        background: #313244;
-      }
-      .hc-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #cdd6f4;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .hc-url {
-        font-size: 11px;
-        color: #89dceb;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-bottom: 8px;
-      }
-      .hc-meta {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .hc-chip {
-        background: #313244;
-        border-radius: 6px;
-        padding: 3px 8px;
-        font-size: 11px;
-        color: #a6adc8;
-      }
-      .hc-chip b { color: #cba6f7; }
     </style>
     <script src="i18n-dom.js"></script>
   </head>
@@ -294,6 +236,7 @@
           <th data-col="openStatus">__MSG_colStatus__</th>
           <th data-col="domain">__MSG_colDomain__</th>
           <th data-col="title">__MSG_colTitle__</th>
+          <th style="width:28px"></th>
           <th data-col="url">__MSG_colUrl__</th>
           <th data-col="lastFocusStart">__MSG_colFocusStart__</th>
           <th data-col="lastFocusEnd">__MSG_colFocusEnd__</th>
@@ -304,15 +247,6 @@
       <tbody id="tableBody"></tbody>
     </table>
     <p id="noData">__MSG_noRecords__</p>
-
-    <div id="hoverCard">
-      <div class="hc-header">
-        <img class="hc-favicon" id="hcFavicon" src="" alt="">
-        <span class="hc-title" id="hcTitle"></span>
-      </div>
-      <div class="hc-url" id="hcUrl"></div>
-      <div class="hc-meta" id="hcMeta"></div>
-    </div>
 
     <script src="tab-management.js"></script>
   </body>
