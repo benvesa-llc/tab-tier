@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.0.9] - 2026-04-18
+
+### Changed
+- Elapsed time in Tab Management now shows up to 3 components: days+hours+minutes, hours+minutes+seconds, or minutes+seconds — e.g. `2g 3s 45d` instead of just `2g 3s`
+
 ## [1.0.8] - 2026-04-18
 
 ### Fixed
