@@ -5,6 +5,8 @@
 // EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
 const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
+document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
+
 let currentSort = "tierDomain"; // "tierDomain" | "tierTitle" | "tierUrl"
 
 // EN: Tier labels and config from i18n | TR: Tier etiketleri ve yapılandırması i18n'den

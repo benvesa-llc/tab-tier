@@ -69,6 +69,12 @@ body {
   font-size: 13px;
   color: var(--overlay);
 }
+.version-tag {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--overlay);
+  vertical-align: middle;
+}
 
 /* ── Card ── */
 .card {

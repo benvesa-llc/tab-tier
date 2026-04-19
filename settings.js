@@ -5,6 +5,8 @@
 // EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
 const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
+document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
+
 // EN: Default group names from i18n (language-aware) | TR: i18n'den varsayılan grup adları
 const DefaultGroupNames = {
   0: i18n("defaultGroupT0"),

@@ -2,7 +2,7 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.1.4] - 2026-04-19
+## [1.1.5] - 2026-04-19
 
 ### Added
 - Dark/light theme support across all pages (Popup, Settings, Tab Management, Onboarding); Catppuccin Mocha (dark) and Catppuccin Latte (light) palettes; toggle with 🌙/☀️ button in popup header or Theme selector in Settings; preference saved to storage and applied instantly via `theme.js`
@@ -17,6 +17,7 @@ All notable changes to Tab Tier will be documented in this file.
 - T4 tabs incorrectly archived (elapsed shorter than T3→T4 threshold) are automatically restored and placed in the correct tier group; a 5-minute cooldown per URL prevents reopen loops on redirecting or failing URLs
 
 ### Fixed
+- Version number displayed in the header of all four pages (Popup logo, Settings h1, Tab Management h1, Onboarding h1) — populated from `chrome.runtime.getManifest().version`, styled as muted `v1.x.x` tag
 - Fixed tier badge text color in Tab Management light theme — T0–T3 badges now always use dark text (`#1e1e2e`) instead of `var(--bg)` which became near-white in light mode
 - Translated remaining English "duplicate" terms in Turkish locale to "kopya" (`dedupBtnLabel`, `noDuplicates`, `duplicatesRemoved`, `dupActionLabel`, `dupActionAllow`)
 - Replaced all hardcoded inline colors in Tab Management rows and status cells with CSS-variable-based classes (`status-open`, `status-missing`, `status-archive`, `url-open`, `url-closed`, `row-stale`, `row-missing`) — all colors now respond to dark/light theme

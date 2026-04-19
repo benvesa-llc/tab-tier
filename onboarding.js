@@ -5,6 +5,8 @@
 // EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
 const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
+document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
+
 let allTabs      = []; // EN: all non-T4 tabs from storage | TR: storage'dan gelen tüm tab'lar
 let filteredTabs = []; // EN: tabs after search filter | TR: arama sonrası görünenler
 let checkedIds   = new Set(); // EN: selected tab IDs (to be set T0) | TR: seçili tabId'ler

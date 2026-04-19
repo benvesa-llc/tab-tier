@@ -5,6 +5,8 @@
 // EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
 const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
+document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
+
 // EN: Selected T4 record storage keys | TR: Seçili T4 kayıtların storage key'leri
 let selectedKeys = new Set();
 
