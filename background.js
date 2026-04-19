@@ -792,31 +792,11 @@ async function timerCheck() {
     const elapsed = now - tab.lastFocusEnd;
 
     if (tab.currentTier === 4) {
-      if (calcExpectedTier(elapsed, settings) < 4) {
-        // EN: Tab was incorrectly archived — elapsed time is shorter than T3→T4 threshold.
-        //     Reopen the tab in T1 (treat restoration as a fresh activation) and reset
-        //     the inactivity timer. Add a small delay so the tab is ready before grouping.
-        // TR: Tab yanlışlıkla arşivlendi — geçen süre T3→T4 eşiğinden kısa.
-        //     Tab'ı T1'de yeniden aç (restorasyon = yeni aktifleşme gibi davranılır)
-        //     ve hareketsizlik zamanlayıcısını sıfırla. Gruplama öncesi küçük gecikme ekle.
-        try {
-          const newTab = await chrome.tabs.create({ url: tab.url, active: false });
-          await new Promise((r) => setTimeout(r, 500));
-          delete tabRecords[tabId];
-          tabRecords[String(newTab.id)] = {
-            ...tab,
-            tabId: newTab.id,
-            currentTier: 1,
-            lastFocusEnd: now,
-          };
-          await moveTabToTierGroup(newTab.id, 1);
-          hasChanges = true;
-          log(`restore T4→T1`, tabId, tab.url);
-        } catch (e) {
-          log("restore T4 error:", e?.message, "tab", tabId);
-        }
-      } else if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
-        // EN: Permanently delete from storage after the configured retention period | TR: Yapılandırılmış saklama süresi sonunda storage'dan kalıcı sil
+      // EN: T4 (archived) — only action is permanent deletion after the retention period.
+      //     Restoration from T4 is a manual user action via Tab Management.
+      // TR: T4 (arşiv) — yalnızca saklama süresi sonunda kalıcı silme yapılır.
+      //     T4'ten geri yükleme kullanıcının Tab Management üzerinden yaptığı manuel işlemdir.
+      if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
         delete tabRecords[tabId];
         hasChanges = true;
       }
