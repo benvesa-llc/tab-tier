@@ -130,11 +130,11 @@ function renderSummary() {
 
   const rows = [
     [i18n("sumTotal"), allRecords.length],
-    [i18n("tierT0Name"), counts[0]],
-    [i18n("tierT1Name"), counts[1]],
-    [i18n("tierT2Name"), counts[2]],
-    [i18n("tierT3Name"), counts[3]],
-    [i18n("tierT4Name"), counts[4]],
+    [TIER_LABELS[0], counts[0]],
+    [TIER_LABELS[1], counts[1]],
+    [TIER_LABELS[2], counts[2]],
+    [TIER_LABELS[3], counts[3]],
+    [TIER_LABELS[4], counts[4]],
     [i18n("sumInternalLabel"), i18n("sumInternalValue", [internalTabCount])],
     ...(warnings.length ? [["⚠️", warnings.join(" · ")]] : []),
   ];

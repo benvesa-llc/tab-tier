@@ -2,13 +2,13 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.24] - 2026-04-19
+## [1.0.25] - 2026-04-19
 
 ### Added
 - Favicon column (20×20) in Tab Management between Title and URL columns
 - Fixed column toggle restored: clicking 📌 unfixes a tab (T0→T1, timer starts), clicking — fixes it (T1→T0)
 - Clicking a closed/archived URL in Tab Management deletes the stale record and opens the URL as a new T1 tab; Tab Management auto-refreshes via `storage.onChanged`
-- Tier badges in Tab Management now use user-configured group names from Settings (T0–T3); default fallback uses the full group name (e.g. "T1: Hot") matching what the tab bar shows; T4 always shows the fixed "Archive" label
+- Tier labels throughout Tab Management (summary cards and tier badges) now use user-configured group names from Settings (T0–T3); default fallback uses the full group name (e.g. "T1: Hot") matching what the tab bar shows; T4 always shows the fixed "Archive" label
 
 ### Changed
 - `timerCheck` and `reconcileTabs` now use a shared `calcExpectedTier(elapsed, settings)` helper — tier is always assigned directly from elapsed time rather than one step at a time, correcting tabs stuck in the wrong tier in both directions
