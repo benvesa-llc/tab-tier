@@ -8,8 +8,9 @@ const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 // EN: Selected T4 record storage keys | TR: Seçili T4 kayıtların storage key'leri
 let selectedKeys = new Set();
 
-// EN: Tier labels from i18n | TR: Tier etiketleri i18n'den
-const TIER_LABELS = {
+// EN: Tier labels — start from i18n defaults, overridden by settings group names on loadData
+// TR: Tier etiketleri — i18n varsayılanları, loadData'da settings grup adlarıyla güncellenir
+let TIER_LABELS = {
   0: i18n("tierT0Name"),
   1: i18n("tierT1Name"),
   2: i18n("tierT2Name"),
@@ -77,11 +78,20 @@ function isInternal(url) {
 let internalTabCount = 0;
 
 async function loadData() {
-  const [{ tabRecords = {} }, realTabs, realActive] = await Promise.all([
-    chrome.storage.local.get("tabRecords"),
+  const [{ tabRecords = {}, settings = {} }, realTabs, realActive] = await Promise.all([
+    chrome.storage.local.get(["tabRecords", "settings"]),
     chrome.tabs.query({}),
     chrome.tabs.query({ active: true }),
   ]);
+
+  // EN: Override T0-T3 labels with user-configured group names (same filter as background.js)
+  // TR: T0-T3 etiketlerini kullanıcının ayarladığı grup adlarıyla güncelle (background.js ile aynı filtre)
+  const gn = settings.groupNames || {};
+  const isSystemDefault = (v) => !v || /^T[0-3]:/.test(v.trim());
+  for (const tier of [0, 1, 2, 3]) {
+    TIER_LABELS[tier] = isSystemDefault(gn[tier]) ? i18n(`tierT${tier}Name`) : gn[tier];
+  }
+  // EN: T4 always uses the i18n label — it has no browser group | TR: T4 her zaman i18n etiketini kullanır — tab bar grubu yoktur
 
   openTabIds = new Set(realTabs.map((t) => t.id));
   activeTabIds = new Set(realActive.map((t) => t.id));

@@ -2,10 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.22] - 2026-04-19
+## [1.0.23] - 2026-04-19
 
-### Fixed
 ### Added
+- Tier badges in Tab Management now reflect user-configured group names from Settings (T0–T3); T4 always shows the fixed "Archive" i18n label since it has no browser group
 - Fixed column in Tab Management is clickable again: clicking 📌 unfixes the tab (T0→T1, timer starts), clicking — fixes it (T1→T0, moves to T0 group); tooltip shows the action in the browser language
 - Clicking a closed/archived URL in Tab Management now deletes the stale record and opens the URL as a new T1 tab (previously opened via `target="_blank"` leaving the old T4 record in storage); Tab Management auto-refreshes via `storage.onChanged`
 - Replaced hover preview card with a dedicated 20×20 favicon column in Tab Management, positioned between Title and URL; broken favicons hide gracefully via `onerror`
