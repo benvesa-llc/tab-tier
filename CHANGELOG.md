@@ -2,9 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.0.14] - 2026-04-19
+## [1.0.15] - 2026-04-19
 
 ### Fixed
+- T4 tabs are now checked against elapsed time every minute: if the elapsed time is shorter than the T3→T4 threshold (e.g. incorrectly archived), the tab is automatically reopened and placed in the correct tier group
 - Fixed: `reconcileTabs` was marking open tabs as T4 (archived) without closing them, causing Tab Management to show a tab as archived while it was still visible in the browser — `reconcileTabs` now skips T4 transitions and leaves archiving to `timerCheck` which properly closes the tab
 - Added `calcExpectedTier(elapsed, settings)` helper: single source of truth for tier thresholds — `timerCheck` and `reconcileTabs` both use it to place every tab in the correct tier based solely on elapsed inactive time; tabs that were incorrectly in T2 with 9 minutes elapsed are corrected to T1 both on startup/Reconcile and within 1 minute by the alarm
 - Tab incorrectly stuck in T2 with a recent `lastFocusEnd` (e.g. 9 minutes): race condition between `timerCheck` and `onActivated` — `timerCheck` reads all records, processes, then writes all back; if the user clicked the tab during processing, `onActivated` would write T1 first, then `timerCheck` would overwrite it with T2 — fixed by re-reading storage just before the final write and restoring any tabs that became active in the meantime

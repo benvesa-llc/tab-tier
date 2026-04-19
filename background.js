@@ -791,9 +791,29 @@ async function timerCheck() {
 
     const elapsed = now - tab.lastFocusEnd;
 
-    // EN: T4: only action is permanent deletion after the configured delay | TR: T4: sadece yapılacak işlem yapılandırılmış gecikme sonrası kalıcı silme
     if (tab.currentTier === 4) {
-      if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
+      const expectedTier = calcExpectedTier(elapsed, settings);
+      if (expectedTier < 4) {
+        // EN: Tab was incorrectly archived — elapsed time is shorter than T3→T4 threshold.
+        //     Reopen the tab and place it in the correct tier group.
+        // TR: Tab yanlışlıkla arşivlendi — geçen süre T3→T4 eşiğinden kısa.
+        //     Tab'ı yeniden aç ve doğru tier grubuna yerleştir.
+        try {
+          const newTab = await chrome.tabs.create({ url: tab.url, active: false });
+          delete tabRecords[tabId];
+          tabRecords[String(newTab.id)] = {
+            ...tab,
+            tabId: newTab.id,
+            currentTier: expectedTier,
+          };
+          await moveTabToTierGroup(newTab.id, expectedTier);
+          hasChanges = true;
+          log(`restore T4→T${expectedTier}`, tabId, tab.url);
+        } catch (e) {
+          log("restore T4 error:", e?.message, "tab", tabId);
+        }
+      } else if (TIER4_DELETE > 0 && elapsed >= TIER4_DELETE) {
+        // EN: Permanently delete from storage after the configured retention period | TR: Yapılandırılmış saklama süresi sonunda storage'dan kalıcı sil
         delete tabRecords[tabId];
         hasChanges = true;
       }
