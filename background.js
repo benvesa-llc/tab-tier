@@ -1294,19 +1294,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (hasGroupId) {
       const newGroupId = changeInfo.groupId;
       if (newGroupId === -1) {
+        // EN: Do NOT update lastFocusEnd here. Edge fires groupId:-1 for ALL tabs on
+        //     sleep/hibernate wake before reassigning real groupIds — treating this as
+        //     a user drag would reset every tab's timer. Instead, wait for the follow-up
+        //     event with the actual groupId; if the tab lands in a different tier group
+        //     that event handles the update. If the tab stays ungrouped, timerCheck
+        //     will reclassify it on the next alarm tick.
+        // TR: Burada lastFocusEnd güncelleme. Edge, uyku/hibernate sonrası wake sırasında
+        //     gerçek groupId'leri yeniden atamadan önce TÜM sekmeler için groupId:-1 tetikler.
+        //     Bunu kullanıcı sürüklemesi saymak her sekmenin sayacını sıfırlar. Bunun yerine
+        //     gerçek groupId'yi içeren sonraki olayı bekle; sekme farklı bir tier grubuna
+        //     girerse o olay güncellemeyi yapar. Sekme grubsuz kalırsa timerCheck halleder.
         if (extensionMovingTabs.has(tabId)) {
-          // EN: Extension is moving this tab between groups — Edge fires groupId:-1 first,
-          //     then the target groupId. Ignore this intermediate event; do NOT reset
-          //     lastFocusEnd or tier. The follow-up event will handle the final state.
-          // TR: Extension bu tab'ı gruplar arasında taşıyor — Edge önce groupId:-1 sonra
-          //     hedef groupId'yi tetikler. Bu ara olayı yoksay; lastFocusEnd veya tier
-          //     sıfırlanmasın. Asıl durum sonraki event'te işlenecek.
           log("onUpdated ungrouped (extension move, ignored)", tabId);
-        } else if (tabRecords[tabId].currentTier !== 0) {
-          // EN: User manually dragged tab out of all groups — treat as T1 | TR: Kullanıcı tab'ı tüm gruplardan çıkardı — T1 yap
-          tabRecords[tabId].currentTier = 1;
-          tabRecords[tabId].lastFocusEnd = Date.now();
-          log("onUpdated ungrouped → T1", tabId);
+        } else {
+          log("onUpdated ungrouped (skipped lastFocusEnd reset — may be wake event)", tabId);
         }
       } else {
         try {

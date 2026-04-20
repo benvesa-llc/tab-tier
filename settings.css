@@ -72,7 +72,7 @@ body {
 .version-tag {
   font-size: 12px;
   font-weight: 400;
-  color: var(--overlay);
+  color: var(--subtext);
   vertical-align: middle;
 }
 

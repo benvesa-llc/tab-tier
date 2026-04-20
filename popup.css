@@ -99,7 +99,7 @@ body {
 .version-tag {
   font-size: 10px;
   font-weight: 400;
-  color: var(--overlay);
+  color: var(--subtext);
   letter-spacing: 0;
   vertical-align: middle;
 }
