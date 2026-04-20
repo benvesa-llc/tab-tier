@@ -23,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js", "theme.js", "whatsnew.html", "data/changelog.json", "data/roadmap.json"],
+      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js", "theme.js", "whatsnew.html", "whatsnew.js", "data/changelog.json", "data/roadmap.json"],
       "matches": ["<all_urls>"]
     }
   ]
