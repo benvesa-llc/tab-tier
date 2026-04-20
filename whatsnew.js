@@ -87,17 +87,12 @@ function renderRoadmap(roadmap) {
     const div = document.createElement("div");
     div.className = "roadmap-item";
     const dot = document.createElement("span");
-    dot.className = "roadmap-dot dot-" + item.status;
-    dot.title = statusLabel(item.status);
+    dot.className = "roadmap-dot";
     const title = document.createElement("span");
     title.className = "roadmap-title";
     title.textContent = (isTR && item.titleTR) ? item.titleTR : item.title;
-    const eta = document.createElement("span");
-    eta.className = "roadmap-eta";
-    eta.textContent = item.eta;
     div.appendChild(dot);
     div.appendChild(title);
-    div.appendChild(eta);
     container.appendChild(div);
   });
 }

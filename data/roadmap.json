@@ -1,6 +1,6 @@
 [
-  { "title": "Tab export / import (JSON + CSV)", "titleTR": "Sekme dışa / içe aktarma (JSON + CSV)", "status": "planned", "eta": "1.3.0" },
-  { "title": "Per-domain custom tier rules", "titleTR": "Domain bazlı özel tier kuralları", "status": "planned", "eta": "1.3.0" },
-  { "title": "Session snapshot & restore", "titleTR": "Oturum anlık görüntüsü ve geri yükleme", "status": "planned", "eta": "1.4.0" },
-  { "title": "Statistics dashboard (focus time, tier history)", "titleTR": "İstatistik paneli (odak süresi, tier geçmişi)", "status": "planned", "eta": "1.4.0" }
+  { "title": "Tab export / import (JSON + CSV)", "titleTR": "Sekme dışa / içe aktarma (JSON + CSV)" },
+  { "title": "Per-domain custom tier rules",     "titleTR": "Domain bazlı özel tier kuralları" },
+  { "title": "Session snapshot & restore",       "titleTR": "Oturum anlık görüntüsü ve geri yükleme" },
+  { "title": "Statistics dashboard (focus time, tier history)", "titleTR": "İstatistik paneli (odak süresi, tier geçmişi)" }
 ]

@@ -3,98 +3,18 @@
     "version": "1.2.0",
     "date": "2026-04-20",
     "changes": [
-      {
-        "type": "feature",
-        "text": "Dark / light theme support — toggle instantly with the 🌙 button in the popup or from Settings.",
-        "textTR": "Koyu / açık tema desteği — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir."
-      },
-      {
-        "type": "fix",
-        "text": "Tab timers were reset after PC sleep / hibernate — elapsed time is now preserved correctly.",
-        "textTR": "PC uyku / hibernate sonrası sekme sayaçları sıfırlanıyordu — artık korunuyor."
-      },
-      {
-        "type": "feature",
-        "text": "Clicking a URL in Tab Management focuses the tab; collapsed groups are expanded automatically.",
-        "textTR": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır."
-      },
-      {
-        "type": "improvement",
-        "text": "Favicon column added to Tab Management for easier visual identification.",
-        "textTR": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı."
-      },
-      {
-        "type": "fix",
-        "text": "Tabs with \"missing\" status are now archived or deleted according to the \"On Manual Close\" setting.",
-        "textTR": "\"Yok\" durumundaki sekmeler artık 'Manuel Kapatma' ayarına göre arşivleniyor veya siliniyor."
-      },
-      {
-        "type": "improvement",
-        "text": "Tier badge labels reflect the custom group names configured in Settings.",
-        "textTR": "Tier rozeti etiketleri, Ayarlar'da özelleştirilen grup adlarını yansıtıyor."
-      },
-      {
-        "type": "improvement",
-        "text": "Version number is now displayed in the header of all pages.",
-        "textTR": "Sayfa başlıklarına sürüm numarası eklendi."
-      },
-      {
-        "type": "feature",
-        "text": "What's New page opens automatically after each update.",
-        "textTR": "Güncelleme sonrası Yenilikler sayfası otomatik açılıyor."
-      }
-    ]
-  },
-  {
-    "version": "1.0.9",
-    "date": "2026-04-18",
-    "changes": [
-      {
-        "type": "improvement",
-        "text": "Tier check now runs every 1 minute (previously 5 minutes).",
-        "textTR": "Tier kontrolü artık her 1 dakikada bir çalışıyor (eskiden 5 dakikaydı)."
-      },
-      {
-        "type": "fix",
-        "text": "Tabs opened while the extension was stopped are detected and corrected on startup.",
-        "textTR": "Uzantı dururken açılan sekmeler başlangıçta tespit edilip otomatik düzeltiliyor."
-      },
-      {
-        "type": "improvement",
-        "text": "Elapsed time shows up to 3 components: days + hours + minutes.",
-        "textTR": "Geçen süre gün + saat + dakika şeklinde 3 bileşenli gösteriliyor."
-      },
-      {
-        "type": "fix",
-        "text": "Fixed column in Tab Management is now a read-only indicator; tier changes are made by dragging groups.",
-        "textTR": "Sabit sütun artık yalnızca okunabilir bir gösterge — tier değişiklikleri grup sürüklemesiyle yapılıyor."
-      }
-    ]
-  },
-  {
-    "version": "1.0.0",
-    "date": "2026-04-15",
-    "changes": [
-      {
-        "type": "feature",
-        "text": "T0–T4 tab lifecycle system with automatic tier transitions based on inactivity.",
-        "textTR": "T0–T4 sekme yaşam döngüsü sistemi — hareketsizliğe göre otomatik kademe geçişleri."
-      },
-      {
-        "type": "feature",
-        "text": "Full English and Turkish language support (chrome.i18n).",
-        "textTR": "Türkçe ve İngilizce tam dil desteği (chrome.i18n)."
-      },
-      {
-        "type": "feature",
-        "text": "Popup, Settings, Onboarding, and Tab Management pages.",
-        "textTR": "Popup, Ayarlar, Başlangıç ve Tab Yönetimi sayfaları."
-      },
-      {
-        "type": "feature",
-        "text": "T0 fixed group — pinned tabs are never automatically demoted.",
-        "textTR": "T0 sabit grubu — seçilen sekmeler asla otomatik düşürülmez."
-      }
+      { "type": "feature", "text": "Dark / light theme support — toggle with the 🌙 button in the popup or from Settings.", "textTR": "Koyu / açık tema desteği — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir." },
+      { "type": "feature", "text": "Clicking a URL in Tab Management focuses the tab; collapsed groups expand automatically.", "textTR": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır." },
+      { "type": "feature", "text": "What's New page opens automatically after each update.", "textTR": "Güncelleme sonrası Yenilikler sayfası otomatik açılıyor." },
+      { "type": "improvement", "text": "Favicon column added to Tab Management for easier visual identification.", "textTR": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı." },
+      { "type": "improvement", "text": "Tier badge labels reflect the custom group names set in Settings.", "textTR": "Tier rozeti etiketleri, Ayarlar'da özelleştirilen grup adlarını yansıtıyor." },
+      { "type": "improvement", "text": "Version number is now displayed in the header of all pages.", "textTR": "Sayfa başlıklarına sürüm numarası eklendi." },
+      { "type": "improvement", "text": "Tier check now runs every 1 minute (was 5 minutes).", "textTR": "Tier kontrolü artık her 1 dakikada bir çalışıyor (eskiden 5 dakikaydı)." },
+      { "type": "improvement", "text": "Elapsed time shows up to 3 components: days + hours + minutes.", "textTR": "Geçen süre gün + saat + dakika şeklinde 3 bileşenli gösteriliyor." },
+      { "type": "fix", "text": "Tab timers were reset after PC sleep / hibernate — elapsed time is now preserved.", "textTR": "PC uyku / hibernate sonrası sekme sayaçları sıfırlanıyordu — artık korunuyor." },
+      { "type": "fix", "text": "Tabs with 'missing' status are now archived or deleted per the 'On Manual Close' setting.", "textTR": "'Yok' durumundaki sekmeler artık 'Manuel Kapatma' ayarına göre arşivleniyor veya siliniyor." },
+      { "type": "fix", "text": "Tabs opened while the extension was stopped are detected and corrected on startup.", "textTR": "Uzantı dururken açılan sekmeler başlangıçta tespit edilip otomatik düzeltiliyor." },
+      { "type": "fix", "text": "Fixed column in Tab Management is now a read-only indicator; tier changes via group drag.", "textTR": "Sabit sütun artık yalnızca okunabilir bir gösterge — tier değişiklikleri grup sürüklemesiyle yapılıyor." }
     ]
   }
 ]
