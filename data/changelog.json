@@ -1,0 +1,35 @@
+[
+  {
+    "version": "1.2.0",
+    "date": "2026-04-20",
+    "changes": [
+      { "type": "feature",     "text": "Koyu / açık tema desteği — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir." },
+      { "type": "fix",         "text": "PC uyku / hibernate sonrası sekme sayaçları sıfırlanıyordu — artık korunuyor." },
+      { "type": "feature",     "text": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır." },
+      { "type": "improvement", "text": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı." },
+      { "type": "fix",         "text": "\"Yok\" durumundaki sekmeler artık 'Manuel Kapatma' ayarına göre arşivleniyor veya siliniyor." },
+      { "type": "improvement", "text": "Tier rozeti etiketleri, Ayarlar'da özelleştirilen grup adlarını yansıtıyor." },
+      { "type": "improvement", "text": "Sayfa başlıklarına sürüm numarası eklendi." }
+    ]
+  },
+  {
+    "version": "1.0.9",
+    "date": "2026-04-18",
+    "changes": [
+      { "type": "improvement", "text": "Tier kontrolü artık her 1 dakikada bir çalışıyor (eskiden 5 dakikaydı)." },
+      { "type": "fix",         "text": "Uzantı dururken açılan sekmeler başlangıçta tespit edilip otomatik düzeltiliyor." },
+      { "type": "improvement", "text": "Geçen süre gün + saat + dakika şeklinde 3 bileşenli gösteriliyor." },
+      { "type": "fix",         "text": "Sabit sütun artık yalnızca okunabilir bir gösterge — tier değişiklikleri grup sürüklemesiyle yapılıyor." }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "2026-04-15",
+    "changes": [
+      { "type": "feature", "text": "T0–T4 sekme yaşam döngüsü sistemi — hareketsizliğe göre otomatik kademe geçişleri." },
+      { "type": "feature", "text": "Türkçe ve İngilizce tam dil desteği (chrome.i18n)." },
+      { "type": "feature", "text": "Popup, Ayarlar, Başlangıç ve Tab Yönetimi sayfaları." },
+      { "type": "feature", "text": "T0 sabit grubu — seçilen sekmeler asla otomatik düşürülmez." }
+    ]
+  }
+]

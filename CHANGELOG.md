@@ -2,6 +2,14 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.2.0] - 2026-04-20
+
+### Added
+- What's New page (`whatsnew.html`) opens automatically after extension updates; shows changelog cards and roadmap items loaded from `data/changelog.json` and `data/roadmap.json`; adapts to browser locale (English/Turkish); respects dark/light theme via `theme.js`
+- `data/changelog.json` — structured changelog for the What's New page (version, date, typed change entries)
+- `data/roadmap.json` — upcoming feature list for the What's New page (title, status, eta)
+- `chrome.runtime.onInstalled` now opens `whatsnew.html` on `reason="update"` and `onboarding.html` on fresh install; alarm is always cleared and recreated on install/update to pick up interval changes
+
 ## [1.1.7] - 2026-04-20
 
 ### Fixed

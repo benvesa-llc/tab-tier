@@ -932,12 +932,12 @@ async function timerCheck() {
 }
 
 // =============================================================================
-// onInstalled: İlk yükleme / güncelleme
+// onInstalled: First install / update
 // =============================================================================
 chrome.runtime.onInstalled.addListener(async (details) => {
-  // "install" yerine initialized flag'i kontrol et:
-  // Eski eklentiden yükseltme yapıldığında reason="update" gelir ve
-  // bu blok atlanırdı. initialized=false ise her durumda ilk kurulum yapılır.
+  // EN: Check initialized flag instead of reason="install" so upgrades from
+  //     older versions without the flag still run first-time setup.
+  // TR: initialized flag'i kontrol et — eski versiyondan geçişte de çalışır.
   const { settings: existingSettings = {} } =
     await chrome.storage.local.get("settings");
 
@@ -962,12 +962,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         currentTier: tab.pinned ? 0 : 1,
         isPinned: tab.pinned || false,
         lastFocusStart: now,
-        lastFocusEnd: now, // Süre hemen başlasın
+        lastFocusEnd: now,
         createdAt: now,
       };
     }
 
-    // Aktif tab'a dokunulmasın
+    // EN: Don't reset the active tab's timer | TR: Aktif sekmenin zamanlayıcısını sıfırlama
     const [activeTab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -979,11 +979,16 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
     await chrome.storage.local.set({ tabRecords });
 
-    // Onboarding aç
+    // EN: Open onboarding on fresh install | TR: İlk kurulumda onboarding'i aç
     chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") });
+  } else if (details.reason === "update") {
+    // EN: Open What's New page on extension update | TR: Güncelleme sonrası yenilikler sayfasını aç
+    chrome.tabs.create({ url: chrome.runtime.getURL("whatsnew.html") });
   }
 
-  // Timer her durumda (install veya update'de)
+  // EN: Always clear and recreate the alarm so interval changes take effect
+  // TR: Alarm her durumda sıfırlanıp yeniden oluşturulur
+  await chrome.alarms.clear("tierCheck");
   chrome.alarms.create("tierCheck", {
     periodInMinutes: DefaultSettings.timerIntervalMinutes,
   });

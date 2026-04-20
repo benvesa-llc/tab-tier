@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What's New — Tab Tier</title>
+    <style>
+      :root {
+        --bg:       #1e1e2e;
+        --mantle:   #181825;
+        --surface0: #313244;
+        --surface1: #45475a;
+        --overlay:  #6c7086;
+        --text:     #cdd6f4;
+        --subtext:  #a6adc8;
+        --accent:   #cba6f7;
+        --green:    #a6e3a1;
+        --yellow:   #f9e2af;
+        --red:      #f38ba8;
+        --blue:     #89b4fa;
+      }
+      [data-theme="light"] {
+        --bg:       #eff1f5;
+        --mantle:   #e6e9ef;
+        --surface0: #ccd0da;
+        --surface1: #bcc0cc;
+        --overlay:  #9ca0b0;
+        --text:     #4c4f69;
+        --subtext:  #6c6f85;
+        --accent:   #8839ef;
+        --green:    #166534;
+        --yellow:   #df8e1d;
+        --red:      #d20f39;
+        --blue:     #0369a1;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+      .header-icon { font-size: 40px; flex-shrink: 0; }
+      .header-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent);
+        line-height: 1.2;
+      }
+      .header-text p {
+        font-size: 13px;
+        color: var(--subtext);
+        margin-top: 4px;
+      }
+
+      .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--overlay);
+        margin-bottom: 12px;
+        margin-top: 36px;
+      }
+
+      .version-card {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 14px;
+        padding: 20px 22px;
+        margin-bottom: 14px;
+      }
+      .version-header {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .version-number {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .version-date {
+        font-size: 12px;
+        color: var(--overlay);
+      }
+      .version-badge {
+        margin-left: auto;
+        font-size: 10px;
+        font-weight: 700;
+        background: var(--accent);
+        color: #1e1e2e;
+        border-radius: 6px;
+        padding: 2px 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .change-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+      .change-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text);
+      }
+      .change-type {
+        flex-shrink: 0;
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 5px;
+        padding: 2px 7px;
+        margin-top: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .type-feature     { background: #2a1a3a; color: var(--accent); }
+      .type-fix         { background: #2a1a1a; color: var(--red); }
+      .type-improvement { background: #1a2a1a; color: var(--green); }
+      [data-theme="light"] .type-feature     { background: #ede0f9; }
+      [data-theme="light"] .type-fix         { background: #fce8ec; }
+      [data-theme="light"] .type-improvement { background: #e0f4e8; }
+
+      .roadmap-list { display: flex; flex-direction: column; gap: 10px; }
+      .roadmap-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 10px;
+        padding: 12px 16px;
+      }
+      .roadmap-dot {
+        flex-shrink: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot-in_progress { background: var(--yellow); }
+      .dot-planned     { background: var(--surface1); }
+      .roadmap-title { flex: 1; font-size: 13px; color: var(--text); }
+      .roadmap-eta   { font-size: 11px; color: var(--overlay); flex-shrink: 0; }
+
+      .footer {
+        margin-top: 44px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #1e1e2e;
+        border: none;
+        border-radius: 10px;
+        padding: 11px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .btn-primary:hover { opacity: 0.88; }
+      .btn-secondary {
+        background: var(--surface0);
+        color: var(--subtext);
+        border: none;
+        border-radius: 10px;
+        padding: 11px 20px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .btn-secondary:hover { opacity: 0.85; }
+
+      .loading { text-align: center; padding: 40px; color: var(--overlay); font-size: 13px; }
+    </style>
+    <script src="theme.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="header-icon">🗂️</div>
+        <div class="header-text">
+          <h1 id="pageTitle">What's New in Tab Tier</h1>
+          <p id="pageSubtitle"></p>
+        </div>
+      </div>
+
+      <div class="section-title" id="changelogTitle">Recent Changes</div>
+      <div id="changelogContainer" class="loading">Loading…</div>
+
+      <div class="section-title" id="roadmapTitle" style="margin-top:36px">Coming Up</div>
+      <div id="roadmapContainer" class="loading">Loading…</div>
+
+      <div class="footer">
+        <button class="btn-primary"   id="openPopupBtn">Open Tab Tier</button>
+        <button class="btn-secondary" id="openSettingsBtn">Settings</button>
+      </div>
+    </div>
+
+    <script>
+      // EN: Detect UI language from browser locale | TR: Tarayıcı dilini algıla
+      const isTR = (navigator.language || "").toLowerCase().startsWith("tr");
+
+      function t(en, tr) { return isTR ? tr : en; }
+
+      function typeLabel(type) {
+        if (type === "feature")     return t("Feature",     "Özellik");
+        if (type === "fix")         return t("Fix",         "Düzeltme");
+        if (type === "improvement") return t("Improvement", "İyileştirme");
+        return type;
+      }
+
+      function statusLabel(status) {
+        if (status === "in_progress") return t("In Progress", "Geliştiriliyor");
+        return t("Planned", "Planlandı");
+      }
+
+      function formatDate(dateStr) {
+        try {
+          return new Date(dateStr).toLocaleDateString(navigator.language || "en", {
+            year: "numeric", month: "long", day: "numeric",
+          });
+        } catch { return dateStr; }
+      }
+
+      async function load() {
+        const version = chrome.runtime.getManifest().version;
+
+        document.getElementById("pageTitle").textContent =
+          t("What's New in Tab Tier", "Tab Tier'daki Yenilikler");
+        document.getElementById("pageSubtitle").textContent =
+          t(`Version v${version} installed — thanks for using Tab Tier!`,
+            `Sürüm v${version} yüklendi — teşekkürler!`);
+        document.getElementById("changelogTitle").textContent =
+          t("Recent Changes", "Son Değişiklikler");
+        document.getElementById("roadmapTitle").textContent =
+          t("Coming Up", "Yakında");
+        document.getElementById("openPopupBtn").textContent =
+          t("Open Tab Tier", "Tab Tier'ı Aç");
+        document.getElementById("openSettingsBtn").textContent =
+          t("Settings", "Ayarlar");
+
+        // ── Changelog ──
+        try {
+          const resp = await fetch(chrome.runtime.getURL("data/changelog.json"));
+          const changelog = await resp.json();
+          const container = document.getElementById("changelogContainer");
+          container.innerHTML = "";
+          container.className = "";
+
+          changelog.forEach(entry => {
+            const isCurrent = entry.version === version;
+            const card = document.createElement("div");
+            card.className = "version-card";
+            card.innerHTML = `
+              <div class="version-header">
+                <span class="version-number">v${entry.version}</span>
+                <span class="version-date">${formatDate(entry.date)}</span>
+                ${isCurrent ? `<span class="version-badge">${t("Installed", "Yüklü")}</span>` : ""}
+              </div>
+              <ul class="change-list">
+                ${entry.changes.map(c => `
+                  <li class="change-item">
+                    <span class="change-type type-${c.type}">${typeLabel(c.type)}</span>
+                    <span>${c.text}</span>
+                  </li>`).join("")}
+              </ul>`;
+            container.appendChild(card);
+          });
+        } catch {
+          document.getElementById("changelogContainer").textContent =
+            t("Could not load changelog.", "Değişiklikler yüklenemedi.");
+        }
+
+        // ── Roadmap ──
+        try {
+          const resp = await fetch(chrome.runtime.getURL("data/roadmap.json"));
+          const roadmap = await resp.json();
+          const container = document.getElementById("roadmapContainer");
+          container.innerHTML = "";
+          container.className = "roadmap-list";
+
+          roadmap.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "roadmap-item";
+            div.innerHTML = `
+              <span class="roadmap-dot dot-${item.status}" title="${statusLabel(item.status)}"></span>
+              <span class="roadmap-title">${item.title}</span>
+              <span class="roadmap-eta">${item.eta}</span>`;
+            container.appendChild(div);
+          });
+        } catch {
+          document.getElementById("roadmapContainer").textContent =
+            t("Could not load roadmap.", "Yol haritası yüklenemedi.");
+        }
+      }
+
+      document.getElementById("openPopupBtn").addEventListener("click", () => {
+        chrome.action.openPopup().catch(() => window.close());
+      });
+      document.getElementById("openSettingsBtn").addEventListener("click", () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL("settings.html") });
+      });
+
+      load();
+    </script>
+  </body>
+</html>

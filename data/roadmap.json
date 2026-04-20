@@ -1,0 +1,6 @@
+[
+  { "title": "Tab export / import (JSON + CSV)", "status": "planned", "eta": "1.3.0" },
+  { "title": "Per-domain custom tier rules", "status": "planned", "eta": "1.3.0" },
+  { "title": "Session snapshot & restore", "status": "planned", "eta": "1.4.0" },
+  { "title": "Statistics dashboard (focus time, tier history)", "status": "planned", "eta": "1.4.0" }
+]
