@@ -280,7 +280,7 @@
                 ${entry.changes.map(c => `
                   <li class="change-item">
                     <span class="change-type type-${c.type}">${typeLabel(c.type)}</span>
-                    <span>${c.text}</span>
+                    <span>${isTR && c.textTR ? c.textTR : c.text}</span>
                   </li>`).join("")}
               </ul>`;
             container.appendChild(card);
