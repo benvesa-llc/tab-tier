@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.2.1",
+    "date": "2026-04-20",
+    "changes": [
+      { "type": "fix", "text": "Tab elapsed times were incorrectly reset to zero on every extension update.", "textTR": "Sekme geçen süreleri her uzantı güncellemesinde sıfırlanıyordu, düzeltildi." }
+    ]
+  },
+  {
     "version": "1.2.0",
     "date": "2026-04-20",
     "changes": [
