@@ -216,15 +216,16 @@
     </div>
 
     <script>
-      // EN: Use chrome.i18n for reliable UI language detection in extension pages | TR: Extension sayfalarında dil tespiti için chrome.i18n kullan
+      // EN: Use chrome.i18n for reliable locale detection in extension pages | TR: Extension sayfalarında dil tespiti
       const isTR = chrome.i18n.getUILanguage().toLowerCase().startsWith("tr");
+      const lang = chrome.i18n.getUILanguage() || "en";
 
       function t(en, tr) { return isTR ? tr : en; }
 
       function typeLabel(type) {
-        if (type === "feature")     return t("Feature",     "Özellik");
-        if (type === "fix")         return t("Fix",         "Düzeltme");
-        if (type === "improvement") return t("Improvement", "İyileştirme");
+        if (type === "feature")     return t("Feature",      "Özellik");
+        if (type === "fix")         return t("Fix",          "Düzeltme");
+        if (type === "improvement") return t("Improvement",  "İyileştirme");
         return type;
       }
 
@@ -235,82 +236,104 @@
 
       function formatDate(dateStr) {
         try {
-          return new Date(dateStr).toLocaleDateString(chrome.i18n.getUILanguage() || "en", {
+          return new Date(dateStr).toLocaleDateString(lang, {
             year: "numeric", month: "long", day: "numeric",
           });
-        } catch { return dateStr; }
+        } catch (e) { return dateStr; }
+      }
+
+      function showError(id, msg) {
+        const el = document.getElementById(id);
+        el.className = "";
+        el.textContent = msg;
+      }
+
+      async function loadChangelog(version) {
+        const url = chrome.runtime.getURL("data/changelog.json");
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status + " — " + url);
+        const changelog = await resp.json();
+        const container = document.getElementById("changelogContainer");
+        container.innerHTML = "";
+        container.className = "";
+
+        changelog.forEach(entry => {
+          const isCurrent = entry.version === version;
+          const card = document.createElement("div");
+          card.className = "version-card";
+
+          const header = document.createElement("div");
+          header.className = "version-header";
+          header.innerHTML =
+            "<span class='version-number'>v" + entry.version + "</span>" +
+            "<span class='version-date'>" + formatDate(entry.date) + "</span>" +
+            (isCurrent ? "<span class='version-badge'>" + t("Installed", "Yüklü") + "</span>" : "");
+
+          const list = document.createElement("ul");
+          list.className = "change-list";
+          entry.changes.forEach(c => {
+            const li = document.createElement("li");
+            li.className = "change-item";
+            const badge = document.createElement("span");
+            badge.className = "change-type type-" + c.type;
+            badge.textContent = typeLabel(c.type);
+            const txt = document.createElement("span");
+            txt.textContent = (isTR && c.textTR) ? c.textTR : c.text;
+            li.appendChild(badge);
+            li.appendChild(txt);
+            list.appendChild(li);
+          });
+
+          card.appendChild(header);
+          card.appendChild(list);
+          container.appendChild(card);
+        });
+      }
+
+      async function loadRoadmap() {
+        const url = chrome.runtime.getURL("data/roadmap.json");
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status + " — " + url);
+        const roadmap = await resp.json();
+        const container = document.getElementById("roadmapContainer");
+        container.innerHTML = "";
+        container.className = "roadmap-list";
+
+        roadmap.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "roadmap-item";
+          const dot = document.createElement("span");
+          dot.className = "roadmap-dot dot-" + item.status;
+          dot.title = statusLabel(item.status);
+          const title = document.createElement("span");
+          title.className = "roadmap-title";
+          title.textContent = (isTR && item.titleTR) ? item.titleTR : item.title;
+          const eta = document.createElement("span");
+          eta.className = "roadmap-eta";
+          eta.textContent = item.eta;
+          div.appendChild(dot);
+          div.appendChild(title);
+          div.appendChild(eta);
+          container.appendChild(div);
+        });
       }
 
       async function load() {
         const version = chrome.runtime.getManifest().version;
 
-        document.getElementById("pageTitle").textContent =
-          t("What's New in Tab Tier", "Tab Tier'daki Yenilikler");
-        document.getElementById("pageSubtitle").textContent =
-          t(`Version v${version} installed — thanks for using Tab Tier!`,
-            `Sürüm v${version} yüklendi — teşekkürler!`);
-        document.getElementById("changelogTitle").textContent =
-          t("Recent Changes", "Son Değişiklikler");
-        document.getElementById("roadmapTitle").textContent =
-          t("Coming Up", "Yakında");
-        document.getElementById("openPopupBtn").textContent =
-          t("Open Tab Tier", "Tab Tier'ı Aç");
-        document.getElementById("openSettingsBtn").textContent =
-          t("Settings", "Ayarlar");
+        document.getElementById("pageTitle").textContent    = t("What's New in Tab Tier", "Tab Tier'daki Yenilikler");
+        document.getElementById("pageSubtitle").textContent = t("Version v" + version + " installed \u2014 thanks for using Tab Tier!", "S\xfcr\xfcm v" + version + " y\xfcklendi \u2014 te\u015fekk\xfcrler!");
+        document.getElementById("changelogTitle").textContent = t("Recent Changes", "Son De\u011fi\u015fiklikler");
+        document.getElementById("roadmapTitle").textContent   = t("Coming Up", "Yakında");
+        document.getElementById("openPopupBtn").textContent   = t("Open Tab Tier", "Tab Tier'\u0131 A\xe7");
+        document.getElementById("openSettingsBtn").textContent = t("Settings", "Ayarlar");
 
-        // ── Changelog ──
-        try {
-          const resp = await fetch(chrome.runtime.getURL("data/changelog.json"));
-          const changelog = await resp.json();
-          const container = document.getElementById("changelogContainer");
-          container.innerHTML = "";
-          container.className = "";
-
-          changelog.forEach(entry => {
-            const isCurrent = entry.version === version;
-            const card = document.createElement("div");
-            card.className = "version-card";
-            card.innerHTML = `
-              <div class="version-header">
-                <span class="version-number">v${entry.version}</span>
-                <span class="version-date">${formatDate(entry.date)}</span>
-                ${isCurrent ? `<span class="version-badge">${t("Installed", "Yüklü")}</span>` : ""}
-              </div>
-              <ul class="change-list">
-                ${entry.changes.map(c => `
-                  <li class="change-item">
-                    <span class="change-type type-${c.type}">${typeLabel(c.type)}</span>
-                    <span>${isTR && c.textTR ? c.textTR : c.text}</span>
-                  </li>`).join("")}
-              </ul>`;
-            container.appendChild(card);
-          });
-        } catch {
-          document.getElementById("changelogContainer").textContent =
-            t("Could not load changelog.", "Değişiklikler yüklenemedi.");
-        }
-
-        // ── Roadmap ──
-        try {
-          const resp = await fetch(chrome.runtime.getURL("data/roadmap.json"));
-          const roadmap = await resp.json();
-          const container = document.getElementById("roadmapContainer");
-          container.innerHTML = "";
-          container.className = "roadmap-list";
-
-          roadmap.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "roadmap-item";
-            div.innerHTML = `
-              <span class="roadmap-dot dot-${item.status}" title="${statusLabel(item.status)}"></span>
-              <span class="roadmap-title">${isTR && item.titleTR ? item.titleTR : item.title}</span>
-              <span class="roadmap-eta">${item.eta}</span>`;
-            container.appendChild(div);
-          });
-        } catch {
-          document.getElementById("roadmapContainer").textContent =
-            t("Could not load roadmap.", "Yol haritası yüklenemedi.");
-        }
+        loadChangelog(version).catch(e => {
+          showError("changelogContainer", t("Could not load changelog.", "De\u011fi\u015fiklikler y\xfcklenemedi.") + " (" + e.message + ")");
+        });
+        loadRoadmap().catch(e => {
+          showError("roadmapContainer", t("Could not load roadmap.", "Yol haritas\u0131 y\xfcklenemedi.") + " (" + e.message + ")");
+        });
       }
 
       document.getElementById("openPopupBtn").addEventListener("click", () => {
@@ -320,7 +343,7 @@
         chrome.tabs.create({ url: chrome.runtime.getURL("settings.html") });
       });
 
-      load();
+      load().catch(e => console.error("whatsnew load error:", e));
     </script>
   </body>
 </html>
