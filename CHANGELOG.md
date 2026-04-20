@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.2.1] - 2026-04-20
+
+### Fixed
+- T1 tab elapsed times were reset to ~0 on every extension update: `initialized` flag was defined as `false` in DefaultSettings but never written back as `true`, so the first-install setup block ran on every `onInstalled` event and overwrote all `lastFocusEnd` values with `Date.now()`; fix: fresh install is now detected by checking whether `tabRecords` storage is empty, not by the flag; `initialized: true` is written after setup so the flag is correct going forward
+
 ## [1.2.0] - 2026-04-20
 
 ### Added

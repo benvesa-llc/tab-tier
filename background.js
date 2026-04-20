@@ -935,16 +935,22 @@ async function timerCheck() {
 // onInstalled: First install / update
 // =============================================================================
 chrome.runtime.onInstalled.addListener(async (details) => {
-  // EN: Check initialized flag instead of reason="install" so upgrades from
-  //     older versions without the flag still run first-time setup.
-  // TR: initialized flag'i kontrol et — eski versiyondan geçişte de çalışır.
-  const { settings: existingSettings = {} } =
-    await chrome.storage.local.get("settings");
+  const { settings: existingSettings = {}, tabRecords: existingTabRecords = {} } =
+    await chrome.storage.local.get(["settings", "tabRecords"]);
 
-  if (!existingSettings.initialized) {
-    log("First init (reason=%s) — scanning tabs", details.reason);
+  // EN: Treat as fresh install only if there are no existing tab records.
+  //     Using tabRecords presence (not the initialized flag) because the flag was
+  //     never written as true in older versions — checking it alone would incorrectly
+  //     re-run first-time setup on every update, wiping all elapsed times.
+  // TR: Yalnızca mevcut sekme kaydı yoksa ilk kurulum olarak kabul et.
+  //     initialized flag eski sürümlerde true olarak hiç yazılmadığından,
+  //     sadece o flag'e bakmak her güncellemede tüm süreleri sıfırlardı.
+  const isFreshInstall = Object.keys(existingTabRecords).length === 0;
 
-    const mergedSettings = { ...DefaultSettings, ...existingSettings };
+  if (isFreshInstall) {
+    log("First install (reason=%s) — scanning tabs", details.reason);
+
+    const mergedSettings = { ...DefaultSettings, ...existingSettings, initialized: true };
     await chrome.storage.local.set({ settings: mergedSettings });
 
     const allTabs = await chrome.tabs.query({});
@@ -968,10 +974,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     }
 
     // EN: Don't reset the active tab's timer | TR: Aktif sekmenin zamanlayıcısını sıfırlama
-    const [activeTab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (activeTab && tabRecords[activeTab.id]) {
       tabRecords[activeTab.id].lastFocusEnd = null;
       currentActiveTabId = activeTab.id;
@@ -981,9 +984,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
     // EN: Open onboarding on fresh install | TR: İlk kurulumda onboarding'i aç
     chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") });
-  } else if (details.reason === "update") {
-    // EN: Open What's New page on extension update | TR: Güncelleme sonrası yenilikler sayfasını aç
-    chrome.tabs.create({ url: chrome.runtime.getURL("whatsnew.html") });
+  } else {
+    // EN: Update (or reinstall with existing data) — merge any new default settings,
+    //     mark initialized, do NOT touch tabRecords so elapsed times are preserved.
+    // TR: Güncelleme — yeni varsayılan ayarları birleştir, initialized'ı işaretle,
+    //     tabRecords'a dokunma, böylece geçen süreler korunur.
+    const mergedSettings = { ...DefaultSettings, ...existingSettings, initialized: true };
+    await chrome.storage.local.set({ settings: mergedSettings });
+
+    if (details.reason === "update") {
+      // EN: Open What's New page on extension update | TR: Güncelleme sonrası yenilikler sayfasını aç
+      chrome.tabs.create({ url: chrome.runtime.getURL("whatsnew.html") });
+    }
   }
 
   // EN: Always clear and recreate the alarm so interval changes take effect
