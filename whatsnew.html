@@ -216,8 +216,8 @@
     </div>
 
     <script>
-      // EN: Detect UI language from browser locale | TR: Tarayıcı dilini algıla
-      const isTR = (navigator.language || "").toLowerCase().startsWith("tr");
+      // EN: Use chrome.i18n for reliable UI language detection in extension pages | TR: Extension sayfalarında dil tespiti için chrome.i18n kullan
+      const isTR = chrome.i18n.getUILanguage().toLowerCase().startsWith("tr");
 
       function t(en, tr) { return isTR ? tr : en; }
 
@@ -235,7 +235,7 @@
 
       function formatDate(dateStr) {
         try {
-          return new Date(dateStr).toLocaleDateString(navigator.language || "en", {
+          return new Date(dateStr).toLocaleDateString(chrome.i18n.getUILanguage() || "en", {
             year: "numeric", month: "long", day: "numeric",
           });
         } catch { return dateStr; }
@@ -303,7 +303,7 @@
             div.className = "roadmap-item";
             div.innerHTML = `
               <span class="roadmap-dot dot-${item.status}" title="${statusLabel(item.status)}"></span>
-              <span class="roadmap-title">${item.title}</span>
+              <span class="roadmap-title">${isTR && item.titleTR ? item.titleTR : item.title}</span>
               <span class="roadmap-eta">${item.eta}</span>`;
             container.appendChild(div);
           });
