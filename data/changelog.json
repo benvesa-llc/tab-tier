@@ -1,27 +1,20 @@
 [
   {
-    "version": "1.2.1",
-    "date": "2026-04-20",
+    "version": "1.2.2",
+    "date": "2026-04-21",
     "changes": [
-      { "type": "fix", "text": "Tab elapsed times were incorrectly reset to zero on every extension update.", "textTR": "Sekme geçen süreleri her uzantı güncellemesinde sıfırlanıyordu, düzeltildi." }
-    ]
-  },
-  {
-    "version": "1.2.0",
-    "date": "2026-04-20",
-    "changes": [
-      { "type": "feature", "text": "Dark / light theme support — toggle with the 🌙 button in the popup or from Settings.", "textTR": "Koyu / açık tema desteği — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir." },
-      { "type": "feature", "text": "Clicking a URL in Tab Management focuses the tab; collapsed groups expand automatically.", "textTR": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır." },
-      { "type": "feature", "text": "What's New page opens automatically after each update.", "textTR": "Güncelleme sonrası Yenilikler sayfası otomatik açılıyor." },
-      { "type": "improvement", "text": "Favicon column added to Tab Management for easier visual identification.", "textTR": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı." },
+      { "type": "feature",     "text": "Dark / light theme — toggle with the 🌙 button in the popup or from Settings.", "textTR": "Koyu / açık tema — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir." },
+      { "type": "feature",     "text": "Clicking a URL in Tab Management focuses the tab; collapsed groups expand automatically.", "textTR": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır." },
+      { "type": "feature",     "text": "Favicon column added to Tab Management for easier visual identification.", "textTR": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı." },
+      { "type": "feature",     "text": "What's New page opens automatically after each update.", "textTR": "Güncelleme sonrası Yenilikler sayfası otomatik açılıyor." },
       { "type": "improvement", "text": "Tier badge labels reflect the custom group names set in Settings.", "textTR": "Tier rozeti etiketleri, Ayarlar'da özelleştirilen grup adlarını yansıtıyor." },
-      { "type": "improvement", "text": "Version number is now displayed in the header of all pages.", "textTR": "Sayfa başlıklarına sürüm numarası eklendi." },
+      { "type": "improvement", "text": "Version number displayed in the header of all pages.", "textTR": "Tüm sayfa başlıklarına sürüm numarası eklendi." },
       { "type": "improvement", "text": "Tier check now runs every 1 minute (was 5 minutes).", "textTR": "Tier kontrolü artık her 1 dakikada bir çalışıyor (eskiden 5 dakikaydı)." },
       { "type": "improvement", "text": "Elapsed time shows up to 3 components: days + hours + minutes.", "textTR": "Geçen süre gün + saat + dakika şeklinde 3 bileşenli gösteriliyor." },
-      { "type": "fix", "text": "Tab timers were reset after PC sleep / hibernate — elapsed time is now preserved.", "textTR": "PC uyku / hibernate sonrası sekme sayaçları sıfırlanıyordu — artık korunuyor." },
-      { "type": "fix", "text": "Tabs with 'missing' status are now archived or deleted per the 'On Manual Close' setting.", "textTR": "'Yok' durumundaki sekmeler artık 'Manuel Kapatma' ayarına göre arşivleniyor veya siliniyor." },
-      { "type": "fix", "text": "Tabs opened while the extension was stopped are detected and corrected on startup.", "textTR": "Uzantı dururken açılan sekmeler başlangıçta tespit edilip otomatik düzeltiliyor." },
-      { "type": "fix", "text": "Fixed column in Tab Management is now a read-only indicator; tier changes via group drag.", "textTR": "Sabit sütun artık yalnızca okunabilir bir gösterge — tier değişiklikleri grup sürüklemesiyle yapılıyor." }
+      { "type": "fix",         "text": "Tab timers were reset after PC sleep / hibernate — elapsed time is now preserved.", "textTR": "PC uyku / hibernate sonrası sekme sayaçları sıfırlanıyordu — artık korunuyor." },
+      { "type": "fix",         "text": "Tab timers were reset on every extension update (e.g. Edge auto-update) — now preserved.", "textTR": "Her uzantı güncellemesinde (Edge otomatik güncelleme dahil) sayaçlar sıfırlanıyordu — artık korunuyor." },
+      { "type": "fix",         "text": "Tabs with 'missing' status are now archived or deleted per the 'On Manual Close' setting.", "textTR": "'Yok' durumundaki sekmeler artık 'Manuel Kapatma' ayarına göre arşivleniyor veya siliniyor." },
+      { "type": "fix",         "text": "Tabs opened while the extension was stopped are detected and corrected on startup.", "textTR": "Uzantı dururken açılan sekmeler başlangıçta tespit edilip otomatik düzeltiliyor." }
     ]
   }
 ]
