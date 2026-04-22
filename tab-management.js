@@ -55,10 +55,15 @@ function fmtElapsed(lastFocusEnd) {
   const sn = i18n("unitAbbrSec");
   // EN: Show up to 3 most significant non-zero components
   // TR: En fazla 3 anlamlı sıfır-olmayan bileşeni göster
-  if (day > 0) return `${day}${g} ${hr % 24}${s} ${min % 60}${d}`;
-  if (hr  > 0) return `${hr}${s} ${min % 60}${d} ${sec % 60}${sn}`;
-  if (min > 0) return `${min}${d} ${sec % 60}${sn}`;
-  return `${sec}${sn}`;
+  let elapsed;
+  if (day > 0) elapsed = `${day}${g} ${hr % 24}${s} ${min % 60}${d}`;
+  else if (hr  > 0) elapsed = `${hr}${s} ${min % 60}${d} ${sec % 60}${sn}`;
+  else if (min > 0) elapsed = `${min}${d} ${sec % 60}${sn}`;
+  else elapsed = `${sec}${sn}`;
+  // EN: Show focus-end date below elapsed time as secondary info
+  // TR: Odak bitiş tarihini geçen sürenin altında ikincil bilgi olarak göster
+  const dateStr = fmtTime(lastFocusEnd).replace("T", " ");
+  return `${elapsed}<br><span class="elapsed-date">${dateStr}</span>`;
 }
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
@@ -251,7 +256,7 @@ function renderTable() {
         <td>${openCell}</td>
         <td class="domain-cell">${escHtml(r.domain || "—")}</td>
         <td class="title-cell" title="${escHtml(r.title || "")}">${escHtml(r.title || "—")}</td>
-        <td style="width:28px;text-align:center;padding:4px 6px">${r.favicon ? `<img src="${escHtml(r.favicon)}" width="20" height="20" style="border-radius:3px;vertical-align:middle;object-fit:contain" onerror="this.style.display='none'">` : ""}</td>
+        <td style="width:28px;text-align:center;padding:4px 6px">${r.favicon ? `<img src="${escHtml(r.favicon)}" width="20" height="20" style="border-radius:3px;vertical-align:middle;object-fit:contain" class="favicon-img">` : ""}</td>
         <td class="url-cell" title="${escHtml(r.url || "")}">
           ${
             isOpen
@@ -266,6 +271,12 @@ function renderTable() {
       </tr>`;
     })
     .join("");
+
+  // EN: Hide favicons that fail to load (CSP blocks inline onerror, use addEventListener)
+  // TR: Yüklenemeyen favicon'ları gizle (CSP inline onerror'ı engeller, addEventListener kullan)
+  document.querySelectorAll(".favicon-img").forEach(img => {
+    img.addEventListener("error", () => { img.style.display = "none"; });
+  });
 
   // EN: Update column header sort arrows | TR: Sütun başlığı okları güncelle
   document.querySelectorAll("thead th[data-col]").forEach((th) => {

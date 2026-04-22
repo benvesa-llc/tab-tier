@@ -2,6 +2,14 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.2.3] - 2026-04-22
+
+### Changed
+- Elapsed column in Tab Management now shows the focus-end date below the elapsed time as secondary info
+
+### Fixed
+- Favicon images that fail to load were not being hidden: MV3 CSP blocks inline `onerror` attribute handlers; switched to programmatic `addEventListener` after table render
+
 ## [1.2.2] - 2026-04-21
 
 ### Fixed
