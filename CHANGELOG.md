@@ -2,10 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.2.3] - 2026-04-22
+## [1.2.4] - 2026-04-22
 
 ### Changed
-- Elapsed column in Tab Management now shows the focus-end date below the elapsed time as secondary info
+- Elapsed sort in Tab Management uses `lastFocusEnd` as secondary sort key — T0 tabs (all showing "—") and elapsed ties are now ordered by when focus actually ended
 
 ### Fixed
 - Favicon images that fail to load were not being hidden: MV3 CSP blocks inline `onerror` attribute handlers; switched to programmatic `addEventListener` after table render

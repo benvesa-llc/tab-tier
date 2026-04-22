@@ -60,10 +60,7 @@ function fmtElapsed(lastFocusEnd) {
   else if (hr  > 0) elapsed = `${hr}${s} ${min % 60}${d} ${sec % 60}${sn}`;
   else if (min > 0) elapsed = `${min}${d} ${sec % 60}${sn}`;
   else elapsed = `${sec}${sn}`;
-  // EN: Show focus-end date below elapsed time as secondary info
-  // TR: Odak bitiş tarihini geçen sürenin altında ikincil bilgi olarak göster
-  const dateStr = fmtTime(lastFocusEnd).replace("T", " ");
-  return `${elapsed}<br><span class="elapsed-date">${dateStr}</span>`;
+  return elapsed;
 }
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
@@ -203,7 +200,15 @@ function renderTable() {
     const vb = getComparableValue(b, sortCol);
     if (va < vb) return -sortDir;
     if (va > vb) return sortDir;
-    // EN: Secondary sort: title ascending | TR: İkincil sıralama: başlık artan
+    // EN: Secondary sort: when sorting by elapsed, use lastFocusEnd so T0 (all "—") and
+    //     ties in elapsed time are ordered by when focus actually ended.
+    // TR: Elapsed sıralamasında ikincil kriter lastFocusEnd — T0 ("—") ve eşit süreler
+    //     odağın gerçekte ne zaman bittiğine göre sıralanır.
+    if (sortCol === "elapsed") {
+      const fa = a.lastFocusEnd ?? 0;
+      const fb = b.lastFocusEnd ?? 0;
+      return fa < fb ? -sortDir : fa > fb ? sortDir : 0;
+    }
     return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
   });
 
