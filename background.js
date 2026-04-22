@@ -318,6 +318,23 @@ async function sortTabsInWindow(windowId, sortType) {
   const finalOrder = [...sortedT0, ...sorted, ...internalTabs];
   const startIndex = browserPinned.length;
 
+  // EN: Ungroup T0 tabs first — grouped tabs cannot be freely repositioned across
+  //     the window via tabs.move; removing them from the group lets the sort loop
+  //     place them at the correct absolute indices before re-grouping below.
+  // TR: T0 sekmelerini önce gruptan çıkar — gruptaki sekmeler tabs.move ile pencere
+  //     genelinde serbest konumlandırılamaz; gruptan çıkarmak sıralama döngüsünün
+  //     doğru mutlak indekslere yerleştirmesine olanak tanır.
+  if (t0Tabs.length > 0) {
+    try {
+      t0Tabs.forEach(t => extensionMovingTabs.add(t.id));
+      await chrome.tabs.ungroup(t0Tabs.map(t => t.id));
+    } catch (e) {
+      log("sortTabsInWindow ungroup T0 error:", e?.message);
+    } finally {
+      t0Tabs.forEach(t => extensionMovingTabs.delete(t.id));
+    }
+  }
+
   for (let i = 0; i < finalOrder.length; i++) {
     try {
       await chrome.tabs.move(finalOrder[i].id, { index: startIndex + i });
