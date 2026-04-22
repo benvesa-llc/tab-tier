@@ -290,7 +290,13 @@ async function sortTabsInWindow(windowId, sortType) {
       if (ea !== eb) return ea - eb;
       return (tabRecords[a.id]?.lastFocusEnd ?? 0) - (tabRecords[b.id]?.lastFocusEnd ?? 0);
     };
-    sortedT0 = [...t0Tabs].sort(byElapsed);
+    // EN: T0 tabs show "—" for elapsed; sort them by lastFocusEnd ascending (oldest focus first),
+    //     matching popup and Tab Management behaviour.
+    // TR: T0 sekmeler elapsed için "—" gösterir; lastFocusEnd artan sırala (en eski odak önce),
+    //     popup ve Tab Yönetimi davranışıyla uyumlu.
+    sortedT0 = [...t0Tabs].sort((a, b) =>
+      (tabRecords[a.id]?.lastFocusEnd ?? 0) - (tabRecords[b.id]?.lastFocusEnd ?? 0)
+    );
     sorted = [...restTabs].sort((a, b) => {
       const ta = tabRecords[a.id]?.currentTier ?? 1;
       const tb = tabRecords[b.id]?.currentTier ?? 1;

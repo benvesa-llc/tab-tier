@@ -2,7 +2,7 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.2.7] - 2026-04-22
+## [1.2.8] - 2026-04-22
 
 ### Added
 - "Elapsed ↑" sort option in popup: sorts all tabs by elapsed inactive time ascending (least inactive first); T0 tabs always first, secondary sort by `lastFocusEnd`; also applied to tab bar via "Apply to Tabs"
@@ -12,6 +12,7 @@ All notable changes to Tab Tier will be documented in this file.
 
 ### Fixed
 - "Apply to Tabs" did not reorder T0 tabs: grouped tabs cannot be freely repositioned across the window via `tabs.move`; T0 tabs are now ungrouped before the sort loop and re-grouped afterwards
+- Elapsed sort "Apply to Tabs": T0 tabs were sorted by elapsed descending instead of `lastFocusEnd` ascending — now matches popup and Tab Management behaviour
 
 ## [1.2.4] - 2026-04-22
 
