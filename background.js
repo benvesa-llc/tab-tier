@@ -319,25 +319,24 @@ async function sortTabsInWindow(windowId, sortType) {
     });
   }
 
-  // EN: Final order: [sorted T0] [sorted T1/T2/T3] [internal pages — always last, ungrouped]
-  // TR: Nihai sıra: [sıralı T0] [sıralı T1/T2/T3] [iç sayfalar — her zaman en sonda, grupsuz]
   const finalOrder = [...sortedT0, ...sorted, ...internalTabs];
   const startIndex = browserPinned.length;
 
-  // EN: Ungroup T0 tabs first — grouped tabs cannot be freely repositioned across
-  //     the window via tabs.move; removing them from the group lets the sort loop
-  //     place them at the correct absolute indices before re-grouping below.
-  // TR: T0 sekmelerini önce gruptan çıkar — gruptaki sekmeler tabs.move ile pencere
-  //     genelinde serbest konumlandırılamaz; gruptan çıkarmak sıralama döngüsünün
-  //     doğru mutlak indekslere yerleştirmesine olanak tanır.
-  if (t0Tabs.length > 0) {
+  // EN: Move the T0 group to the front first so that individual tabs.move calls
+  //     land within the group's span — Chrome keeps grouped tabs in their group
+  //     only when the target index is inside the group's current contiguous range.
+  // TR: T0 grubunu önce öne taşı; böylece tabs.move çağrıları grubun aralığı
+  //     içinde kalır — Chrome, hedef indeks grubun aralığındaysa sekmeyi grupta tutar.
+  const allGroups = await chrome.tabGroups.query({ windowId });
+  const t0Group = allGroups.find(g => g.color === TIER_GROUP_COLORS[0]);
+  if (t0Group && sortedT0.length > 0) {
+    sortedT0.forEach(t => extensionMovingTabs.add(t.id));
     try {
-      t0Tabs.forEach(t => extensionMovingTabs.add(t.id));
-      await chrome.tabs.ungroup(t0Tabs.map(t => t.id));
+      await chrome.tabGroups.move(t0Group.id, { index: startIndex });
     } catch (e) {
-      log("sortTabsInWindow ungroup T0 error:", e?.message);
+      log("sortTabsInWindow t0Group move error:", e?.message);
     } finally {
-      t0Tabs.forEach(t => extensionMovingTabs.delete(t.id));
+      sortedT0.forEach(t => extensionMovingTabs.delete(t.id));
     }
   }
 

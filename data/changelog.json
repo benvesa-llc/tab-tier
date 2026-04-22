@@ -1,11 +1,11 @@
 [
   {
-    "version": "1.2.8",
+    "version": "1.2.9",
     "date": "2026-04-22",
     "changes": [
       { "type": "improvement", "text": "Popup width increased from 440px to 520px for more comfortable tab browsing.", "textTR": "Popup genişliği 440px'ten 520px'e çıkarıldı, sekmeler daha rahat görünüyor." },
       { "type": "improvement", "text": "Elapsed sort in popup uses focus-end date as a tiebreaker — same behavior as Tab Management.", "textTR": "Popup'taki Elapsed sıralaması ikincil kriter olarak odak bitiş tarihini kullanıyor — Tab Yönetimi ile aynı davranış." },
-      { "type": "fix", "text": "\"Apply to Tabs\" did not reorder T0 (fixed) tabs — grouped tabs are now ungrouped before sorting and re-grouped afterwards.", "textTR": "\"Sekmelere Uygula\" T0 (sabit) sekmeleri sıralamıyordu — sekmeler artık sıralama öncesi gruptan çıkarılıp sonra yeniden gruplandırılıyor." },
+      { "type": "fix", "text": "\"Apply to Tabs\" T0 sort: T0 group is moved to the front via tabGroups.move before sorting so tabs reorder within the group without any ungroup/re-group flash.", "textTR": "\"Sekmelere Uygula\" T0 sıralaması: T0 grubu sıralama öncesi öne alınıyor, sekmeler grup içinde sıralanıyor — grup kapanıp açılma yok." },
       { "type": "fix", "text": "Elapsed sort \"Apply to Tabs\": T0 tabs were ordered by elapsed descending instead of lastFocusEnd ascending — now matches popup and Tab Management.", "textTR": "Elapsed sıralaması \"Sekmelere Uygula\": T0 sekmeler elapsed azalan yerine lastFocusEnd artan sıralanıyor — artık popup ve Tab Yönetimi ile tutarlı." }
     ]
   },
