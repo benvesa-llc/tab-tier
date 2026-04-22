@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.2.5] - 2026-04-22
+
+### Added
+- "Elapsed ↑" sort option in popup: sorts all tabs by elapsed inactive time ascending (least inactive first); T0 tabs always first, secondary sort by `lastFocusEnd`; also applied to tab bar via "Apply to Tabs"
+
 ## [1.2.4] - 2026-04-22
 
 ### Changed

@@ -190,6 +190,16 @@ function sortRecords(records) {
       return (a.url || "").toLowerCase().localeCompare((b.url || "").toLowerCase());
     });
   }
+  if (currentSort === "elapsed") {
+    // EN: T0 first, then ascending elapsed (least recently used last), secondary: lastFocusEnd asc
+    // TR: T0 önce, sonra artan elapsed (en uzun süre önce odaklanılan en sonda), ikincil: lastFocusEnd artan
+    const elapsedOf = (r) => r.currentTier === 0 ? -1 : r.lastFocusEnd == null ? 0 : Date.now() - r.lastFocusEnd;
+    return [...records].sort((a, b) => {
+      const ea = elapsedOf(a), eb = elapsedOf(b);
+      if (ea !== eb) return ea - eb;
+      return (a.lastFocusEnd ?? 0) - (b.lastFocusEnd ?? 0);
+    });
+  }
   // EN: tierDomain (default): tier first, then domain A-Z, then title A-Z
   // TR: tierDomain (varsayılan): tier önce, sonra domain A-Z, sonra başlık A-Z
   return [...records].sort((a, b) => {

@@ -13,6 +13,7 @@
   "sortTierDomain":     { "message": "Tier + Domain" },
   "sortTierTitle":      { "message": "Tier + Başlık" },
   "sortTierUrl":        { "message": "Tier + URL" },
+  "sortElapsed":        { "message": "Elapsed ↑" },
   "applyToTabs":        { "message": "Tab'lara Uygula" },
   "applyToTabsTitle":   { "message": "Seçili sırayı tarayıcı tab bar'a uygula" },
   "clearArchiveBtn":    { "message": "🗑 Arşivi Temizle" },

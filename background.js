@@ -276,6 +276,27 @@ async function sortTabsInWindow(windowId, sortType) {
       if (ta !== tb) return ta - tb;
       return byUrl(a, b);
     });
+  } else if (sortType === "elapsed") {
+    // EN: Elapsed ascending — least inactive first; T0 sorted by lastFocusEnd asc
+    // TR: Elapsed artan — en az hareketsiz olan önce; T0 lastFocusEnd artan
+    const now = Date.now();
+    const elapsedOf = (tab) => {
+      const rec = tabRecords[tab.id];
+      if (!rec || rec.lastFocusEnd == null) return 0;
+      return now - rec.lastFocusEnd;
+    };
+    const byElapsed = (a, b) => {
+      const ea = elapsedOf(a), eb = elapsedOf(b);
+      if (ea !== eb) return ea - eb;
+      return (tabRecords[a.id]?.lastFocusEnd ?? 0) - (tabRecords[b.id]?.lastFocusEnd ?? 0);
+    };
+    sortedT0 = [...t0Tabs].sort(byElapsed);
+    sorted = [...restTabs].sort((a, b) => {
+      const ta = tabRecords[a.id]?.currentTier ?? 1;
+      const tb = tabRecords[b.id]?.currentTier ?? 1;
+      if (ta !== tb) return ta - tb;
+      return byElapsed(a, b);
+    });
   } else {
     // EN: tierDomain (default) — tier first, then domain A-Z | TR: tierDomain (varsayılan) — önce tier, sonra domain A-Z
     const byDomain = (a, b) => {

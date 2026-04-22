@@ -1,12 +1,13 @@
 [
   {
-    "version": "1.2.4",
+    "version": "1.2.5",
     "date": "2026-04-22",
     "changes": [
       { "type": "feature",     "text": "Dark / light theme — toggle with the 🌙 button in the popup or from Settings.", "textTR": "Koyu / açık tema — popup'taki 🌙 butonu veya Ayarlar'dan anlık değiştirilebilir." },
       { "type": "feature",     "text": "Clicking a URL in Tab Management focuses the tab; collapsed groups expand automatically.", "textTR": "Tab Yönetimi'nde URL'ye tıklamak sekmeyi odaklar, kapalı gruplar otomatik açılır." },
       { "type": "feature",     "text": "Favicon column added to Tab Management for easier visual identification.", "textTR": "Tab Yönetimi'ne favicon sütunu eklendi — siteleri görsel olarak tanımak kolaylaştı." },
       { "type": "feature",     "text": "What's New page opens automatically after each update.", "textTR": "Güncelleme sonrası Yenilikler sayfası otomatik açılıyor." },
+      { "type": "improvement", "text": "New \"Elapsed ↑\" sort option — sorts by inactive time ascending; also applies to the browser tab bar.", "textTR": "Yeni \"Elapsed ↑\" sıralama seçeneği — hareketsizlik süresine göre artan sıralama; tab bar'a da uygulanabilir." },
       { "type": "improvement", "text": "Elapsed sort uses focus-end date as a tiebreaker — T0 tabs and ties are ordered by when focus actually ended.", "textTR": "Elapsed sıralaması ikincil kriter olarak odak bitiş tarihini kullanıyor — T0 ve eşit süreler odağın bittiği zamana göre sıralanıyor." },
       { "type": "improvement", "text": "Tier badge labels reflect the custom group names set in Settings.", "textTR": "Tier rozeti etiketleri, Ayarlar'da özelleştirilen grup adlarını yansıtıyor." },
       { "type": "improvement", "text": "Version number displayed in the header of all pages.", "textTR": "Tüm sayfa başlıklarına sürüm numarası eklendi." },
