@@ -2,15 +2,16 @@
 // Tab Lifecycle Manager — popup.js
 // =============================================================================
 
-// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
-const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
+// EN: i18n helper — reassigned at startup if a stored language override is active
+// TR: i18n yardımcısı — başlangıçta saklanan dil tercihine göre yeniden atanır
+let i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
 document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
 
 let currentSort = "tierDomain"; // "tierDomain" | "tierTitle" | "tierUrl"
 
-// EN: Tier labels and config from i18n | TR: Tier etiketleri ve yapılandırması i18n'den
-const TIER_LABELS = {
+// EN: Tier labels — rebuilt after locale is loaded | TR: Tier etiketleri — locale yüklendikten sonra güncellenir
+let TIER_LABELS = {
   0: { label: i18n("tierT0Name"), cls: "t0", icon: "📌" },
   1: { label: i18n("tierT1Name"), cls: "t1", icon: "🔥" },
   2: { label: i18n("tierT2Name"), cls: "t2", icon: "⏸" },
@@ -508,8 +509,43 @@ document.getElementById("tabManagerBtn").addEventListener("click", () => {
   window.close();
 });
 
-// EN: Initial load | TR: İlk yükleme
-render();
+// EN: Load locale override then render | TR: Locale override yükle, sonra render et
+(async () => {
+  try {
+    const { settings = {} } = await chrome.storage.local.get("settings");
+    const lang = settings.uiLanguage;
+    if (lang && lang !== "auto") {
+      const resp = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
+      if (resp.ok) {
+        const msgs = await resp.json();
+        i18n = (key, subs) => {
+          const entry = msgs[key];
+          if (!entry) return chrome.i18n.getMessage(key, subs) || `[${key}]`;
+          let text = entry.message;
+          if (subs && entry.placeholders) {
+            const args = Array.isArray(subs) ? subs : [subs];
+            for (const [name, ph] of Object.entries(entry.placeholders)) {
+              const m = (ph.content || "").match(/^\$(\d+)$/);
+              if (m) {
+                const val = String(args[parseInt(m[1]) - 1] ?? "");
+                text = text.replace(new RegExp(`\\$${name.toUpperCase()}\\$`, "g"), val);
+              }
+            }
+          }
+          return text;
+        };
+        TIER_LABELS = {
+          0: { label: i18n("tierT0Name"), cls: "t0", icon: "📌" },
+          1: { label: i18n("tierT1Name"), cls: "t1", icon: "🔥" },
+          2: { label: i18n("tierT2Name"), cls: "t2", icon: "⏸" },
+          3: { label: i18n("tierT3Name"), cls: "t3", icon: "❄️" },
+          4: { label: i18n("tierT4Name"), cls: "t4", icon: "⚫" }
+        };
+      }
+    }
+  } catch (e) {}
+  render();
+})();
 
 // EN: Re-render on storage change | TR: Storage değişince güncelle
 chrome.storage.onChanged.addListener(() => {

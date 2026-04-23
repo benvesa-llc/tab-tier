@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.3.4] - 2026-04-23
+
+### Fixed
+- Popup tier badge labels (T0 Fixed, T1 Active…) now reflect the stored language — locale JSON is loaded before first render so labels show in the selected language
+
 ## [1.3.3] - 2026-04-23
 
 ### Fixed
