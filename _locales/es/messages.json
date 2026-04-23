@@ -13,7 +13,7 @@
   "sortTierDomain":    { "message": "Tier + Dominio" },
   "sortTierTitle":     { "message": "Tier + Título" },
   "sortTierUrl":       { "message": "Tier + URL" },
-  "sortElapsed":       { "message": "Elapsed ↑" },
+  "sortElapsed":       { "message": "Transcurrido ↑" },
   "applyToTabs":       { "message": "Aplicar a Pestañas" },
   "applyToTabsTitle":  { "message": "Aplicar el orden seleccionado a la barra de pestañas" },
   "clearArchiveBtn":   { "message": "🗑 Limpiar Archivo" },

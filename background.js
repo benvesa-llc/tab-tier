@@ -414,8 +414,14 @@ async function renameAllGroups() {
     await chrome.storage.local.get("settings");
   // EN: Merge i18n defaults with stored custom names; skip empty stored values so defaults show through
   // TR: i18n varsayılanlarını saklanan özel adlarla birleştir; boş kayıtlı değerleri atla, varsayılan görünsün
+  // EN: Same filter as moveTabToTierGroup — drop system-default-looking names (T0:/T1: prefix)
+  //     so locale defaults always win when the user hasn't set a custom name
+  // TR: moveTabToTierGroup ile aynı filtre — T0:/T1: önekli sistem adlarını at;
+  //     kullanıcı özel ad belirlemediyse locale varsayılanları kazansın
   const customNames = Object.fromEntries(
-    Object.entries(settings.groupNames || {}).filter(([, v]) => v?.trim())
+    Object.entries(settings.groupNames || {}).filter(
+      ([, v]) => v?.trim() && !/^T[0-3]:/.test(v.trim())
+    )
   );
   const localeDefaults = await resolveDefaultGroupNames(settings);
   const groupNames = { ...localeDefaults, ...customNames };

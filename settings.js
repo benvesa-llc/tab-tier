@@ -91,11 +91,13 @@ function readFromUI(existing) {
     onManualClose:   document.getElementById("closeAction").value,
     theme:           document.getElementById("themeSelect").value,
     uiLanguage:      document.getElementById("langSelect").value,
+    // EN: Store only user-typed custom names; empty = let locale defaults show through
+    // TR: Sadece kullanıcının yazdığı özel adları sakla; boş = locale varsayılanı göster
     groupNames: {
-      0: document.getElementById("gn0").value.trim() || DefaultGroupNames[0],
-      1: document.getElementById("gn1").value.trim() || DefaultGroupNames[1],
-      2: document.getElementById("gn2").value.trim() || DefaultGroupNames[2],
-      3: document.getElementById("gn3").value.trim() || DefaultGroupNames[3],
+      0: document.getElementById("gn0").value.trim(),
+      1: document.getElementById("gn1").value.trim(),
+      2: document.getElementById("gn2").value.trim(),
+      3: document.getElementById("gn3").value.trim(),
     },
   };
 }

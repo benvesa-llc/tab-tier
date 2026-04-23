@@ -2,11 +2,17 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.3.1] - 2026-04-23
+## [1.3.3] - 2026-04-23
 
 ### Fixed
-- Tab bar group names now update to the selected language when language is changed in Settings (background uses locale JSON instead of browser `chrome.i18n`)
-- Tab Management status column ("open", "missing", "archive") and all dynamic strings now respect the stored language preference
+- Spanish locale: "Elapsed ↑" sort button now correctly shows "Transcurrido ↑"
+
+## [1.3.2] - 2026-04-23
+
+### Fixed
+- Tab bar group names now correctly update to the selected language: `renameAllGroups` now applies the same filter as `moveTabToTierGroup` (drops `T0:/T1:` prefixed stored names so locale defaults win)
+- Group name inputs: empty inputs no longer store browser-locale defaults — empty string is stored so the locale default always shows through on language change
+- Settings page h1 "Tab Lifecycle Manager" converted to `__MSG_onboardingH1__` token so it is processed by `i18n-dom.js`
 
 ## [1.3.0] - 2026-04-23
 
