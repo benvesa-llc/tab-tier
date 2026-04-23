@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.3.7] - 2026-04-23
+
+### Fixed
+- Turkish locale: "Elapsed ↑" sort button now correctly shows "Geçen Süre ↑"
+
 ## [1.3.5] - 2026-04-23
 
 ### Changed
