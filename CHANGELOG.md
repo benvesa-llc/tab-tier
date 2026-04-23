@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.4.0] - 2026-04-23
+
+### Changed
+- Language dropdown options now shown in the active UI language: English shows "Turkish / Spanish", Turkish shows "İngilizce / İspanyolca", Spanish shows "Inglés / Turco"
+
 ## [1.3.9] - 2026-04-23
 
 ### Added

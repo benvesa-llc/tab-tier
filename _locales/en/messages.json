@@ -106,8 +106,8 @@
   "langLabel": { "message": "Language" },
   "langAuto":  { "message": "Auto (browser)" },
   "langEn":    { "message": "English" },
-  "langTr":    { "message": "Türkçe" },
-  "langEs":    { "message": "Español" },
+  "langTr":    { "message": "Turkish" },
+  "langEs":    { "message": "Spanish" },
 
   "groupNamesTitle": { "message": "🏷 Group Names" },
   "groupNamesHint": { "message": "Customize names shown in the browser tab bar." },

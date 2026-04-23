@@ -97,9 +97,9 @@
 
   "langLabel": { "message": "Dil" },
   "langAuto":  { "message": "Otomatik (tarayıcı)" },
-  "langEn":    { "message": "English" },
+  "langEn":    { "message": "İngilizce" },
   "langTr":    { "message": "Türkçe" },
-  "langEs":    { "message": "Español" },
+  "langEs":    { "message": "İspanyolca" },
 
   "groupNamesTitle":   { "message": "🏷 Grup Adları" },
   "groupNamesHint":    { "message": "Tab gruplarının tarayıcı tab bar'da görünen adlarını özelleştir." },

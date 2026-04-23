@@ -97,8 +97,8 @@
 
   "langLabel": { "message": "Idioma" },
   "langAuto":  { "message": "Auto (navegador)" },
-  "langEn":    { "message": "English" },
-  "langTr":    { "message": "Türkçe" },
+  "langEn":    { "message": "Inglés" },
+  "langTr":    { "message": "Turco" },
   "langEs":    { "message": "Español" },
 
   "groupNamesTitle":    { "message": "🏷 Nombres de Grupos" },
