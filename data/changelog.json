@@ -1,6 +1,6 @@
 [
   {
-    "version": "1.3.8",
+    "version": "1.3.9",
     "date": "2026-04-23",
     "changes": [
       { "type": "feature",     "text": "Spanish (es) locale — full translation of all UI strings.", "textTR": "İspanyolca (es) dil desteği — tüm arayüz metinleri çevrildi.", "textES": "Idioma español (es) — traducción completa de todos los textos de la interfaz." },

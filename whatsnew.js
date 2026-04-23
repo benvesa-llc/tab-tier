@@ -131,6 +131,15 @@ async function load() {
     const resp = await fetch(chrome.runtime.getURL("data/changelog.json"));
     if (!resp.ok) throw new Error("HTTP " + resp.status);
     const changelog = await resp.json();
+    const latestEntry = changelog[0];
+    if (latestEntry) {
+      const d = formatDate(latestEntry.date, lang);
+      document.getElementById("pageSubtitle").textContent = t(lang,
+        "v" + latestEntry.version + " — " + d,
+        "v" + latestEntry.version + " — " + d,
+        "v" + latestEntry.version + " — " + d
+      );
+    }
     renderChangelog(changelog, version, lang);
   } catch (e) {
     showError("changelogContainer", t(lang,
