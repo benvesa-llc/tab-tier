@@ -95,6 +95,12 @@
   "themeLight": { "message": "☀️ Açık" },
   "themeToggleTitle": { "message": "Temayı değiştir" },
 
+  "langLabel": { "message": "Dil" },
+  "langAuto":  { "message": "Otomatik (tarayıcı)" },
+  "langEn":    { "message": "English" },
+  "langTr":    { "message": "Türkçe" },
+  "langEs":    { "message": "Español" },
+
   "groupNamesTitle":   { "message": "🏷 Grup Adları" },
   "groupNamesHint":    { "message": "Tab gruplarının tarayıcı tab bar'da görünen adlarını özelleştir." },
   "applyGroupNamesBtn":{ "message": "✏️ Grupları Yeniden Adlandır" },

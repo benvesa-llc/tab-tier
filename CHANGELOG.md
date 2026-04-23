@@ -2,6 +2,20 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.3.1] - 2026-04-23
+
+### Fixed
+- Tab bar group names now update to the selected language when language is changed in Settings (background uses locale JSON instead of browser `chrome.i18n`)
+- Tab Management status column ("open", "missing", "archive") and all dynamic strings now respect the stored language preference
+
+## [1.3.0] - 2026-04-23
+
+### Added
+- Spanish (`es`) locale — full translation of all UI strings in `_locales/es/messages.json`
+- Language selector in Settings (Auto / English / Türkçe / Español); preference saved to storage and applied on next page load
+- `i18n-dom.js` now reads `uiLanguage` from storage and fetches the matching `_locales/{lang}/messages.json` to override `chrome.i18n` for all HTML token substitutions
+- `whatsnew.js` detects stored language preference and renders changelog / roadmap / labels in the selected language
+
 ## [1.2.9] - 2026-04-22
 
 ### Added

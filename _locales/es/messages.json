@@ -1,0 +1,247 @@
+{
+  "extName":        { "message": "Tab Tier" },
+  "extDescription": { "message": "Gestión inteligente del ciclo de vida de pestañas para tu navegador" },
+
+  "tierT0Name": { "message": "T0 Fijo" },
+  "tierT1Name": { "message": "T1 Activo" },
+  "tierT2Name": { "message": "T2 Inactivo" },
+  "tierT3Name": { "message": "T3 Frío" },
+  "tierT4Name": { "message": "T4 Archivo" },
+
+  "searchPlaceholder": { "message": "🔍 Buscar pestañas (título, dominio, url)..." },
+  "sortLabel":         { "message": "Ordenar:" },
+  "sortTierDomain":    { "message": "Tier + Dominio" },
+  "sortTierTitle":     { "message": "Tier + Título" },
+  "sortTierUrl":       { "message": "Tier + URL" },
+  "sortElapsed":       { "message": "Elapsed ↑" },
+  "applyToTabs":       { "message": "Aplicar a Pestañas" },
+  "applyToTabsTitle":  { "message": "Aplicar el orden seleccionado a la barra de pestañas" },
+  "clearArchiveBtn":   { "message": "🗑 Limpiar Archivo" },
+  "clearArchiveBtnTitle": { "message": "Limpiar archivo de Tier 4" },
+  "tabManagementBtn":  { "message": "📋 Gestión de Pestañas" },
+  "settingsBtn":       { "message": "⚙️ Ajustes" },
+
+  "timeActive":  { "message": "activo" },
+  "timeDaysAgo": {
+    "message": "hace $COUNT$ días",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "timeHoursAgo": {
+    "message": "hace $COUNT$ h",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "timeMinsAgo": {
+    "message": "hace $COUNT$ min",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "timeJustNow": { "message": "ahora mismo" },
+
+  "openFromArchive": { "message": "Abrir (desde archivo)" },
+  "focusTab":        { "message": "Enfocar pestaña" },
+  "unpinTab":        { "message": "Quitar de fijos (T0)" },
+  "pinToT0":         { "message": "Fijar en T0" },
+  "deleteRecord":    { "message": "Eliminar registro" },
+
+  "noTabRecords":        { "message": "Sin registros de pestañas." },
+  "noTabsInTier":        { "message": "Sin pestañas en este nivel." },
+  "confirmClearArchive": { "message": "Se eliminarán todos los registros del archivo Tier 4. ¿Estás seguro?" },
+  "sortingText":         { "message": "⏳ Ordenando..." },
+  "sortDone":            { "message": "✅ Listo" },
+  "noSearchResults": {
+    "message": "Sin resultados para \"$QUERY$\".",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "autoDeleteInfo": {
+    "message": "⏱ Eliminación auto: $DAYS$ días",
+    "placeholders": { "days": { "content": "$1" } }
+  },
+  "domainGroupOther": { "message": "Otros" },
+  "totalCountLabel": {
+    "message": "Total: $COUNT$",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "settingsTitle":        { "message": "Ajustes" },
+  "settingsSubtitle":     { "message": "Personaliza las duraciones y el comportamiento por nivel" },
+  "tierTransitionsTitle": { "message": "⏱ Duraciones de Transición" },
+  "t1t2Label": { "message": "🔥→⏸ Tier 1 → Tier 2 (Minutos)" },
+  "t1t2Hint":  { "message": "Tiempo inactivo antes de pasar a Inactivo. Por defecto: 60 min" },
+  "t2t3Label": { "message": "⏸→❄️ Tier 2 → Tier 3 (Horas)" },
+  "t2t3Hint":  { "message": "Transición de Inactivo a Frío. Por defecto: 24 horas" },
+  "t3t4Label": { "message": "❄️→⚫ Tier 3 → Tier 4 (Días)" },
+  "t3t4Hint":  { "message": "De Frío a Archivo (se elimina de la barra). Por defecto: 7 días" },
+  "t4delLabel":{ "message": "⚫→🗑 Tier 4 → Eliminar (Días)" },
+  "t4delHint": { "message": "0 = ilimitado (nunca se elimina). Por defecto: 60 días" },
+  "unitMin":   { "message": "min" },
+  "unitHour":  { "message": "h" },
+  "unitDay":   { "message": "día" },
+  "unitAbbrDay":  { "message": "d" },
+  "unitAbbrHour": { "message": "h" },
+  "unitAbbrMin":  { "message": "m" },
+  "unitAbbrSec":  { "message": "s" },
+
+  "behaviorTitle":     { "message": "🔧 Comportamiento" },
+  "dupActionLabel":    { "message": "Al detectar pestaña duplicada" },
+  "dupActionRedirect": { "message": "Redirigir a la pestaña existente (por defecto)" },
+  "dupActionWarn":     { "message": "Mostrar aviso, el usuario decide" },
+  "dupActionAllow":    { "message": "Permitir duplicado" },
+  "dupActionHint":     { "message": "¿Qué hacer al abrir la misma URL?" },
+  "closeActionLabel":  { "message": "Al cerrar una pestaña manualmente" },
+  "closeActionDelete": { "message": "Eliminar registro (por defecto)" },
+  "closeActionArchive":{ "message": "Enviar al Archivo Tier 4" },
+  "closeActionHint":   { "message": "¿Qué pasa cuando el usuario cierra con X?" },
+  "themeLabel": { "message": "Tema" },
+  "themeDark":  { "message": "🌙 Oscuro" },
+  "themeLight": { "message": "☀️ Claro" },
+  "themeToggleTitle": { "message": "Cambiar tema" },
+
+  "langLabel": { "message": "Idioma" },
+  "langAuto":  { "message": "Auto (navegador)" },
+  "langEn":    { "message": "English" },
+  "langTr":    { "message": "Türkçe" },
+  "langEs":    { "message": "Español" },
+
+  "groupNamesTitle":    { "message": "🏷 Nombres de Grupos" },
+  "groupNamesHint":     { "message": "Personaliza los nombres mostrados en la barra de pestañas." },
+  "applyGroupNamesBtn": { "message": "✏️ Renombrar Grupos" },
+  "saveSettingsBtn":    { "message": "💾 Guardar Ajustes" },
+  "resetSettingsBtn":   { "message": "↩ Restablecer" },
+
+  "devToolsTitle":      { "message": "🧪 Herramientas de Desarrollo" },
+  "dissolveGroupsBtn":  { "message": "🔓 Disolver Todos los Grupos" },
+  "dissolveGroupsHint": { "message": "Disolver grupos no cierra pestañas — solo elimina las agrupaciones." },
+  "dataManagementTitle":{ "message": "⚠️ Gestión de Datos" },
+  "clearArchiveBtnFull":{ "message": "🗑 Limpiar Archivo (Tier 4)" },
+  "clearAllDataBtn":    { "message": "🔥 Eliminar Todos los Datos" },
+  "dataManagementHint": { "message": "Estas acciones no se pueden deshacer." },
+
+  "savedStatus":         { "message": "✅ ¡Guardado!" },
+  "resetStatus":         { "message": "↩ Restablecido a valores por defecto." },
+  "groupNamesRenamed":   { "message": "✅ ¡Grupos renombrados!" },
+  "groupsDissolved":     { "message": "🔓 ¡Grupos disueltos!" },
+  "confirmResetSettings":{ "message": "Todos los ajustes volverán a los valores por defecto. ¿Estás seguro?" },
+  "archiveClearedMsg": {
+    "message": "$COUNT$ registros de archivo eliminados.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "confirmClearAll":  { "message": "SE ELIMINARÁN todos los registros y ajustes. ¡Esto no se puede deshacer! ¿Continuar?" },
+  "allDataClearedMsg":{ "message": "Todos los datos eliminados. Reinicia la extensión." },
+
+  "defaultGroupT0": { "message": "T0: Fijo" },
+  "defaultGroupT1": { "message": "T1: Activo" },
+  "defaultGroupT2": { "message": "T2: Tibio" },
+  "defaultGroupT3": { "message": "T3: Frío" },
+  "internalGroupTitle": { "message": "Otros" },
+  "tabLoadingTitle":    { "message": "Cargando..." },
+
+  "tabMgmtPageTitle":  { "message": "TabTier — Gestión de Pestañas" },
+  "tabMgmtH1":         { "message": "📋 Gestión de Pestañas" },
+  "tabMgmtSubtitle":   { "message": "Todos los registros — vista en vivo" },
+  "refreshBtnLabel":   { "message": "↻ Actualizar" },
+  "reconcileBtnLabel": { "message": "🔄 Reconciliar" },
+  "dedupBtnLabel":     { "message": "🧹 Limpiar Duplicados" },
+  "openSelectedBtnLabel": { "message": "📂 Abrir Seleccionadas (T1)" },
+  "copyJsonBtnLabel":  { "message": "📋 Copiar JSON" },
+  "filterPlaceholder": { "message": "Filtrar por URL / dominio / título…" },
+  "selectAllT4Title":  { "message": "Seleccionar todos los T4" },
+  "colFixed":    { "message": "Fijo" },
+  "fixTab":      { "message": "Fijar (mover a T0)" },
+  "unfixTab":    { "message": "Desfijar (mover a T1)" },
+  "colTabId":      { "message": "ID Pestaña" },
+  "colTier":       { "message": "Tier" },
+  "colStatus":     { "message": "Estado" },
+  "colDomain":     { "message": "Dominio" },
+  "colTitle":      { "message": "Título" },
+  "colUrl":        { "message": "URL" },
+  "colFocusStart": { "message": "Inicio Foco" },
+  "colFocusEnd":   { "message": "Fin Foco" },
+  "colElapsed":    { "message": "Transcurrido" },
+  "colCreated":    { "message": "Creado" },
+  "noRecords":     { "message": "Sin registros." },
+
+  "statusArchive":   { "message": "archivo" },
+  "statusActiveNow": { "message": "● activo" },
+  "statusOpen":      { "message": "✓ abierto" },
+  "statusMissing":   { "message": "✗ ausente" },
+  "staleLabel":      { "message": "obsoleto" },
+  "lastUpdated":     { "message": "Última actualización: " },
+  "sumTotal":        { "message": "Total" },
+  "sumInternalLabel":{ "message": "Páginas internas" },
+  "sumInternalValue":{
+    "message": "$COUNT$ (sin seguimiento)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "staleWarning": {
+    "message": "⚠️ $COUNT$ obsoletos activos",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "missingWarning": {
+    "message": "⚠️ $COUNT$ en registros / ausentes en navegador",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "reconciling":          { "message": "⏳ Reconciliando…" },
+  "reconcileResultTitle": { "message": "Resultado de Reconciliación" },
+  "reconcileArchived":    { "message": "Archivados" },
+  "reconcileAdded":       { "message": "Nuevos registros" },
+  "reconcileFixed":       { "message": "Corregidos" },
+  "reconcileRelinked":    { "message": "Re-vinculados" },
+  "reconcileTierFixed":   { "message": "Tier corregido" },
+  "reconcileGrouped":     { "message": "Agrupados" },
+  "copyDone":  { "message": "✅ Copiado" },
+  "cleaning":  { "message": "⏳ Limpiando…" },
+  "openSelectedWithCount": {
+    "message": "📂 Abrir Seleccionadas ($COUNT$ pestañas → T1)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "noDuplicates": { "message": "✅ Sin duplicados" },
+  "duplicatesRemoved": {
+    "message": "✅ $COUNT$ duplicados eliminados, $TABS$ pestañas cerradas",
+    "placeholders": { "count": { "content": "$1" }, "tabs": { "content": "$2" } }
+  },
+  "pinToggleUnpin": { "message": "Mover a T1 (quitar de fijos)" },
+  "pinTogglePin":   { "message": "Mover a T0 (fijar)" },
+  "opening":        { "message": "⏳ Abriendo…" },
+
+  "onboardingPageTitle": { "message": "Tab Lifecycle Manager — Bienvenido" },
+  "onboardingH1":        { "message": "Tab Lifecycle Manager" },
+  "onboardingDesc1":     { "message": "No necesitas cerrar tus pestañas —" },
+  "onboardingDescBold":  { "message": "déjalas madurar" },
+  "onboardingDesc2":     { "message": "Cada pestaña se mueve entre niveles automáticamente según el uso." },
+
+  "legendT0Name": { "message": "T0 Fijo" },
+  "legendT0Desc": { "message": "En grupo T0, nunca baja de nivel" },
+  "legendT1Name": { "message": "T1 Activo" },
+  "legendT1Desc": { "message": "Totalmente cargado, normal" },
+  "legendT2Name": { "message": "T2 Inactivo" },
+  "legendT2Desc": { "message": "Suspendido (tras 1 hora)" },
+  "legendT3Name": { "message": "T3 Frío" },
+  "legendT3Desc": { "message": "Grupo contraído (tras 24 h)" },
+  "legendT4Name": { "message": "T4 Archivo" },
+  "legendT4Desc": { "message": "En panel, sin barra de pestañas (tras 7 días)" },
+
+  "t0SectionTitle": { "message": "🏠 ¿Qué pestañas deben estar en T0 (grupo Fijo)?" },
+  "t0SectionHint":  { "message": "Las pestañas seleccionadas se moverán al grupo T0 y nunca bajarán de nivel automáticamente. Marca las que siempre mantienes abiertas como Gmail, Teams o Notion." },
+  "tabSearchPlaceholder":     { "message": "🔍 Buscar por nombre, dominio o URL..." },
+  "selectAllBtnLabel":        { "message": "Seleccionar Todo" },
+  "selectAllVisibleBtnLabel": { "message": "Seleccionar Todo (visible)" },
+  "startBtnLabel": { "message": "🚀 Comenzar" },
+  "skipBtnLabel":  { "message": "Omitir (no seleccionar T0)" },
+
+  "loadingText":    { "message": "Cargando..." },
+  "noResultsFound": { "message": "Sin resultados." },
+  "statsWithSearch": {
+    "message": "$TOTAL$ pestañas · $VISIBLE$ mostradas · $PINNED$ seleccionadas (se añadirán a T0)",
+    "placeholders": {
+      "total":   { "content": "$1" },
+      "visible": { "content": "$2" },
+      "pinned":  { "content": "$3" }
+    }
+  },
+  "statsWithoutSearch": {
+    "message": "$TOTAL$ pestañas · $PINNED$ seleccionadas (se añadirán a T0)",
+    "placeholders": {
+      "total":  { "content": "$1" },
+      "pinned": { "content": "$2" }
+    }
+  }
+}

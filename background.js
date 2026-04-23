@@ -11,6 +11,31 @@ const DefaultGroupNames = {
   3: chrome.i18n.getMessage("defaultGroupT3"),
 };
 
+// EN: Cache locale-aware group name defaults; keyed by language code
+// TR: Dil koduna göre anahtarlanan locale farkında grup adı önbelleği
+let _localeNameCache = { lang: null, names: null };
+
+async function resolveDefaultGroupNames(settings) {
+  const lang = settings.uiLanguage;
+  if (!lang || lang === "auto") return DefaultGroupNames;
+  if (_localeNameCache.lang === lang) return _localeNameCache.names;
+  try {
+    const resp = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
+    if (!resp.ok) return DefaultGroupNames;
+    const msgs = await resp.json();
+    const names = {
+      0: msgs.defaultGroupT0?.message || DefaultGroupNames[0],
+      1: msgs.defaultGroupT1?.message || DefaultGroupNames[1],
+      2: msgs.defaultGroupT2?.message || DefaultGroupNames[2],
+      3: msgs.defaultGroupT3?.message || DefaultGroupNames[3],
+    };
+    _localeNameCache = { lang, names };
+    return names;
+  } catch (e) {
+    return DefaultGroupNames;
+  }
+}
+
 const TIER_GROUP_COLORS = {
   0: "red",
   1: "orange",
@@ -175,7 +200,8 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
         ([, v]) => v?.trim() && !/^T[0-3]:/.test(v.trim())
       )
     );
-    const groupNames = { ...DefaultGroupNames, ...customNames };
+    const localeDefaults = await resolveDefaultGroupNames(settings);
+    const groupNames = { ...localeDefaults, ...customNames };
     const title = groupNames[tier];
     const color = TIER_GROUP_COLORS[tier];
 
@@ -391,7 +417,8 @@ async function renameAllGroups() {
   const customNames = Object.fromEntries(
     Object.entries(settings.groupNames || {}).filter(([, v]) => v?.trim())
   );
-  const groupNames = { ...DefaultGroupNames, ...customNames };
+  const localeDefaults = await resolveDefaultGroupNames(settings);
+  const groupNames = { ...localeDefaults, ...customNames };
 
   // Renk → tier eşleştirmesi: her tier'ın rengi unique
   // Böylece "Sabit", "T0: Sabit" gibi herhangi bir isimli grubu

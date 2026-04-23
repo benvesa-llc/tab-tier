@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.3.0",
+    "date": "2026-04-23",
+    "changes": [
+      { "type": "feature", "text": "Spanish (es) locale — full translation of all UI strings.", "textTR": "İspanyolca (es) dil desteği — tüm arayüz metinleri çevrildi." },
+      { "type": "feature", "text": "Language selector in Settings: Auto / English / Türkçe / Español. Preference is saved and applied instantly.", "textTR": "Ayarlar'a dil seçici eklendi: Otomatik / İngilizce / Türkçe / İspanyolca. Tercih kaydedilir ve anında uygulanır." },
+      { "type": "improvement", "text": "All pages now respect the stored language preference — no browser locale change needed to test or use a different language.", "textTR": "Tüm sayfalar saklanan dil tercihine göre görüntülenir — test veya farklı dil için tarayıcı dilini değiştirmeye gerek yok." }
+    ]
+  },
+  {
     "version": "1.2.9",
     "date": "2026-04-22",
     "changes": [

@@ -103,6 +103,12 @@
   "themeLight": { "message": "☀️ Light" },
   "themeToggleTitle": { "message": "Toggle theme" },
 
+  "langLabel": { "message": "Language" },
+  "langAuto":  { "message": "Auto (browser)" },
+  "langEn":    { "message": "English" },
+  "langTr":    { "message": "Türkçe" },
+  "langEs":    { "message": "Español" },
+
   "groupNamesTitle": { "message": "🏷 Group Names" },
   "groupNamesHint": { "message": "Customize names shown in the browser tab bar." },
   "applyGroupNamesBtn": { "message": "✏️ Rename Groups" },

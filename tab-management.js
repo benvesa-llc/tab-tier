@@ -2,8 +2,9 @@
 // TabTier — tab-management.js
 // =============================================================================
 
-// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
-const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
+// EN: i18n helper — reassigned at startup if a stored language override is active
+// TR: i18n yardımcısı — başlangıçta saklanan dil tercihine göre yeniden atanır
+let i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
 document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
 
@@ -522,6 +523,39 @@ document.querySelectorAll("thead th[data-col]").forEach((th) => {
 // TR: Sayfa açılışında otomatik uzlaştır — senkron dışı kalan tabları yakala
 //     (örn. PC uyku/açılış veya servis worker yeniden başlatma sonrası)
 (async () => {
+  // EN: Load locale override before rendering — reassign i18n and TIER_LABELS
+  // TR: Render öncesi locale override yükle — i18n ve TIER_LABELS'ı yeniden ata
+  try {
+    const { settings = {} } = await chrome.storage.local.get("settings");
+    const lang = settings.uiLanguage;
+    if (lang && lang !== "auto") {
+      const resp = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
+      if (resp.ok) {
+        const msgs = await resp.json();
+        i18n = (key, subs) => {
+          const entry = msgs[key];
+          if (!entry) return chrome.i18n.getMessage(key, subs) || `[${key}]`;
+          let text = entry.message;
+          if (subs && entry.placeholders) {
+            const args = Array.isArray(subs) ? subs : [subs];
+            for (const [name, ph] of Object.entries(entry.placeholders)) {
+              const m = (ph.content || "").match(/^\$(\d+)$/);
+              if (m) {
+                const val = String(args[parseInt(m[1]) - 1] ?? "");
+                text = text.replace(new RegExp(`\\$${name.toUpperCase()}\\$`, "g"), val);
+              }
+            }
+          }
+          return text;
+        };
+        for (let tier = 0; tier <= 4; tier++) {
+          const keys = ["tierT0Name","tierT1Name","tierT2Name","tierT3Name","tierT4Name"];
+          TIER_LABELS[tier] = i18n(keys[tier]);
+        }
+      }
+    }
+  } catch (e) {}
+
   try {
     await chrome.runtime.sendMessage({ type: "RECONCILE_TABS" });
   } catch (_) {}

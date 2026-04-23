@@ -23,7 +23,8 @@ const DefaultSettings = {
   timerIntervalMinutes:     1,
   duplicateAction: "redirect",
   onManualClose:   "delete",
-  theme:           "dark",
+  theme:       "dark",
+  uiLanguage:  "auto",
   // EN: Empty by default — i18n defaults are resolved at runtime, not stored
   // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
   groupNames: {},
@@ -55,6 +56,7 @@ function applyToUI(s) {
   document.getElementById("dupAction").value    = s.duplicateAction;
   document.getElementById("closeAction").value  = s.onManualClose;
   document.getElementById("themeSelect").value  = s.theme || "dark";
+  document.getElementById("langSelect").value   = s.uiLanguage || "auto";
 
   // EN: If a stored name looks like a system default (starts with T0:/T1:/T2:/T3:),
   //     treat it as empty so the i18n placeholder shows instead.
@@ -88,6 +90,7 @@ function readFromUI(existing) {
     duplicateAction: document.getElementById("dupAction").value,
     onManualClose:   document.getElementById("closeAction").value,
     theme:           document.getElementById("themeSelect").value,
+    uiLanguage:      document.getElementById("langSelect").value,
     groupNames: {
       0: document.getElementById("gn0").value.trim() || DefaultGroupNames[0],
       1: document.getElementById("gn1").value.trim() || DefaultGroupNames[1],
@@ -135,7 +138,16 @@ async function init() {
   syncSliderNumber("t3t4Range", "t3t4");
   syncSliderNumber("t4delRange", "t4del");
 
-  document.getElementById("saveBtn").addEventListener("click", save);
+  document.getElementById("saveBtn").addEventListener("click", async () => {
+    const prevLang = currentSettings.uiLanguage || "auto";
+    await save();
+    // EN: On language change: rename tab bar groups then reload the page
+    // TR: Dil değişiminde: tab bar gruplarını yeniden adlandır ve sayfayı yenile
+    if ((document.getElementById("langSelect").value) !== prevLang) {
+      chrome.runtime.sendMessage({ type: "RENAME_ALL_GROUPS" });
+      window.location.reload();
+    }
+  });
 
   document.getElementById("resetBtn").addEventListener("click", async () => {
     if (confirm(i18n("confirmResetSettings"))) {
