@@ -2,7 +2,10 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
-## [1.3.7] - 2026-04-23
+## [1.3.8] - 2026-04-23
+
+### Changed
+- What's New page: all post-1.2.4 changes consolidated into a single entry showing the latest version and today's date; Spanish (`textES`) entries added to every changelog item
 
 ### Fixed
 - Turkish locale: "Elapsed ↑" sort button now correctly shows "Geçen Süre ↑"
