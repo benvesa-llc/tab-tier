@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.3.9] - 2026-04-23
+
+### Added
+- Roadmap: German, Portuguese, and French locale entries added to What's New "Coming Up" section; Spanish (`titleES`) added to all roadmap items
+
 ## [1.3.8] - 2026-04-23
 
 ### Changed
