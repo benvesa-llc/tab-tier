@@ -141,14 +141,17 @@ async function init() {
   syncSliderNumber("t4delRange", "t4del");
 
   document.getElementById("saveBtn").addEventListener("click", async () => {
-    const prevLang = currentSettings.uiLanguage || "auto";
     await save();
-    // EN: On language change: rename tab bar groups then reload the page
-    // TR: Dil değişiminde: tab bar gruplarını yeniden adlandır ve sayfayı yenile
-    if ((document.getElementById("langSelect").value) !== prevLang) {
-      chrome.runtime.sendMessage({ type: "RENAME_ALL_GROUPS" });
-      window.location.reload();
-    }
+  });
+
+  // EN: Instant language switch: save uiLanguage and reload immediately on change
+  // TR: Anlık dil değişimi: uiLanguage'ı kaydet ve değişiklikte hemen yenile
+  document.getElementById("langSelect").addEventListener("change", async () => {
+    const newLang = document.getElementById("langSelect").value;
+    const { settings: s = {} } = await chrome.storage.local.get("settings");
+    await chrome.storage.local.set({ settings: { ...s, uiLanguage: newLang } });
+    chrome.runtime.sendMessage({ type: "RENAME_ALL_GROUPS" });
+    window.location.reload();
   });
 
   document.getElementById("resetBtn").addEventListener("click", async () => {

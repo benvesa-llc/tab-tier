@@ -2,6 +2,12 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.3.5] - 2026-04-23
+
+### Changed
+- Popup width increased from 520px to 572px (~10% wider) for more comfortable tab browsing
+- Language selector in Settings now applies instantly on change (no Save click required) — saves `uiLanguage` and reloads the page immediately
+
 ## [1.3.4] - 2026-04-23
 
 ### Fixed
