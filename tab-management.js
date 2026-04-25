@@ -444,24 +444,133 @@ document.getElementById("reconcileClose").addEventListener("click", () => {
   document.getElementById("reconcileResult").style.display = "none";
 });
 
+// EN: Render duplicate preview panel — groups of duplicate tabs for user to review before deleting
+// TR: Kopya önizleme panelini göster — kullanıcı silmeden önce grupları inceleyebilir
+function renderDedupPreview(groups) {
+  const panel = document.getElementById("dedupPreview");
+  panel.innerHTML = "";
+  panel.style.display = "block";
+
+  const header = document.createElement("div");
+  header.className = "dedup-header";
+  const title = document.createElement("span");
+  title.className = "dedup-title";
+  title.textContent = i18n("dedupPreviewTitle", [groups.length]);
+  header.appendChild(title);
+  panel.appendChild(header);
+
+  const groupsWrap = document.createElement("div");
+  groupsWrap.className = "dedup-groups";
+
+  groups.forEach((group, gi) => {
+    const card = document.createElement("div");
+    card.className = "dedup-group-card";
+
+    const urlLabel = document.createElement("div");
+    urlLabel.className = "dedup-url";
+    urlLabel.textContent = group.url;
+    card.appendChild(urlLabel);
+
+    // EN: Update row highlight based on selected radio | TR: Seçili radio'ya göre satır vurgusunu güncelle
+    function updateDim() {
+      const checked = card.querySelector("input[type='radio']:checked");
+      card.querySelectorAll(".dedup-entry").forEach(row => {
+        const radio = row.querySelector("input[type='radio']");
+        row.classList.toggle("dedup-dim", radio !== checked);
+      });
+    }
+
+    group.entries.forEach(entry => {
+      const label = document.createElement("label");
+      label.className = "dedup-entry";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `dedup-group-${gi}`;
+      radio.value = entry.key;
+      radio.checked = entry.key === group.autoKeepKey;
+      radio.addEventListener("change", updateDim);
+
+      const tierBadge = document.createElement("span");
+      tierBadge.className = `tier-badge tier-${entry.currentTier}`;
+      tierBadge.textContent = `T${entry.currentTier}`;
+
+      const statusSpan = document.createElement("span");
+      statusSpan.className = entry.isOpen ? "status-open" : "status-archive";
+      statusSpan.textContent = entry.isOpen ? "✓" : "⚫";
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "dedup-entry-title";
+      titleSpan.textContent = entry.title;
+
+      label.appendChild(radio);
+      label.appendChild(tierBadge);
+      label.appendChild(statusSpan);
+      label.appendChild(titleSpan);
+      card.appendChild(label);
+    });
+
+    groupsWrap.appendChild(card);
+    updateDim();
+  });
+
+  panel.appendChild(groupsWrap);
+
+  const totalDupes = groups.reduce((s, g) => s + g.entries.length - 1, 0);
+
+  const footer = document.createElement("div");
+  footer.className = "dedup-footer";
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.className = "btn-dedup-confirm";
+  confirmBtn.textContent = i18n("dedupPreviewConfirm", [totalDupes]);
+  confirmBtn.addEventListener("click", async () => {
+    const keepKeys = {};
+    groups.forEach((group, gi) => {
+      const selected = panel.querySelector(`input[name="dedup-group-${gi}"]:checked`);
+      if (selected) keepKeys[group.url] = selected.value;
+    });
+    confirmBtn.disabled = true;
+    try {
+      const res = await chrome.runtime.sendMessage({ type: "DEDUP_RECORDS", keepKeys });
+      panel.style.display = "none";
+      await loadData();
+      const btn = document.getElementById("dedupBtn");
+      btn.textContent = i18n("duplicatesRemoved", [res.removed, res.closedTabs]);
+      setTimeout(() => { btn.textContent = i18n("dedupBtnLabel"); }, 3500);
+    } catch (_) {
+      confirmBtn.disabled = false;
+    }
+  });
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "btn-dedup-cancel";
+  cancelBtn.textContent = i18n("dedupPreviewCancel");
+  cancelBtn.addEventListener("click", () => { panel.style.display = "none"; });
+
+  footer.appendChild(confirmBtn);
+  footer.appendChild(cancelBtn);
+  panel.appendChild(footer);
+}
+
 document.getElementById("dedupBtn").addEventListener("click", async () => {
   const btn = document.getElementById("dedupBtn");
   btn.textContent = i18n("cleaning");
   btn.disabled = true;
   try {
-    const res = await chrome.runtime.sendMessage({ type: "DEDUP_RECORDS" });
-    await loadData();
-    btn.textContent =
-      res.removed > 0
-        ? i18n("duplicatesRemoved", [res.removed, res.closedTabs])
-        : i18n("noDuplicates");
+    const res = await chrome.runtime.sendMessage({ type: "FIND_DUPLICATES" });
+    if (!res.groups || res.groups.length === 0) {
+      btn.textContent = i18n("noDuplicates");
+      setTimeout(() => { btn.textContent = i18n("dedupBtnLabel"); btn.disabled = false; }, 3000);
+    } else {
+      btn.textContent = i18n("dedupBtnLabel");
+      btn.disabled = false;
+      renderDedupPreview(res.groups);
+    }
   } catch (_) {
     btn.textContent = "❌ Error";
+    setTimeout(() => { btn.textContent = i18n("dedupBtnLabel"); btn.disabled = false; }, 3000);
   }
-  setTimeout(() => {
-    btn.textContent = i18n("dedupBtnLabel");
-    btn.disabled = false;
-  }, 3500);
 });
 
 // EN: "Select all T4" header checkbox | TR: "Tümünü seç" başlık checkbox

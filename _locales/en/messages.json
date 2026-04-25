@@ -209,6 +209,15 @@
     "message": "📂 Open Selected ($COUNT$ tabs → T1)",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "dedupPreviewTitle": {
+    "message": "🧹 $COUNT$ duplicate group(s) found — select which tab to keep in each group",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewConfirm": {
+    "message": "✅ Confirm — delete $COUNT$ duplicate(s)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewCancel": { "message": "Cancel" },
   "noDuplicates": { "message": "✅ No duplicates" },
   "duplicatesRemoved": {
     "message": "✅ $COUNT$ duplicates removed, $TABS$ tabs closed",

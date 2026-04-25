@@ -193,6 +193,15 @@
     "message": "📂 Abrir Seleccionadas ($COUNT$ pestañas → T1)",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "dedupPreviewTitle": {
+    "message": "🧹 $COUNT$ grupo(s) duplicado(s) encontrado(s) — selecciona qué pestaña conservar en cada grupo",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewConfirm": {
+    "message": "✅ Confirmar — eliminar $COUNT$ duplicado(s)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewCancel": { "message": "Cancelar" },
   "noDuplicates": { "message": "✅ Sin duplicados" },
   "duplicatesRemoved": {
     "message": "✅ $COUNT$ duplicados eliminados, $TABS$ pestañas cerradas",

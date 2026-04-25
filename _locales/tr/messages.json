@@ -193,6 +193,15 @@
     "message": "📂 Seçilileri Aç ($COUNT$ tab → T1)",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "dedupPreviewTitle": {
+    "message": "🧹 $COUNT$ kopya grubu bulundu — her grupta hangi sekmenin kalacağını seç",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewConfirm": {
+    "message": "✅ Onayla — $COUNT$ kopyayı sil",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "dedupPreviewCancel": { "message": "İptal" },
   "noDuplicates": { "message": "✅ Kopya yok" },
   "duplicatesRemoved": {
     "message": "✅ $COUNT$ kopya silindi, $TABS$ sekme kapandı",

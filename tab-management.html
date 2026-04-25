@@ -5,6 +5,7 @@
     <title>__MSG_tabMgmtPageTitle__</title>
     <style>
       :root {
+        --dedup-bg: #2a2412;
         --bg:       #1e1e2e;
         --mantle:   #181825;
         --surface0: #313244;
@@ -27,6 +28,7 @@
         --row-missing: #1e1b2d;
       }
       [data-theme="light"] {
+        --dedup-bg: #fdf8e6;
         --bg:       #eff1f5;
         --mantle:   #e6e9ef;
         --surface0: #ccd0da;
@@ -252,6 +254,67 @@
       .reconcile-item .ri-val.zero { color: var(--surface1); }
       .reconcile-item .ri-lbl  { font-size: 10px; color: var(--overlay); text-transform: uppercase; letter-spacing: 0.5px; }
 
+      /* ── Dedup Preview Panel ── */
+      #dedupPreview {
+        display: none;
+        background: var(--dedup-bg);
+        border: 1px solid var(--yellow);
+        border-radius: 8px;
+        padding: 10px 14px 12px;
+        margin-bottom: 14px;
+        font-size: 12px;
+      }
+      .dedup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .dedup-title { font-weight: 700; color: var(--yellow); font-size: 13px; }
+      .dedup-groups {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+      }
+      .dedup-group-card {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 6px;
+        padding: 8px 10px;
+      }
+      .dedup-url {
+        font-size: 11px;
+        color: var(--sky);
+        margin-bottom: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .dedup-entry {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .dedup-entry:hover { background: var(--hover2); }
+      .dedup-entry.dedup-dim { opacity: 0.3; }
+      .dedup-entry-title {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text);
+      }
+      .dedup-footer { display: flex; gap: 8px; align-items: center; }
+      .btn-dedup-confirm { background: var(--t0-bg); color: var(--red); font-weight: 700; }
+      .btn-dedup-cancel  { background: var(--surface0); color: var(--text); }
+
     </style>
     <script src="theme.js"></script>
     <script src="i18n-dom.js"></script>
@@ -272,6 +335,8 @@
       </div>
       <span id="refreshTime"></span>
     </div>
+
+    <div id="dedupPreview"></div>
 
     <div class="reconcile-result" id="reconcileResult">
       <div class="reconcile-result-header">

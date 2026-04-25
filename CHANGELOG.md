@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.4.1] - 2026-04-25
+
+### Changed
+- Duplicate cleanup now shows a preview panel before deleting: tabs are grouped by URL, one is pre-selected to keep (lowest tier / most recently focused), others are dimmed; user can change selection then confirm — or cancel
+
 ## [1.4.0] - 2026-04-23
 
 ### Changed

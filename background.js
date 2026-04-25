@@ -526,7 +526,7 @@ async function groupInternalTabs(windowId) {
 //   Kural: en düşük tier numaralı kayıt korunur (T0 > T1 > T2 > T3 > T4)
 //   Diğerleri: storage'dan silinir + açık tabsa tarayıcıdan kapatılır
 // =============================================================================
-async function dedupRecords() {
+async function dedupRecords(keepKeys = {}) {
   const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
 
   // URL → kayıt listesi
@@ -541,7 +541,7 @@ async function dedupRecords() {
   let removed = 0;
   let closedTabs = 0;
 
-  for (const [, entries] of Object.entries(byUrl)) {
+  for (const [url, entries] of Object.entries(byUrl)) {
     if (entries.length <= 1) continue;
 
     // Birincil: en düşük tier numarası (T0 en öncelikli)
@@ -554,7 +554,12 @@ async function dedupRecords() {
       const bTime = b.rec.lastFocusEnd ?? Number.MAX_SAFE_INTEGER;
       return bTime - aTime; // azalan → en yeni başa
     });
-    const [keep, ...dupes] = entries;
+    // EN: Use user-chosen key if provided, else auto (first after sort)
+    // TR: Kullanıcının seçtiği kayıt varsa onu kullan, yoksa otomatik (sıralamada ilk)
+    const chosenKey = keepKeys[url];
+    const keepEntry = chosenKey ? (entries.find(e => e.key === chosenKey) || entries[0]) : entries[0];
+    const keep = keepEntry;
+    const dupes = entries.filter(e => e.key !== keepEntry.key);
 
     log(
       "dedup keep:",
@@ -1639,9 +1644,54 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return true;
 
     case "DEDUP_RECORDS":
-      dedupRecords()
+      // EN: Optional keepKeys = { url: recordKey } — user-chosen record to keep per URL
+      // TR: İsteğe bağlı keepKeys = { url: recordKey } — kullanıcının URL başına saklamak istediği kayıt
+      dedupRecords(message.keepKeys || {})
         .then((result) => sendResponse({ ok: true, ...result }))
         .catch((e) => sendResponse({ ok: false, error: e?.message }));
       return true;
+
+    case "FIND_DUPLICATES": {
+      // EN: Return duplicate groups without deleting — for preview UI
+      // TR: Önizleme için silmeden kopya gruplarını döndür
+      (async () => {
+        try {
+          const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+          const byUrl = {};
+          for (const [key, rec] of Object.entries(tabRecords)) {
+            if (!rec.url) continue;
+            if (!byUrl[rec.url]) byUrl[rec.url] = [];
+            byUrl[rec.url].push({ key, rec });
+          }
+          const groups = [];
+          for (const [url, entries] of Object.entries(byUrl)) {
+            if (entries.length <= 1) continue;
+            entries.sort((a, b) => {
+              const tierDiff = (a.rec.currentTier ?? 99) - (b.rec.currentTier ?? 99);
+              if (tierDiff !== 0) return tierDiff;
+              const aTime = a.rec.lastFocusEnd ?? Number.MAX_SAFE_INTEGER;
+              const bTime = b.rec.lastFocusEnd ?? Number.MAX_SAFE_INTEGER;
+              return bTime - aTime;
+            });
+            groups.push({
+              url,
+              autoKeepKey: entries[0].key,
+              entries: entries.map(({ key, rec }) => ({
+                key,
+                title:        rec.title || rec.url,
+                favicon:      rec.favicon,
+                currentTier:  rec.currentTier,
+                lastFocusEnd: rec.lastFocusEnd,
+                isOpen:       rec.currentTier !== 4,
+              })),
+            });
+          }
+          sendResponse({ ok: true, groups });
+        } catch (e) {
+          sendResponse({ ok: false, error: e?.message });
+        }
+      })();
+      return true;
+    }
   }
 });
