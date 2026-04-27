@@ -314,14 +314,14 @@ async function sortTabsInWindow(windowId, sortType) {
     const byElapsed = (a, b) => {
       const ea = elapsedOf(a), eb = elapsedOf(b);
       if (ea !== eb) return ea - eb;
-      return (tabRecords[a.id]?.lastFocusEnd ?? 0) - (tabRecords[b.id]?.lastFocusEnd ?? 0);
+      return (tabRecords[b.id]?.lastFocusEnd ?? 0) - (tabRecords[a.id]?.lastFocusEnd ?? 0);
     };
-    // EN: T0 tabs show "—" for elapsed; sort them by lastFocusEnd ascending (oldest focus first),
+    // EN: T0 tabs show "—" for elapsed; sort them by lastFocusEnd descending (most recently focused first),
     //     matching popup and Tab Management behaviour.
-    // TR: T0 sekmeler elapsed için "—" gösterir; lastFocusEnd artan sırala (en eski odak önce),
+    // TR: T0 sekmeler elapsed için "—" gösterir; lastFocusEnd azalan sırala (en son odaklanan önce),
     //     popup ve Tab Yönetimi davranışıyla uyumlu.
     sortedT0 = [...t0Tabs].sort((a, b) =>
-      (tabRecords[a.id]?.lastFocusEnd ?? 0) - (tabRecords[b.id]?.lastFocusEnd ?? 0)
+      (tabRecords[b.id]?.lastFocusEnd ?? 0) - (tabRecords[a.id]?.lastFocusEnd ?? 0)
     );
     sorted = [...restTabs].sort((a, b) => {
       const ta = tabRecords[a.id]?.currentTier ?? 1;

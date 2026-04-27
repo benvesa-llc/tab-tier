@@ -198,7 +198,7 @@ function sortRecords(records) {
     return [...records].sort((a, b) => {
       const ea = elapsedOf(a), eb = elapsedOf(b);
       if (ea !== eb) return ea - eb;
-      return (a.lastFocusEnd ?? 0) - (b.lastFocusEnd ?? 0);
+      return (b.lastFocusEnd ?? 0) - (a.lastFocusEnd ?? 0);
     });
   }
   // EN: tierDomain (default): tier first, then domain A-Z, then title A-Z

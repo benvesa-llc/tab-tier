@@ -208,7 +208,7 @@ function renderTable() {
     if (sortCol === "elapsed") {
       const fa = a.lastFocusEnd ?? 0;
       const fb = b.lastFocusEnd ?? 0;
-      return fa < fb ? -sortDir : fa > fb ? sortDir : 0;
+      return fa > fb ? -1 : fa < fb ? 1 : 0;
     }
     return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
   });

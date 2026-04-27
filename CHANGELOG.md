@@ -2,6 +2,11 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+## [1.4.2] - 2026-04-27
+
+### Changed
+- Elapsed sort: secondary sort key (focus-end date) is now descending — most recently focused tabs appear first among ties; applies to popup, Tab Management, and "Apply to Tabs"
+
 ## [1.4.1] - 2026-04-25
 
 ### Changed
