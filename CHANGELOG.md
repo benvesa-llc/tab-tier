@@ -2,6 +2,8 @@
 
 All notable changes to Tab Tier will be documented in this file.
 
+> **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
+
 ## [1.4.2] - 2026-04-27
 
 ### Changed
@@ -14,55 +16,27 @@ All notable changes to Tab Tier will be documented in this file.
 
 ## [1.4.0] - 2026-04-23
 
-### Changed
-- Language dropdown options now shown in the active UI language: English shows "Turkish / Spanish", Turkish shows "İngilizce / İspanyolca", Spanish shows "Inglés / Turco"
-
-## [1.3.9] - 2026-04-23
-
-### Added
-- Roadmap: German, Portuguese, and French locale entries added to What's New "Coming Up" section; Spanish (`titleES`) added to all roadmap items
-
-### Changed
-- What's New subtitle now shows version and date from the first changelog entry instead of the installed manifest version
-
-## [1.3.8] - 2026-04-23
-
-### Changed
-- What's New page: all post-1.2.4 changes consolidated into a single entry showing the latest version and today's date; Spanish (`textES`) entries added to every changelog item
-
-### Fixed
-- Turkish locale: "Elapsed ↑" sort button now correctly shows "Geçen Süre ↑"
-
-## [1.3.5] - 2026-04-23
-
-### Changed
-- Popup width increased from 520px to 572px (~10% wider) for more comfortable tab browsing
-- Language selector in Settings now applies instantly on change (no Save click required) — saves `uiLanguage` and reloads the page immediately
-
-## [1.3.4] - 2026-04-23
-
-### Fixed
-- Popup tier badge labels (T0 Fixed, T1 Active…) now reflect the stored language — locale JSON is loaded before first render so labels show in the selected language
-
-## [1.3.3] - 2026-04-23
-
-### Fixed
-- Spanish locale: "Elapsed ↑" sort button now correctly shows "Transcurrido ↑"
-
-## [1.3.2] - 2026-04-23
-
-### Fixed
-- Tab bar group names now correctly update to the selected language: `renameAllGroups` now applies the same filter as `moveTabToTierGroup` (drops `T0:/T1:` prefixed stored names so locale defaults win)
-- Group name inputs: empty inputs no longer store browser-locale defaults — empty string is stored so the locale default always shows through on language change
-- Settings page h1 "Tab Lifecycle Manager" converted to `__MSG_onboardingH1__` token so it is processed by `i18n-dom.js`
-
-## [1.3.0] - 2026-04-23
-
 ### Added
 - Spanish (`es`) locale — full translation of all UI strings in `_locales/es/messages.json`
 - Language selector in Settings (Auto / English / Türkçe / Español); preference saved to storage and applied on next page load
-- `i18n-dom.js` now reads `uiLanguage` from storage and fetches the matching `_locales/{lang}/messages.json` to override `chrome.i18n` for all HTML token substitutions
+- `i18n-dom.js` reads `uiLanguage` from storage and fetches the matching `_locales/{lang}/messages.json` to override `chrome.i18n` for all HTML token substitutions
 - `whatsnew.js` detects stored language preference and renders changelog / roadmap / labels in the selected language
+- Roadmap: German, Portuguese, and French locale entries added to What's New "Coming Up" section; Spanish (`titleES`) added to all roadmap items
+
+### Changed
+- Popup width increased from 520px to 572px (~10% wider) for more comfortable tab browsing
+- Language selector in Settings applies instantly on change (no Save click required) — saves `uiLanguage` and reloads the page immediately
+- Language dropdown options shown in the active UI language: English shows "Turkish / Spanish", Turkish shows "İngilizce / İspanyolca", Spanish shows "Inglés / Turco"
+- What's New page: all post-1.2.4 changes consolidated into a single entry; Spanish (`textES`) entries added to every changelog item
+- What's New subtitle shows version and date from the first changelog entry instead of the installed manifest version
+
+### Fixed
+- Popup tier badge labels (T0 Fixed, T1 Active…) reflect the stored language — locale JSON is loaded before first render so labels show in the selected language
+- Spanish locale: "Elapsed ↑" sort button now correctly shows "Transcurrido ↑"
+- Turkish locale: "Elapsed ↑" sort button now correctly shows "Geçen Süre ↑"
+- Tab bar group names correctly update to the selected language: `renameAllGroups` applies the same filter as `moveTabToTierGroup` (drops `T0:/T1:` prefixed stored names so locale defaults win)
+- Group name inputs: empty inputs no longer store browser-locale defaults — empty string is stored so the locale default always shows through on language change
+- Settings page h1 "Tab Lifecycle Manager" converted to `__MSG_onboardingH1__` token so it is processed by `i18n-dom.js`
 
 ## [1.2.9] - 2026-04-22
 
@@ -71,54 +45,42 @@ All notable changes to Tab Tier will be documented in this file.
 
 ### Changed
 - Popup width increased from 440px to 520px for more comfortable tab browsing
+- Elapsed sort in Tab Management uses `lastFocusEnd` as secondary sort key — T0 tabs (all showing "—") and elapsed ties are ordered by when focus actually ended
 
 ### Fixed
-- "Apply to Tabs" T0 sort: T0 group is now moved to the front via `tabGroups.move` before the sort loop so individual `tabs.move` calls stay within the group's span — no ungroup/re-group flash
+- "Apply to Tabs" T0 sort: T0 group is moved to the front via `tabGroups.move` before the sort loop so individual `tabs.move` calls stay within the group's span — no ungroup/re-group flash
 - Elapsed sort "Apply to Tabs": T0 tabs were sorted by elapsed descending instead of `lastFocusEnd` ascending — now matches popup and Tab Management behaviour
-
-## [1.2.4] - 2026-04-22
-
-### Changed
-- Elapsed sort in Tab Management uses `lastFocusEnd` as secondary sort key — T0 tabs (all showing "—") and elapsed ties are now ordered by when focus actually ended
-
-### Fixed
 - Favicon images that fail to load were not being hidden: MV3 CSP blocks inline `onerror` attribute handlers; switched to programmatic `addEventListener` after table render
 
 ## [1.2.2] - 2026-04-21
 
 ### Fixed
-- Tab elapsed times were reset on every extension reload: previous fix (v1.2.1) used `tabRecords` presence to detect fresh install, but the earlier bug had already wiped records so it still triggered the reset; root fix: first-time setup now runs exclusively on `reason="install"` — updates (`reason="update"`) never touch `tabRecords` under any condition
+- Tab elapsed times were reset on every extension reload: first-time setup now runs exclusively on `reason="install"` — updates (`reason="update"`) never touch `tabRecords` under any condition
 
 ## [1.2.1] - 2026-04-20
 
-### Fixed
-- T1 tab elapsed times were reset to ~0 on every extension update: `initialized` flag was defined as `false` in DefaultSettings but never written back as `true`, so the first-install setup block ran on every `onInstalled` event and overwrote all `lastFocusEnd` values with `Date.now()`
-
-## [1.2.0] - 2026-04-20
-
 ### Added
-- What's New page (`whatsnew.html`) opens automatically after extension updates; shows changelog cards and roadmap items loaded from `data/changelog.json` and `data/roadmap.json`; adapts to browser locale (English/Turkish); respects dark/light theme via `theme.js`
+- What's New page (`whatsnew.html`) opens automatically after extension updates; shows changelog cards and roadmap items loaded from `data/changelog.json` and `data/roadmap.json`; adapts to browser locale; respects dark/light theme via `theme.js`
 - `data/changelog.json` — structured changelog for the What's New page (version, date, typed change entries)
 - `data/roadmap.json` — upcoming feature list for the What's New page (title, status, eta)
-- `chrome.runtime.onInstalled` now opens `whatsnew.html` on `reason="update"` and `onboarding.html` on fresh install; alarm is always cleared and recreated on install/update to pick up interval changes
-
-## [1.1.7] - 2026-04-20
+- `chrome.runtime.onInstalled` opens `whatsnew.html` on `reason="update"` and `onboarding.html` on fresh install; alarm is always cleared and recreated on install/update
 
 ### Fixed
-- Timer reset after PC sleep/hibernate: Edge fires `groupId: -1` for ALL open tabs during session restore before reassigning real group IDs — extension was treating this as a user drag and writing `lastFocusEnd = now` for every tab, resetting elapsed time to zero; fix: `groupId: -1` event no longer touches `lastFocusEnd`; tier corrections on user drags are handled by the follow-up real-groupId event
+- T1 tab elapsed times were reset to ~0 on every extension update: `initialized` flag was defined as `false` in DefaultSettings but never written back as `true`, so the first-install setup block ran on every `onInstalled` event and overwrote all `lastFocusEnd` values
+- Timer reset after PC sleep/hibernate: Edge fires `groupId: -1` for ALL open tabs during session restore before reassigning real group IDs — extension was treating this as a user drag and writing `lastFocusEnd = now` for every tab; fix: `groupId: -1` event no longer touches `lastFocusEnd`; tier corrections on user drags are handled by the follow-up real-groupId event
 
 ## [1.1.6] - 2026-04-19
 
 ### Added
 - Dark/light theme support across all pages (Popup, Settings, Tab Management, Onboarding); Catppuccin Mocha (dark) and Catppuccin Latte (light) palettes; toggle with 🌙/☀️ button in popup header or Theme selector in Settings; preference saved to storage and applied instantly via `theme.js`
-- Clicking an open tab URL in Tab Management now expands the tab group if it is collapsed before focusing the tab — the tab is always visible after clicking
+- Clicking an open tab URL in Tab Management expands the tab group if it is collapsed before focusing the tab — the tab is always visible after clicking
 - Favicon column (20×20) in Tab Management between Title and URL columns
 - Fixed column toggle restored: clicking 📌 unfixes a tab (T0→T1, timer starts), clicking — fixes it (T1→T0)
 - Clicking a closed/archived URL in Tab Management deletes the stale record and opens the URL as a new T1 tab; Tab Management auto-refreshes via `storage.onChanged`
-- Tier labels throughout Tab Management (summary cards and tier badges) now use user-configured group names from Settings (T0–T3); default fallback uses the full group name (e.g. "T1: Hot") matching what the tab bar shows; T4 always shows the fixed "Archive" label
+- Tier labels throughout Tab Management (summary cards and tier badges) use user-configured group names from Settings (T0–T3); T4 always shows the fixed "Archive" label
 
 ### Changed
-- `timerCheck` and `reconcileTabs` now use a shared `calcExpectedTier(elapsed, settings)` helper — tier is always assigned directly from elapsed time rather than one step at a time, correcting tabs stuck in the wrong tier in both directions
+- `timerCheck` and `reconcileTabs` use a shared `calcExpectedTier(elapsed, settings)` helper — tier is always assigned directly from elapsed time rather than one step at a time, correcting tabs stuck in the wrong tier in both directions
 - T4 tabs incorrectly archived (elapsed shorter than T3→T4 threshold) are automatically restored and placed in the correct tier group; a 5-minute cooldown per URL prevents reopen loops on redirecting or failing URLs
 
 ### Fixed
@@ -128,7 +90,7 @@ All notable changes to Tab Tier will be documented in this file.
 - Translated remaining English "duplicate" terms in Turkish locale to "kopya" (`dedupBtnLabel`, `noDuplicates`, `duplicatesRemoved`, `dupActionLabel`, `dupActionAllow`)
 - Replaced all hardcoded inline colors in Tab Management rows and status cells with CSS-variable-based classes (`status-open`, `status-missing`, `status-archive`, `url-open`, `url-closed`, `row-stale`, `row-missing`) — all colors now respond to dark/light theme
 - Darkened URL and active-status colors in Tab Management light theme for better readability (`--sky` → `#0369a1`, `--green` → `#166534`)
-- Missing tabs (status "missing" in Tab Management) now respect the "On Manual Close" setting: "archive" moves to T4, "delete" removes the record entirely — applied by both `timerCheck` (within 1 minute) and `reconcileTabs`
+- Missing tabs (status "missing" in Tab Management) respect the "On Manual Close" setting: "archive" moves to T4, "delete" removes the record entirely
 - Tabs incorrectly showing as T4 (archived) in Tab Management while still open in the browser — `reconcileTabs` was marking tabs T4 without closing them; archiving is now left entirely to `timerCheck`
 - Tab stuck in T2 with only 9 minutes elapsed: race condition where `timerCheck` overwrote an `onActivated` T1 promotion — storage is re-read just before saving and any tab activated during processing is restored from the fresh copy
 - T2/T3 group not appearing in tab bar after a failed `moveTabToTierGroup` call: `extensionMovingTabs` flag was never cleared on error, silently blocking all future `onUpdated` events for that tab
@@ -136,7 +98,7 @@ All notable changes to Tab Tier will be documented in this file.
 ## [1.0.9] - 2026-04-18
 
 ### Added
-- Startup now always calls `reconcileTabs()` before `timerCheck()` to catch tabs opened while the service worker was stopped (e.g. after sleep/wake)
+- Startup always calls `reconcileTabs()` before `timerCheck()` to catch tabs opened while the service worker was stopped (e.g. after sleep/wake)
 - Tab Management auto-reconciles on open to fix any drift between storage and browser state
 
 ### Changed
@@ -155,7 +117,7 @@ All notable changes to Tab Tier will be documented in this file.
 - Elapsed time units in Tab Management localized: English `2h 34m`, Turkish `2s 34d` (s/d/sn for saat/dakika/saniye)
 
 ### Fixed
-- Reconcile result now displayed as a persistent panel with labeled metric cards (Archived / New / Fixed / Re-linked / Tier corrected / Grouped), dismissible with ✕; previously shown as a disappearing button label
+- Reconcile result displayed as a persistent panel with labeled metric cards (Archived / New / Fixed / Re-linked / Tier corrected / Grouped), dismissible with ✕; previously shown as a disappearing button label
 - Elapsed sort in Tab Management places T0 (fixed) tabs first; secondary sort by title when primary values are equal
 
 ## [1.0.0] - 2026-04-15
@@ -170,7 +132,7 @@ All notable changes to Tab Tier will be documented in this file.
 - Default group names use i18n; stored names that look like old system defaults are cleared so the correct language placeholder shows
 - All tab bar labels (group names, internal group title, loading placeholder) use `chrome.i18n.getMessage()`
 - Popup sort options replaced with three tier-first presets: Tier + Domain, Tier + Title, Tier + URL
-- Popup now shows all tiers (T0–T4) by default
+- Popup shows all tiers (T0–T4) by default
 
 ### Fixed
 - `__MSG_*__` placeholders rendered as literal text in HTML pages — added `i18n-dom.js` to substitute tokens on load
@@ -181,7 +143,6 @@ All notable changes to Tab Tier will be documented in this file.
 - `onActivated` corrects pinned tabs incorrectly stored as T2/T3 to T0
 - `tabs.onReplaced` listener added to re-link storage records when Edge reassigns a tab ID on wake
 - `onUpdated` groupId handler checks `tab.active` before setting `lastFocusEnd` to avoid resetting the timer on a freshly activated tab
-- Reconcile result shown as persistent panel with labeled metric cards instead of a disappearing button label
 
 ## [0.2.8] - 2026-04-14
 
