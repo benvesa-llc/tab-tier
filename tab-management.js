@@ -27,8 +27,22 @@ let activeTabIds = new Set(); // EN: currently focused tab IDs | TR: gerçekte a
 let sortCol = "currentTier";
 let sortDir = 1; // EN: 1 = asc, -1 = desc | TR: 1 = artan, -1 = azalan
 let filterText = "";
-let pageSize = 50;    // EN: rows per page; 0 = show all | TR: sayfa başına satır; 0 = tümünü göster
+let pageSize = -1;   // EN: rows per page; -1 = auto-fit viewport, 0 = show all | TR: sayfa başına satır; -1 = otomatik, 0 = tümünü göster
 let currentPage = 0; // EN: zero-based current page index | TR: sıfır tabanlı geçerli sayfa indeksi
+
+const ROW_HEIGHT_PX = 37; // EN: estimated rendered row height in pixels | TR: tahmini render edilmiş satır yüksekliği
+
+// EN: Calculate how many rows fit in the viewport below the sticky thead.
+// TR: Sabit thead'in altında viewport'a kaç satır sığdığını hesapla.
+function calcAutoPageSize() {
+  const thead  = document.querySelector("#dataTable thead");
+  const pgBot  = document.getElementById("pagination");
+  if (!thead) return 25;
+  const theadBottom  = thead.getBoundingClientRect().bottom;
+  const pgBotHeight  = pgBot.offsetHeight || 40;
+  const available    = window.innerHeight - theadBottom - pgBotHeight - 8;
+  return Math.max(5, Math.floor(available / ROW_HEIGHT_PX));
+}
 
 // ─── Time formatting ─────────────────────────────────────────────────────────
 
@@ -217,14 +231,17 @@ function renderTable() {
 
   const totalRows = rows.length;
 
+  // EN: Resolve effective page size: -1 = auto-fit, 0 = all | TR: Etkin sayfa boyutunu belirle: -1 = otomatik, 0 = tümü
+  const resolvedSize = pageSize === -1 ? calcAutoPageSize() : pageSize;
+
   // EN: Clamp currentPage so it stays valid after filter/data changes
   // TR: currentPage'i filtre/veri değişimlerinde geçerli aralıkta tut
-  const effectiveSize = pageSize === 0 ? totalRows : pageSize;
+  const effectiveSize = resolvedSize === 0 ? totalRows : resolvedSize;
   const totalPages = effectiveSize > 0 ? Math.ceil(totalRows / effectiveSize) : 1;
   if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
 
   // EN: Slice to current page | TR: Geçerli sayfaya dilimleme
-  if (pageSize > 0) rows = rows.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  if (resolvedSize > 0) rows = rows.slice(currentPage * resolvedSize, (currentPage + 1) * resolvedSize);
 
   document.getElementById("noData").style.display =
     totalRows === 0 ? "block" : "none";
@@ -358,24 +375,31 @@ function renderTable() {
   selectAll.indeterminate =
     selectedKeys.size > 0 && selectedKeys.size < t4Count;
 
-  renderPagination(totalRows);
+  renderPagination(totalRows, resolvedSize);
 }
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
-function renderPagination(totalRows) {
-  const effectiveSize = pageSize === 0 ? totalRows : pageSize;
+function renderPagination(totalRows, resolvedSize) {
+  const effectiveSize = resolvedSize === 0 ? totalRows : resolvedSize;
   const totalPages = effectiveSize > 0 ? Math.ceil(totalRows / effectiveSize) : 1;
   const atFirst = currentPage === 0;
   const atLast  = currentPage >= totalPages - 1;
+
+  // EN: Label for auto option shows calculated row count in parentheses
+  // TR: Otomatik seçeneğinin etiketi parantez içinde hesaplanan satır sayısını gösterir
+  const autoLabel = pageSize === -1
+    ? `${i18n("pagingAuto")} (${resolvedSize})`
+    : i18n("pagingAuto");
 
   function barHtml(suffix) {
     return `
       <span class="pg-label">${i18n("pagingRowsLabel")}</span>
       <select id="pageSizeSelect${suffix}">
-        ${[10, 25, 50, 100, 0].map(s =>
-          `<option value="${s}" ${s === pageSize ? "selected" : ""}>${s === 0 ? i18n("pagingAll") : s}</option>`
-        ).join("")}
+        ${[10, 25, -1, 0].map(s => {
+          const label = s === 0 ? i18n("pagingAll") : s === -1 ? autoLabel : s;
+          return `<option value="${s}" ${s === pageSize ? "selected" : ""}>${label}</option>`;
+        }).join("")}
       </select>
       <button class="pg-btn" id="pgFirst${suffix}" ${atFirst ? "disabled" : ""}>«</button>
       <button class="pg-btn" id="pgPrev${suffix}"  ${atFirst ? "disabled" : ""}>‹</button>
@@ -681,6 +705,12 @@ document.querySelectorAll("thead th[data-col]").forEach((th) => {
     currentPage = 0;
     renderTable();
   });
+});
+
+// EN: Re-render on resize when auto mode is active so row count stays fitted to viewport
+// TR: Otomatik mod aktifken pencere yeniden boyutlandırılırsa satır sayısını yeniden hesapla
+window.addEventListener("resize", () => {
+  if (pageSize === -1) renderTable();
 });
 
 // ─── Init and live update ────────────────────────────────────────────────────

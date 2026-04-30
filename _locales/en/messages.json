@@ -281,6 +281,7 @@
 
   "pagingRowsLabel": { "message": "Rows per page:" },
   "pagingAll":       { "message": "All" },
+  "pagingAuto":      { "message": "Auto" },
   "pagingInfo": {
     "message": "Page $PAGE$ of $TOTAL$",
     "placeholders": {

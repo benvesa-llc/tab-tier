@@ -259,6 +259,7 @@
 
   "pagingRowsLabel": { "message": "Sayfa başına satır:" },
   "pagingAll":       { "message": "Tümü" },
+  "pagingAuto":      { "message": "Otomatik" },
   "pagingInfo": {
     "message": "Sayfa $PAGE$ / $TOTAL$",
     "placeholders": {
