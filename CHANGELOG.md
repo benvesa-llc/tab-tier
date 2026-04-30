@@ -4,6 +4,17 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.4.4] - 2026-04-30
+
+### Fixed
+- Duplicate tab groups (e.g. multiple "T1: Hot" groups) no longer appear when Chrome restores a session or opens many tabs at once; concurrent `moveTabToTierGroup` calls for the same window are now serialized via a per-window async lock
+- Reconcile now merges any pre-existing duplicate same-color groups on startup, healing tabs affected by the race condition before this fix
+
+## [1.4.3] - 2026-04-29
+
+### Fixed
+- Settings page status messages ("Saved!", "Reset to defaults.", group rename confirmations, etc.) now respect the stored `uiLanguage`; previously they always used the browser locale because `settings.js` called `chrome.i18n.getMessage` synchronously before the locale override was loaded
+
 ## [1.4.2] - 2026-04-27
 
 ### Changed

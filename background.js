@@ -78,6 +78,20 @@ let currentActiveTabId = null;
 // TR: Extension tarafından taşınan tab ID'leri — bunlar için onUpdated lastFocusEnd yazmamalı
 const extensionMovingTabs = new Set();
 
+// EN: Per-window mutex — serializes group find-or-create to prevent duplicate groups
+//     when multiple tabs are moved to the same tier concurrently (e.g. session restore).
+// TR: Pencere başına mutex — eş zamanlı grup oluşturma yarış koşulunu önler;
+//     aynı anda birden fazla tab aynı tier'a taşınırken yinelenen grup oluşmasını engeller.
+const _windowGroupLocks = new Map(); // windowId → Promise<void>
+
+function acquireWindowLock(windowId) {
+  let release;
+  const lock = new Promise(r => { release = r; });
+  const prev = _windowGroupLocks.get(windowId) ?? Promise.resolve();
+  _windowGroupLocks.set(windowId, prev.then(() => lock, () => lock));
+  return prev.then(() => release, () => release);
+}
+
 // EN: URLs currently being restored from T4 — prevents mini-reconcile from
 //     immediately re-archiving a tab that was just reopened (anti-loop guard).
 // TR: T4'ten geri yüklenen URL'ler — yeni açılan tab'ı mini-reconcile'ın hemen
@@ -214,25 +228,34 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
     // TR: Bu tab'ı extension tarafından taşınıyor olarak işaretle; onUpdated lastFocusEnd'i sıfırlamasın
     extensionMovingTabs.add(tabId);
 
-    const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
-    // Renk üzerinden eşleştir: title değişmiş olsa bile doğru grubu bulur
-    const targetGroup = groups.find((g) => g.color === color);
+    // EN: Acquire per-window lock before querying/creating groups to prevent
+    //     concurrent calls from each seeing "no group yet" and creating duplicates.
+    // TR: Grup sorgusu/oluşturma öncesi pencere kilidini al; eş zamanlı çağrıların
+    //     her birinin "grup yok" görüp yinelenen grup açmasını önler.
+    const release = await acquireWindowLock(tab.windowId);
+    try {
+      const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
+      // EN: Match by color — finds the correct group even if its title was renamed | TR: Renk üzerinden eşleştir: title değişmiş olsa bile doğru grubu bulur
+      const targetGroup = groups.find((g) => g.color === color);
 
-    if (targetGroup) {
-      // Grup adını da güncelle (ayarlarla senkronize tut)
-      if (targetGroup.title !== title) {
-        await chrome.tabGroups.update(targetGroup.id, { title });
+      if (targetGroup) {
+        // EN: Keep group title in sync with current settings | TR: Grup adını ayarlarla senkronize tut
+        if (targetGroup.title !== title) {
+          await chrome.tabGroups.update(targetGroup.id, { title });
+        }
+        await chrome.tabs.group({ tabIds: [tabId], groupId: targetGroup.id });
+      } else {
+        const groupId = await chrome.tabs.group({ tabIds: [tabId] });
+        await chrome.tabGroups.update(groupId, {
+          title,
+          color,
+          collapsed: tier === 3,
+        });
+        // EN: New group created — reorder all tier groups so T0 < T1 < T2 < T3 | TR: Yeni grup oluşturuldu, tüm grupları T0 < T1 < T2 < T3 sırasına diz
+        await reorderGroupsInWindow(tab.windowId);
       }
-      await chrome.tabs.group({ tabIds: [tabId], groupId: targetGroup.id });
-    } else {
-      const groupId = await chrome.tabs.group({ tabIds: [tabId] });
-      await chrome.tabGroups.update(groupId, {
-        title,
-        color,
-        collapsed: tier === 3,
-      });
-      // EN: New group created — reorder all tier groups so T0 < T1 < T2 < T3 | TR: Yeni grup oluşturuldu, tüm grupları T0 < T1 < T2 < T3 sırasına diz
-      await reorderGroupsInWindow(tab.windowId);
+    } finally {
+      release();
     }
   } catch (e) {
     // EN: Always clean up the moving-flag on error so future onUpdated events are not ignored
@@ -593,6 +616,35 @@ async function dedupRecords(keepKeys = {}) {
 }
 
 // =============================================================================
+// EN: Merge duplicate tab groups that share the same color within a window.
+//     Keeps the first (lowest-index) group and moves all other tabs into it.
+//     This heals duplicate groups created before the per-window lock was introduced.
+// TR: Aynı pencerede aynı rengi paylaşan yinelenen tab gruplarını birleştir.
+//     İlk (en düşük indisli) grubu tutar, diğer tüm tabları o gruba taşır.
+async function mergeDuplicateColorGroups(windowId) {
+  try {
+    const groups = await chrome.tabGroups.query({ windowId });
+    const byColor = new Map();
+    for (const g of groups) {
+      if (!byColor.has(g.color)) byColor.set(g.color, []);
+      byColor.get(g.color).push(g);
+    }
+    for (const [, colorGroups] of byColor) {
+      if (colorGroups.length <= 1) continue;
+      colorGroups.sort((a, b) => a.id - b.id);
+      const primary = colorGroups[0];
+      for (const dupe of colorGroups.slice(1)) {
+        const dupeTabs = await chrome.tabs.query({ windowId, groupId: dupe.id });
+        if (dupeTabs.length > 0) {
+          await chrome.tabs.group({ tabIds: dupeTabs.map(t => t.id), groupId: primary.id });
+        }
+      }
+    }
+  } catch (e) {
+    log("mergeDuplicateColorGroups error:", e?.message);
+  }
+}
+
 // reconcileTabs: Storage'ı gerçek açık tablarla eşitle + grupları uygula
 //   - Kapalı tab'ların kayıtlarını HER ZAMAN T4'e gönder (sil değil)
 //   - Açık ama kayıtsız tab'lara yeni kayıt ekle
@@ -808,6 +860,9 @@ async function reconcileTabs() {
   const windowIds = [...new Set(allTabs.map((t) => t.windowId))];
   for (const wid of windowIds) {
     await groupInternalTabs(wid);
+    // EN: Merge any duplicate same-color groups left over from previous race conditions
+    // TR: Önceki yarış koşullarından kalan aynı renkli yinelenen grupları birleştir
+    await mergeDuplicateColorGroups(wid);
   }
 
   log(

@@ -2,13 +2,14 @@
 // Tab Lifecycle Manager — settings.js
 // =============================================================================
 
-// EN: i18n helper shorthand | TR: i18n yardımcı kısaltması
-const i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
+// EN: i18n helper — reassigned at startup if a stored language override is active
+// TR: i18n yardımcısı — başlangıçta saklanan dil tercihine göre yeniden atanır
+let i18n = (key, subs) => chrome.i18n.getMessage(key, subs);
 
 document.getElementById("appVersion").textContent = "v" + chrome.runtime.getManifest().version;
 
-// EN: Default group names from i18n (language-aware) | TR: i18n'den varsayılan grup adları
-const DefaultGroupNames = {
+// EN: Default group names — populated after locale loads | TR: Varsayılan grup adları — locale yüklendikten sonra doldurulur
+let DefaultGroupNames = {
   0: i18n("defaultGroupT0"),
   1: i18n("defaultGroupT1"),
   2: i18n("defaultGroupT2"),
@@ -210,4 +211,40 @@ async function init() {
   });
 }
 
-init();
+// EN: Load locale override before init so all i18n calls use the selected language
+// TR: init öncesi locale override'ı yükle ki tüm i18n çağrıları seçili dili kullansın
+(async () => {
+  try {
+    const { settings = {} } = await chrome.storage.local.get("settings");
+    const lang = settings.uiLanguage;
+    if (lang && lang !== "auto") {
+      const resp = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
+      if (resp.ok) {
+        const msgs = await resp.json();
+        i18n = (key, subs) => {
+          const entry = msgs[key];
+          if (!entry) return chrome.i18n.getMessage(key, subs) || `[${key}]`;
+          let text = entry.message;
+          if (subs && entry.placeholders) {
+            const args = Array.isArray(subs) ? subs : [subs];
+            for (const [name, ph] of Object.entries(entry.placeholders)) {
+              const m = (ph.content || "").match(/^\$(\d+)$/);
+              if (m) {
+                const val = String(args[parseInt(m[1]) - 1] ?? "");
+                text = text.replace(new RegExp(`\\$${name.toUpperCase()}\\$`, "g"), val);
+              }
+            }
+          }
+          return text;
+        };
+        DefaultGroupNames = {
+          0: i18n("defaultGroupT0"),
+          1: i18n("defaultGroupT1"),
+          2: i18n("defaultGroupT2"),
+          3: i18n("defaultGroupT3"),
+        };
+      }
+    }
+  } catch (e) {}
+  init();
+})();
