@@ -255,5 +255,15 @@
       "total":  { "content": "$1" },
       "pinned": { "content": "$2" }
     }
+  },
+
+  "pagingRowsLabel": { "message": "Sayfa başına satır:" },
+  "pagingAll":       { "message": "Tümü" },
+  "pagingInfo": {
+    "message": "Sayfa $PAGE$ / $TOTAL$",
+    "placeholders": {
+      "page":  { "content": "$1" },
+      "total": { "content": "$2" }
+    }
   }
 }

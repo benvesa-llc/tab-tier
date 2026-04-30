@@ -252,5 +252,15 @@
       "total":  { "content": "$1" },
       "pinned": { "content": "$2" }
     }
+  },
+
+  "pagingRowsLabel": { "message": "Filas por página:" },
+  "pagingAll":       { "message": "Todas" },
+  "pagingInfo": {
+    "message": "Página $PAGE$ de $TOTAL$",
+    "placeholders": {
+      "page":  { "content": "$1" },
+      "total": { "content": "$2" }
+    }
   }
 }

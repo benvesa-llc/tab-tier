@@ -27,6 +27,8 @@ let activeTabIds = new Set(); // EN: currently focused tab IDs | TR: gerçekte a
 let sortCol = "currentTier";
 let sortDir = 1; // EN: 1 = asc, -1 = desc | TR: 1 = artan, -1 = azalan
 let filterText = "";
+let pageSize = 50;    // EN: rows per page; 0 = show all | TR: sayfa başına satır; 0 = tümünü göster
+let currentPage = 0; // EN: zero-based current page index | TR: sıfır tabanlı geçerli sayfa indeksi
 
 // ─── Time formatting ─────────────────────────────────────────────────────────
 
@@ -213,8 +215,19 @@ function renderTable() {
     return (a.title || "").toLowerCase().localeCompare((b.title || "").toLowerCase());
   });
 
+  const totalRows = rows.length;
+
+  // EN: Clamp currentPage so it stays valid after filter/data changes
+  // TR: currentPage'i filtre/veri değişimlerinde geçerli aralıkta tut
+  const effectiveSize = pageSize === 0 ? totalRows : pageSize;
+  const totalPages = effectiveSize > 0 ? Math.ceil(totalRows / effectiveSize) : 1;
+  if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
+
+  // EN: Slice to current page | TR: Geçerli sayfaya dilimleme
+  if (pageSize > 0) rows = rows.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
   document.getElementById("noData").style.display =
-    rows.length === 0 ? "block" : "none";
+    totalRows === 0 ? "block" : "none";
 
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = rows
@@ -345,6 +358,40 @@ function renderTable() {
   selectAll.indeterminate =
     selectedKeys.size > 0 && selectedKeys.size < t4Count;
 
+  renderPagination(totalRows);
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+function renderPagination(totalRows) {
+  const bar = document.getElementById("pagination");
+  const effectiveSize = pageSize === 0 ? totalRows : pageSize;
+  const totalPages = effectiveSize > 0 ? Math.ceil(totalRows / effectiveSize) : 1;
+
+  bar.innerHTML = `
+    <span class="pg-label">${i18n("pagingRowsLabel")}</span>
+    <select id="pageSizeSelect">
+      ${[10, 30, 50, 100, 0].map(s =>
+        `<option value="${s}" ${s === pageSize ? "selected" : ""}>${s === 0 ? i18n("pagingAll") : s}</option>`
+      ).join("")}
+    </select>
+    <button class="pg-btn" id="pgFirst" ${currentPage === 0 ? "disabled" : ""}>«</button>
+    <button class="pg-btn" id="pgPrev"  ${currentPage === 0 ? "disabled" : ""}>‹</button>
+    <span class="pg-info">${i18n("pagingInfo", [currentPage + 1, totalPages])}</span>
+    <button class="pg-btn" id="pgNext" ${currentPage >= totalPages - 1 ? "disabled" : ""}>›</button>
+    <button class="pg-btn" id="pgLast" ${currentPage >= totalPages - 1 ? "disabled" : ""}>»</button>
+    <span class="pg-total">(${totalRows})</span>
+  `;
+
+  document.getElementById("pageSizeSelect").addEventListener("change", (e) => {
+    pageSize = parseInt(e.target.value);
+    currentPage = 0;
+    renderTable();
+  });
+  document.getElementById("pgFirst").addEventListener("click", () => { currentPage = 0; renderTable(); });
+  document.getElementById("pgPrev").addEventListener("click",  () => { if (currentPage > 0) { currentPage--; renderTable(); } });
+  document.getElementById("pgNext").addEventListener("click",  () => { if (currentPage < totalPages - 1) { currentPage++; renderTable(); } });
+  document.getElementById("pgLast").addEventListener("click",  () => { currentPage = totalPages - 1; renderTable(); });
 }
 
 function escHtml(str) {
@@ -376,6 +423,7 @@ const filterClear = document.getElementById("filterClear");
 filterInput.addEventListener("input", (e) => {
   filterText = e.target.value;
   filterClear.style.display = filterText ? "block" : "none";
+  currentPage = 0;
   renderTable();
 });
 
@@ -384,6 +432,7 @@ filterClear.addEventListener("click", () => {
   filterText = "";
   filterClear.style.display = "none";
   filterInput.focus();
+  currentPage = 0;
   renderTable();
 });
 
@@ -621,6 +670,7 @@ document.querySelectorAll("thead th[data-col]").forEach((th) => {
       sortCol = col;
       sortDir = 1;
     }
+    currentPage = 0;
     renderTable();
   });
 });

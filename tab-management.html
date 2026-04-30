@@ -315,6 +315,46 @@
       .btn-dedup-confirm { background: var(--t0-bg); color: var(--red); font-weight: 700; }
       .btn-dedup-cancel  { background: var(--surface0); color: var(--text); }
 
+      /* ── Pagination ── */
+      #pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+        font-size: 12px;
+      }
+      #pagination .pg-label { color: var(--subtext); }
+      #pagination select {
+        background: var(--surface0);
+        border: 1px solid var(--surface1);
+        border-radius: 6px;
+        color: var(--text);
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        outline: none;
+      }
+      #pagination select:focus { border-color: var(--accent); }
+      #pagination .pg-btn {
+        background: var(--surface0);
+        color: var(--text);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+      }
+      #pagination .pg-btn:hover:not(:disabled) { background: var(--surface1); }
+      #pagination .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+      #pagination .pg-info {
+        color: var(--subtext);
+        min-width: 110px;
+        text-align: center;
+      }
+      #pagination .pg-total { color: var(--overlay); margin-left: 4px; }
+
     </style>
     <script src="theme.js"></script>
     <script src="i18n-dom.js"></script>
@@ -369,6 +409,7 @@
       <tbody id="tableBody"></tbody>
     </table>
     <p id="noData">__MSG_noRecords__</p>
+    <div id="pagination"></div>
 
     <script src="tab-management.js"></script>
   </body>
