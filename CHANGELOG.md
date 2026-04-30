@@ -4,11 +4,11 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.4.7] - 2026-05-01
+## [1.4.8] - 2026-05-01
 
 ### Changed
-- Pagination "Auto" mode (default): automatically calculates how many rows fit in the visible viewport below the sticky header; label shows the calculated count e.g. "Auto (22)"; recalculates on window resize
-- Pagination options changed to 10 / 25 / Auto / All (removed 50 and 100 fixed options)
+- Pagination "Auto" mode (default): automatically calculates how many rows fit in the visible viewport; pre-renders the bar before measuring so the count is consistent across all renders; label shows resolved count e.g. "Auto (28)"; recalculates on window resize
+- Pagination option order: Auto / 10 / 25 / 50 / 100 / All
 
 ## [1.4.6] - 2026-04-30
 

@@ -31,17 +31,38 @@ let pageSize = -1;   // EN: rows per page; -1 = auto-fit viewport, 0 = show all 
 let currentPage = 0; // EN: zero-based current page index | TR: sıfır tabanlı geçerli sayfa indeksi
 
 const ROW_HEIGHT_PX = 37; // EN: estimated rendered row height in pixels | TR: tahmini render edilmiş satır yüksekliği
+const PAGE_SIZE_OPTIONS = [-1, 10, 25, 50, 100, 0]; // EN: -1=Auto, 0=All | TR: -1=Otomatik, 0=Tümü
 
 // EN: Calculate how many rows fit in the viewport below the sticky thead.
+//     pgBarHeight must be the already-measured height of one pagination bar.
 // TR: Sabit thead'in altında viewport'a kaç satır sığdığını hesapla.
-function calcAutoPageSize() {
-  const thead  = document.querySelector("#dataTable thead");
-  const pgBot  = document.getElementById("pagination");
+//     pgBarHeight, bir pagination barının önceden ölçülmüş yüksekliğidir.
+function calcAutoPageSize(pgBarHeight) {
+  const thead = document.querySelector("#dataTable thead");
   if (!thead) return 25;
-  const theadBottom  = thead.getBoundingClientRect().bottom;
-  const pgBotHeight  = pgBot.offsetHeight || 40;
-  const available    = window.innerHeight - theadBottom - pgBotHeight - 8;
+  const theadBottom = thead.getBoundingClientRect().bottom;
+  const available   = window.innerHeight - theadBottom - pgBarHeight - 8;
   return Math.max(5, Math.floor(available / ROW_HEIGHT_PX));
+}
+
+// EN: Build pagination bar HTML without binding events (shared by pre-render and final render)
+// TR: Olay bağlamadan pagination bar HTML'i oluştur (ön render ve son render paylaşır)
+function buildBarHtml(suffix, atFirst, atLast, cp, totalPages, totalRows, autoLabel) {
+  return `
+    <span class="pg-label">${i18n("pagingRowsLabel")}</span>
+    <select id="pageSizeSelect${suffix}">
+      ${PAGE_SIZE_OPTIONS.map(s => {
+        const label = s === 0 ? i18n("pagingAll") : s === -1 ? autoLabel : s;
+        return `<option value="${s}" ${s === pageSize ? "selected" : ""}>${label}</option>`;
+      }).join("")}
+    </select>
+    <button class="pg-btn" id="pgFirst${suffix}" ${atFirst ? "disabled" : ""}>«</button>
+    <button class="pg-btn" id="pgPrev${suffix}"  ${atFirst ? "disabled" : ""}>‹</button>
+    <span class="pg-info">${i18n("pagingInfo", [cp + 1, totalPages])}</span>
+    <button class="pg-btn" id="pgNext${suffix}" ${atLast ? "disabled" : ""}>›</button>
+    <button class="pg-btn" id="pgLast${suffix}" ${atLast ? "disabled" : ""}>»</button>
+    <span class="pg-total">(${totalRows})</span>
+  `;
 }
 
 // ─── Time formatting ─────────────────────────────────────────────────────────
@@ -231,8 +252,20 @@ function renderTable() {
 
   const totalRows = rows.length;
 
-  // EN: Resolve effective page size: -1 = auto-fit, 0 = all | TR: Etkin sayfa boyutunu belirle: -1 = otomatik, 0 = tümü
-  const resolvedSize = pageSize === -1 ? calcAutoPageSize() : pageSize;
+  // EN: Resolve effective page size: -1 = auto-fit, 0 = all.
+  //     For auto mode, pre-render the top bar first so its height is measurable,
+  //     then use that height in calcAutoPageSize — ensures consistent results every render.
+  // TR: Etkin sayfa boyutunu belirle: -1 = otomatik, 0 = tümü.
+  //     Otomatik modda üst barı önce render et, yüksekliğini ölç, calcAutoPageSize'a geçir.
+  let resolvedSize;
+  if (pageSize === -1) {
+    document.getElementById("paginationTop").innerHTML =
+      buildBarHtml("T", true, true, 0, 1, 0, i18n("pagingAuto"));
+    const pgBarHeight = document.getElementById("paginationTop").offsetHeight;
+    resolvedSize = calcAutoPageSize(pgBarHeight);
+  } else {
+    resolvedSize = pageSize;
+  }
 
   // EN: Clamp currentPage so it stays valid after filter/data changes
   // TR: currentPage'i filtre/veri değişimlerinde geçerli aralıkta tut
@@ -383,35 +416,18 @@ function renderTable() {
 function renderPagination(totalRows, resolvedSize) {
   const effectiveSize = resolvedSize === 0 ? totalRows : resolvedSize;
   const totalPages = effectiveSize > 0 ? Math.ceil(totalRows / effectiveSize) : 1;
-  const atFirst = currentPage === 0;
-  const atLast  = currentPage >= totalPages - 1;
-
-  // EN: Label for auto option shows calculated row count in parentheses
-  // TR: Otomatik seçeneğinin etiketi parantez içinde hesaplanan satır sayısını gösterir
+  const atFirst   = currentPage === 0;
+  const atLast    = currentPage >= totalPages - 1;
+  // EN: Auto label shows the calculated row count so user knows what "Auto" resolved to
+  // TR: Otomatik etiketi hesaplanan satır sayısını gösterir
   const autoLabel = pageSize === -1
     ? `${i18n("pagingAuto")} (${resolvedSize})`
     : i18n("pagingAuto");
 
-  function barHtml(suffix) {
-    return `
-      <span class="pg-label">${i18n("pagingRowsLabel")}</span>
-      <select id="pageSizeSelect${suffix}">
-        ${[10, 25, -1, 0].map(s => {
-          const label = s === 0 ? i18n("pagingAll") : s === -1 ? autoLabel : s;
-          return `<option value="${s}" ${s === pageSize ? "selected" : ""}>${label}</option>`;
-        }).join("")}
-      </select>
-      <button class="pg-btn" id="pgFirst${suffix}" ${atFirst ? "disabled" : ""}>«</button>
-      <button class="pg-btn" id="pgPrev${suffix}"  ${atFirst ? "disabled" : ""}>‹</button>
-      <span class="pg-info">${i18n("pagingInfo", [currentPage + 1, totalPages])}</span>
-      <button class="pg-btn" id="pgNext${suffix}" ${atLast ? "disabled" : ""}>›</button>
-      <button class="pg-btn" id="pgLast${suffix}" ${atLast ? "disabled" : ""}>»</button>
-      <span class="pg-total">(${totalRows})</span>
-    `;
-  }
-
-  document.getElementById("paginationTop").innerHTML = barHtml("T");
-  document.getElementById("pagination").innerHTML    = barHtml("B");
+  document.getElementById("paginationTop").innerHTML =
+    buildBarHtml("T", atFirst, atLast, currentPage, totalPages, totalRows, autoLabel);
+  document.getElementById("pagination").innerHTML =
+    buildBarHtml("B", atFirst, atLast, currentPage, totalPages, totalRows, autoLabel);
 
   for (const suffix of ["T", "B"]) {
     document.getElementById(`pageSizeSelect${suffix}`).addEventListener("change", (e) => {
