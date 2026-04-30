@@ -316,7 +316,7 @@
       .btn-dedup-cancel  { background: var(--surface0); color: var(--text); }
 
       /* ── Pagination ── */
-      #pagination {
+      #paginationTop, #pagination {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -324,8 +324,9 @@
         flex-wrap: wrap;
         font-size: 12px;
       }
-      #pagination .pg-label { color: var(--subtext); }
-      #pagination select {
+      #paginationTop { margin-top: 0; margin-bottom: 10px; }
+      #paginationTop .pg-label, #pagination .pg-label { color: var(--subtext); }
+      #paginationTop select, #pagination select {
         background: var(--surface0);
         border: 1px solid var(--surface1);
         border-radius: 6px;
@@ -335,8 +336,8 @@
         cursor: pointer;
         outline: none;
       }
-      #pagination select:focus { border-color: var(--accent); }
-      #pagination .pg-btn {
+      #paginationTop select:focus, #pagination select:focus { border-color: var(--accent); }
+      #paginationTop .pg-btn, #pagination .pg-btn {
         background: var(--surface0);
         color: var(--text);
         padding: 4px 10px;
@@ -346,14 +347,14 @@
         border: none;
         cursor: pointer;
       }
-      #pagination .pg-btn:hover:not(:disabled) { background: var(--surface1); }
-      #pagination .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-      #pagination .pg-info {
+      #paginationTop .pg-btn:hover:not(:disabled), #pagination .pg-btn:hover:not(:disabled) { background: var(--surface1); }
+      #paginationTop .pg-btn:disabled, #pagination .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+      #paginationTop .pg-info, #pagination .pg-info {
         color: var(--subtext);
         min-width: 110px;
         text-align: center;
       }
-      #pagination .pg-total { color: var(--overlay); margin-left: 4px; }
+      #paginationTop .pg-total, #pagination .pg-total { color: var(--overlay); margin-left: 4px; }
 
     </style>
     <script src="theme.js"></script>
@@ -387,6 +388,8 @@
     </div>
 
     <div class="summary" id="summary"></div>
+
+    <div id="paginationTop"></div>
 
     <table id="dataTable">
       <thead>

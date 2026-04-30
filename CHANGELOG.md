@@ -4,10 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.4.5] - 2026-04-30
+## [1.4.6] - 2026-04-30
 
 ### Added
-- Pagination in Tab Management: rows-per-page selector (10 / 30 / 50 / 100 / All, default 50) with first / prev / next / last navigation; resets to page 1 on filter or sort change
+- Pagination in Tab Management: rows-per-page selector (10 / 25 / 50 / 100 / All, default 50) with first / prev / next / last navigation shown above and below the table; resets to page 1 on filter or sort change
 
 ### Fixed
 - Duplicate tab groups (e.g. multiple "T1: Hot" groups) no longer appear when Chrome restores a session or opens many tabs at once; concurrent `moveTabToTierGroup` calls for the same window are now serialized via a per-window async lock
