@@ -30,23 +30,30 @@ let filterText = "";
 let pageSize = -1;   // EN: rows per page; -1 = auto-fit viewport, 0 = show all | TR: sayfa başına satır; -1 = otomatik, 0 = tümünü göster
 let currentPage = 0; // EN: zero-based current page index | TR: sıfır tabanlı geçerli sayfa indeksi
 
-const ROW_HEIGHT_PX = 37; // EN: estimated rendered row height in pixels | TR: tahmini render edilmiş satır yüksekliği
 const PAGE_SIZE_OPTIONS = [-1, 10, 25, 50, 100, 0]; // EN: -1=Auto, 0=All | TR: -1=Otomatik, 0=Tümü
 
-// EN: Calculate how many rows fit in the viewport below the sticky thead.
-//     pgBarHeight must be the already-measured height of one pagination bar.
-// TR: Sabit thead'in altında viewport'a kaç satır sığdığını hesapla.
-//     pgBarHeight, bir pagination barının önceden ölçülmüş yüksekliğidir.
-function calcAutoPageSize(pgBarHeight) {
-  const thead = document.querySelector("#dataTable thead");
+// EN: Measured row height — 0 until the first tbody render, then set from an actual TR.
+// TR: Ölçülen satır yüksekliği — ilk tbody render'ından önce 0, sonra gerçek TR'den ölçülür.
+let _rowHeight = 0;
+
+// EN: Calculate how many rows fit between the sticky thead and the bottom pagination bar.
+//     Uses paginationTop.offsetHeight as a proxy for the bottom bar height (same structure).
+//     Falls back to 37px row height before the first real measurement.
+// TR: Sabit thead ile alt pagination bar arasına kaç satır sığdığını hesapla.
+//     Alt bar yüksekliği için paginationTop.offsetHeight kullanılır (aynı yapı).
+//     İlk gerçek ölçümden önce 37px yedek satır yüksekliği kullanılır.
+function calcAutoPageSize() {
+  const thead  = document.querySelector("#dataTable thead");
   if (!thead) return 25;
-  const theadBottom = thead.getBoundingClientRect().bottom;
-  const available   = window.innerHeight - theadBottom - pgBarHeight - 8;
-  return Math.max(5, Math.floor(available / ROW_HEIGHT_PX));
+  const theadBottom  = thead.getBoundingClientRect().bottom;
+  const botBarHeight = document.getElementById("paginationTop").offsetHeight || 36;
+  const rowHeight    = _rowHeight || 37;
+  const available    = window.innerHeight - theadBottom - botBarHeight - 8;
+  return Math.max(5, Math.floor(available / rowHeight));
 }
 
-// EN: Build pagination bar HTML without binding events (shared by pre-render and final render)
-// TR: Olay bağlamadan pagination bar HTML'i oluştur (ön render ve son render paylaşır)
+// EN: Build pagination bar HTML without binding events (shared by probe and final render)
+// TR: Olay bağlamadan pagination bar HTML'i oluştur (probe ve son render paylaşır)
 function buildBarHtml(suffix, atFirst, atLast, cp, totalPages, totalRows, autoLabel) {
   return `
     <span class="pg-label">${i18n("pagingRowsLabel")}</span>
@@ -257,15 +264,7 @@ function renderTable() {
   //     then use that height in calcAutoPageSize — ensures consistent results every render.
   // TR: Etkin sayfa boyutunu belirle: -1 = otomatik, 0 = tümü.
   //     Otomatik modda üst barı önce render et, yüksekliğini ölç, calcAutoPageSize'a geçir.
-  let resolvedSize;
-  if (pageSize === -1) {
-    document.getElementById("paginationTop").innerHTML =
-      buildBarHtml("T", true, true, 0, 1, 0, i18n("pagingAuto"));
-    const pgBarHeight = document.getElementById("paginationTop").offsetHeight;
-    resolvedSize = calcAutoPageSize(pgBarHeight);
-  } else {
-    resolvedSize = pageSize;
-  }
+  const resolvedSize = pageSize === -1 ? calcAutoPageSize() : pageSize;
 
   // EN: Clamp currentPage so it stays valid after filter/data changes
   // TR: currentPage'i filtre/veri değişimlerinde geçerli aralıkta tut
@@ -407,6 +406,20 @@ function renderTable() {
   selectAll.checked = t4Count > 0 && selectedKeys.size === t4Count;
   selectAll.indeterminate =
     selectedKeys.size > 0 && selectedKeys.size < t4Count;
+
+  // EN: Two-pass auto-fit: after the first tbody render, measure actual row height from
+  //     a live TR and re-render once so the count reflects real pixel dimensions.
+  //     The flag prevents an infinite re-render loop.
+  // TR: İki geçişli otomatik uyum: ilk tbody render'ından sonra gerçek satır yüksekliğini
+  //     ölç, doğru sayı için bir kez yeniden render et. Bayrak sonsuz döngüyü önler.
+  if (pageSize === -1 && !_rowHeight) {
+    const firstRow = document.querySelector("#tableBody tr");
+    if (firstRow && firstRow.offsetHeight > 0) {
+      _rowHeight = firstRow.offsetHeight;
+      renderTable();
+      return;
+    }
+  }
 
   renderPagination(totalRows, resolvedSize);
 }
