@@ -381,15 +381,32 @@ function renderTable() {
     });
   });
 
-  // EN: Open-archived links — delete old record, open URL as new T1 tab | TR: Arşiv/kapalı linkleri — eski kaydı sil, URL'yi yeni T1 tab olarak aç
-  document.querySelectorAll(".open-archived").forEach((a) => {
-    a.addEventListener("click", async (e) => {
+  // EN: Open-archived links — delete old record, open URL as new T1 tab. Use event
+  //     delegation on tbody so handlers survive re-renders, and log errors so a
+  //     silent failure (e.g. background rejecting chrome.tabs.create) is visible.
+  // TR: Arşiv/kapalı linkleri — eski kaydı sil, URL'yi yeni T1 tab olarak aç. Event
+  //     delegation tbody üzerinde — render sonrası kaybolmaz; hatalar console'a
+  //     basılır (sessiz hatalar görünür olsun).
+  const tbody = document.getElementById("tableBody");
+  if (tbody && !tbody._openArchivedBound) {
+    tbody._openArchivedBound = true;
+    tbody.addEventListener("click", async (e) => {
+      const a = e.target.closest("a.open-archived");
+      if (!a) return;
       e.preventDefault();
       const { url, key } = a.dataset;
-      if (!url) return;
-      await chrome.runtime.sendMessage({ type: "OPEN_AS_T1", url, oldKey: key });
+      if (!url) {
+        console.warn("[TabTier] open-archived clicked but data-url empty", { key });
+        return;
+      }
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "OPEN_AS_T1", url, oldKey: key });
+        if (!res?.ok) console.error("[TabTier] OPEN_AS_T1 failed:", res?.error, { url, key });
+      } catch (err) {
+        console.error("[TabTier] OPEN_AS_T1 threw:", err, { url, key });
+      }
     });
-  });
+  }
 
   // EN: Row checkbox events — bind after tbody render | TR: Checkbox olayları — tbody render edildikten sonra bağla
   document.querySelectorAll(".row-cb").forEach((cb) => {
