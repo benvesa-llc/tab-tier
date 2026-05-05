@@ -3,22 +3,8 @@
     "version": "1.4.13",
     "date": "2026-05-05",
     "changes": [
+      { "type": "feat", "text": "Pagination in Tab Management: rows-per-page selector (Auto / 10 / 25 / 50 / 100 / All) with first / prev / next / last navigation shown above and below the table; \"Auto\" fits exactly as many rows as your viewport allows.", "textTR": "Tab Yönetimi'nde sayfalama: sayfa başına satır seçici (Otomatik / 10 / 25 / 50 / 100 / Tümü) ve tablonun üstü ve altında ilk / önceki / sonraki / son navigasyonu; \"Otomatik\" görüntü alanına tam sığacak sayıda satır gösterir.", "textES": "Paginación en Gestión de Pestañas: selector de filas por página (Auto / 10 / 25 / 50 / 100 / Todas) con navegación primera / anterior / siguiente / última encima y debajo de la tabla; \"Auto\" muestra exactamente cuántas filas caben en la ventana." },
       { "type": "fix", "text": "Archived (T4) URL links in Tab Management now open the URL as a new T1 tab when clicked — previously the click silently did nothing.", "textTR": "Tab Yönetimi'nde arşivdeki (T4) URL linklerine tıklayınca artık URL yeni bir T1 tab olarak açılıyor — önceden tıklama sessizce hiçbir şey yapmıyordu.", "textES": "Los enlaces URL archivados (T4) en Gestión de Pestañas ahora abren la URL como una nueva pestaña T1 al hacer clic — antes el clic no hacía nada en silencio." }
-    ]
-  },
-  {
-    "version": "1.4.10",
-    "date": "2026-05-01",
-    "changes": [
-      { "type": "feat", "text": "Pagination in Tab Management: rows-per-page selector (Auto / 10 / 25 / 50 / 100 / All) with first / prev / next / last navigation shown above and below the table; \"Auto\" fits exactly as many rows as your viewport allows.", "textTR": "Tab Yönetimi'nde sayfalama: sayfa başına satır seçici (Otomatik / 10 / 25 / 50 / 100 / Tümü) ve tablonun üstü ve altında ilk / önceki / sonraki / son navigasyonu; \"Otomatik\" görüntü alanına tam sığacak sayıda satır gösterir.", "textES": "Paginación en Gestión de Pestañas: selector de filas por página (Auto / 10 / 25 / 50 / 100 / Todas) con navegación primera / anterior / siguiente / última encima y debajo de la tabla; \"Auto\" muestra exactamente cuántas filas caben en la ventana." }
-    ]
-  },
-  {
-    "version": "1.4.4",
-    "date": "2026-04-30",
-    "changes": [
-      { "type": "fix", "text": "Duplicate tier groups (e.g. multiple \"T1: Hot\" groups) no longer appear when Chrome restores a session or opens many tabs at once — concurrent group assignments are now serialized per window.", "textTR": "Oturum geri yükleme veya çok sekme açılırken oluşan yinelenen tier grupları (ör. birden fazla \"T1: Sıcak\" grubu) artık görünmüyor — eş zamanlı grup atamaları pencere başına sıralanıyor.", "textES": "Los grupos de nivel duplicados (p. ej. varios grupos \"T1: Caliente\") ya no aparecen al restaurar una sesión o abrir muchas pestañas a la vez — las asignaciones de grupos simultáneas se serializan por ventana." },
-      { "type": "fix", "text": "Settings page status messages (\"Saved!\", \"Reset to defaults.\", group rename confirmations) now respect the selected UI language instead of always using the browser locale.", "textTR": "Ayarlar sayfasındaki durum mesajları (\"Kaydedildi!\", \"Varsayılana sıfırla.\", grup adı yeniden adlandırma onayları) artık her zaman tarayıcı dilini değil, seçilen arayüz dilini kullanıyor.", "textES": "Los mensajes de estado de la página de Ajustes (\"¡Guardado!\", \"Restablecer valores predeterminados.\", confirmaciones de cambio de nombre de grupo) ahora respetan el idioma de interfaz seleccionado en lugar de usar siempre el idioma del navegador." }
     ]
   }
 ]
