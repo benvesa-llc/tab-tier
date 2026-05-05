@@ -356,6 +356,124 @@
       }
       #paginationTop .pg-total, #pagination .pg-total { color: var(--overlay); margin-left: 4px; }
 
+      /* ── View tabs (Records / Stats) ── */
+      .view-tabs {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--surface0);
+      }
+      .view-tab {
+        background: none;
+        color: var(--subtext);
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        transition: color 120ms, border-color 120ms;
+      }
+      .view-tab:hover { color: var(--text); background: var(--hover2); }
+      .view-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      /* ── Statistics view ── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 16px;
+      }
+      .stat-card {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .stat-card h3 {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--subtext);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+      }
+      .donut-wrap { display: flex; align-items: center; gap: 16px; }
+      .donut-svg { width: 140px; height: 140px; flex: 0 0 140px; }
+      .donut-center { font-size: 18px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: middle; }
+      .donut-legend { flex: 1; font-size: 12px; }
+      .donut-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid var(--surface0);
+      }
+      .donut-legend-item:last-child { border: none; }
+      .donut-legend-color { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 10px; }
+      .donut-legend-name { color: var(--text); flex: 1; }
+      .donut-legend-count { color: var(--text); font-weight: 600; }
+      .donut-legend-pct { color: var(--overlay); margin-left: 4px; font-size: 11px; }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 7px 0;
+        font-size: 12px;
+      }
+      .bar-label {
+        flex: 0 0 140px;
+        color: var(--subtext);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .bar-track {
+        flex: 1;
+        height: 18px;
+        background: var(--surface0);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+      }
+      .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 200ms; }
+      .bar-count {
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 600;
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .ratio-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        text-align: center;
+      }
+      .ratio-cell { padding: 8px; }
+      .ratio-num { font-size: 32px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+      .ratio-label { font-size: 11px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+      .ratio-pct { font-size: 12px; color: var(--overlay); margin-top: 2px; }
+      .oldest-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--surface0);
+        font-size: 12px;
+      }
+      .oldest-row:last-child { border: none; }
+      .oldest-domain { color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .oldest-tier-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; flex: 0 0 auto; }
+      .oldest-age { color: var(--yellow); font-family: monospace; flex: 0 0 auto; }
+      .stats-empty { color: var(--overlay); font-size: 12px; text-align: center; padding: 20px 0; }
+
     </style>
     <script src="theme.js"></script>
     <script src="i18n-dom.js"></script>
@@ -364,6 +482,12 @@
     <h1>__MSG_tabMgmtH1__ <span id="appVersion" class="version-tag"></span></h1>
     <p class="subtitle">__MSG_tabMgmtSubtitle__</p>
 
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="records">__MSG_viewTabRecords__</button>
+      <button class="view-tab" data-view="stats">__MSG_viewTabStats__</button>
+    </div>
+
+    <div id="recordsView">
     <div class="toolbar">
       <button class="btn-primary"   id="refreshBtn">__MSG_refreshBtnLabel__</button>
       <button class="btn-secondary" id="reconcileBtn">__MSG_reconcileBtnLabel__</button>
@@ -413,6 +537,28 @@
     </table>
     <p id="noData">__MSG_noRecords__</p>
     <div id="pagination"></div>
+    </div><!-- /#recordsView -->
+
+    <div id="statsView" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>__MSG_statsTierTitle__</h3>
+          <div id="statsTierDonut"></div>
+        </div>
+        <div class="stat-card">
+          <h3>__MSG_statsActiveRatioTitle__</h3>
+          <div id="statsActiveRatio"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <h3>__MSG_statsTopDomainsTitle__</h3>
+          <div id="statsTopDomains"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <h3>__MSG_statsOldestTitle__</h3>
+          <div id="statsOldest"></div>
+        </div>
+      </div>
+    </div>
 
     <script src="tab-management.js"></script>
   </body>

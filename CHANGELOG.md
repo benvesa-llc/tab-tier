@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.4.13] - 2026-05-05
+## [1.4.14] - 2026-05-05
+
+### Added
+- Statistics view in Tab Management — a new "📊 Statistics" tab next to "📋 Tab Records" derives charts from the existing `tabRecords` snapshot (no new data tracking required): tier distribution donut, active vs archived counts, top-10 domains horizontal bar chart, and a list of the longest-lived (oldest createdAt) tabs; cards live-refresh whenever data changes if the Stats view is open
 
 ### Fixed
 - Archived (T4) URL links in Tab Management now reliably open the URL as a new T1 tab on click; switched to event-delegation on `tbody` (one-time bind that survives re-renders), and surfaces background errors and missing-URL cases in the console instead of failing silently

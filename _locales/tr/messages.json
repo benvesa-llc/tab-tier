@@ -266,5 +266,16 @@
       "page":  { "content": "$1" },
       "total": { "content": "$2" }
     }
-  }
+  },
+
+  "viewTabRecords":     { "message": "📋 Tab Kayıtları" },
+  "viewTabStats":       { "message": "📊 İstatistikler" },
+  "statsTierTitle":     { "message": "Tier Dağılımı" },
+  "statsTopDomainsTitle": { "message": "En Çok Sekme — Domain" },
+  "statsActiveRatioTitle": { "message": "Aktif / Arşiv" },
+  "statsOldestTitle":   { "message": "En Eski Sekmeler" },
+  "statsActive":        { "message": "Aktif" },
+  "statsArchived":      { "message": "Arşiv" },
+  "statsAgeDays":       { "message": "$D$g $H$s", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
+  "statsAgeHours":      { "message": "$H$s $M$d", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
 }

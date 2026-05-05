@@ -153,6 +153,9 @@ async function loadData() {
 
   renderSummary();
   renderTable();
+  // EN: If the Stats view is currently active, refresh its cards too | TR: Stats görünümü aktifse kartları da yenile
+  const statsView = document.getElementById("statsView");
+  if (statsView && statsView.style.display !== "none") renderStats();
   document.getElementById("refreshTime").textContent =
     i18n("lastUpdated") + new Date().toLocaleTimeString();
 }
@@ -758,6 +761,164 @@ document.querySelectorAll("thead th[data-col]").forEach((th) => {
 window.addEventListener("resize", () => {
   if (pageSize === -1) renderTable();
 });
+
+// ─── View tabs (Records / Stats) ─────────────────────────────────────────────
+
+// EN: Toggle between the Records table view and the Statistics view. Stats
+//     are rendered on demand each time the user switches in (cheap — pure
+//     in-memory aggregation over allRecords).
+// TR: Kayıtlar tablosu ile İstatistikler görünümü arasında geçiş. Stats her
+//     görüntülemede yeniden hesaplanır (ucuz — allRecords üzerinde saf bellek
+//     içi toplama).
+document.querySelectorAll(".view-tab").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll(".view-tab").forEach((b) => b.classList.toggle("active", b === btn));
+    document.getElementById("recordsView").style.display = view === "records" ? "" : "none";
+    document.getElementById("statsView").style.display   = view === "stats"   ? "" : "none";
+    if (view === "stats") renderStats();
+  });
+});
+
+// EN: Render all stats cards from the current allRecords snapshot.
+// TR: Mevcut allRecords anlık görüntüsünden tüm istatistik kartlarını render et.
+function renderStats() {
+  const total = allRecords.length;
+  const tierCounts = [0, 0, 0, 0, 0];
+  const domainCounts = new Map();
+
+  for (const r of allRecords) {
+    const t = Number.isInteger(r.currentTier) ? r.currentTier : 1;
+    if (t >= 0 && t <= 4) tierCounts[t]++;
+    const d = (r.domain || "—").trim() || "—";
+    domainCounts.set(d, (domainCounts.get(d) || 0) + 1);
+  }
+
+  renderTierDonut(tierCounts, total);
+  renderActiveRatio(tierCounts, total);
+  renderTopDomains([...domainCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10));
+  renderOldestTabs([...allRecords].filter((r) => r.createdAt).sort((a, b) => a.createdAt - b.createdAt).slice(0, 8));
+}
+
+// EN: Tier color palette — keep aligned with tier-badge classes in CSS.
+// TR: Tier renk paleti — CSS'deki tier-badge sınıflarıyla aynı kalmalı.
+const TIER_COLORS = {
+  0: "var(--blue)",
+  1: "var(--yellow)",
+  2: "var(--green)",
+  3: "var(--accent)",
+  4: "var(--overlay)",
+};
+
+function renderTierDonut(counts, total) {
+  const host = document.getElementById("statsTierDonut");
+  if (total === 0) {
+    host.innerHTML = `<p class="stats-empty">${i18n("noRecords")}</p>`;
+    return;
+  }
+  // EN: Stack stroke-dasharray segments on a single circle path | TR: Tek bir circle üzerinde stroke-dasharray segmentlerini üst üste bindir
+  const C = 2 * Math.PI * 40;
+  let cumOffset = 0;
+  let segments = "";
+  for (let t = 0; t <= 4; t++) {
+    if (counts[t] === 0) continue;
+    const segLen = (counts[t] / total) * C;
+    segments += `<circle r="40" cx="50" cy="50" fill="transparent" stroke="${TIER_COLORS[t]}" stroke-width="14" stroke-dasharray="${segLen} ${C - segLen}" stroke-dashoffset="${-cumOffset}" transform="rotate(-90 50 50)"/>`;
+    cumOffset += segLen;
+  }
+
+  let legend = "";
+  for (let t = 0; t <= 4; t++) {
+    if (counts[t] === 0) continue;
+    const pct = Math.round((counts[t] / total) * 100);
+    legend += `
+      <div class="donut-legend-item">
+        <span class="donut-legend-color" style="background:${TIER_COLORS[t]}"></span>
+        <span class="donut-legend-name">${escHtml(TIER_LABELS[t] || `T${t}`)}</span>
+        <span class="donut-legend-count">${counts[t]}<span class="donut-legend-pct">(${pct}%)</span></span>
+      </div>`;
+  }
+
+  host.innerHTML = `
+    <div class="donut-wrap">
+      <svg class="donut-svg" viewBox="0 0 100 100">
+        ${segments}
+        <text x="50" y="50" class="donut-center">${total}</text>
+      </svg>
+      <div class="donut-legend">${legend}</div>
+    </div>`;
+}
+
+function renderActiveRatio(counts, total) {
+  const archived = counts[4] || 0;
+  const active = total - archived;
+  const activePct = total > 0 ? Math.round((active / total) * 100) : 0;
+  const archivedPct = total > 0 ? Math.round((archived / total) * 100) : 0;
+  document.getElementById("statsActiveRatio").innerHTML = `
+    <div class="ratio-grid">
+      <div class="ratio-cell">
+        <div class="ratio-num">${active}</div>
+        <div class="ratio-label">${escHtml(i18n("statsActive"))}</div>
+        <div class="ratio-pct">${activePct}%</div>
+      </div>
+      <div class="ratio-cell">
+        <div class="ratio-num" style="color:var(--overlay)">${archived}</div>
+        <div class="ratio-label">${escHtml(i18n("statsArchived"))}</div>
+        <div class="ratio-pct">${archivedPct}%</div>
+      </div>
+    </div>`;
+}
+
+function renderTopDomains(sorted) {
+  const host = document.getElementById("statsTopDomains");
+  if (!sorted.length) {
+    host.innerHTML = `<p class="stats-empty">${i18n("noRecords")}</p>`;
+    return;
+  }
+  const max = sorted[0][1];
+  host.innerHTML = sorted
+    .map(([d, c]) => `
+      <div class="bar-row">
+        <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.max(2, (c / max) * 100)}%"></div>
+          <span class="bar-count">${c}</span>
+        </div>
+      </div>`)
+    .join("");
+}
+
+// EN: Format an age-in-ms as "Nd Hh" or "Hh Mm" using localized unit tokens.
+// TR: ms cinsinden yaşı yerelleştirilmiş birim tokenlarıyla "Ng Hs" veya "Hs Md" olarak biçimlendir.
+function fmtAge(ms) {
+  if (!ms || ms < 0) return "—";
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days >= 1) return i18n("statsAgeDays", [String(days), String(hours)]);
+  return i18n("statsAgeHours", [String(hours), String(mins)]);
+}
+
+function renderOldestTabs(oldest) {
+  const host = document.getElementById("statsOldest");
+  if (!oldest.length) {
+    host.innerHTML = `<p class="stats-empty">${i18n("noRecords")}</p>`;
+    return;
+  }
+  const now = Date.now();
+  host.innerHTML = oldest
+    .map((r) => {
+      const tier = r.currentTier ?? 1;
+      const label = TIER_LABELS[tier] || `T${tier}`;
+      return `
+        <div class="oldest-row">
+          <span class="oldest-tier-badge tier-badge tier-${tier}">${escHtml(label)}</span>
+          <span class="oldest-domain" title="${escHtml(r.url || "")}">${escHtml(r.domain || "—")}</span>
+          <span class="oldest-age">${escHtml(fmtAge(now - r.createdAt))}</span>
+        </div>`;
+    })
+    .join("");
+}
 
 // ─── Init and live update ────────────────────────────────────────────────────
 

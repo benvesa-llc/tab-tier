@@ -288,5 +288,16 @@
       "page":  { "content": "$1" },
       "total": { "content": "$2" }
     }
-  }
+  },
+
+  "viewTabRecords":     { "message": "📋 Tab Records" },
+  "viewTabStats":       { "message": "📊 Statistics" },
+  "statsTierTitle":     { "message": "Tier Distribution" },
+  "statsTopDomainsTitle": { "message": "Top Domains" },
+  "statsActiveRatioTitle": { "message": "Active vs Archived" },
+  "statsOldestTitle":   { "message": "Longest-Lived Tabs" },
+  "statsActive":        { "message": "Active" },
+  "statsArchived":      { "message": "Archived" },
+  "statsAgeDays":       { "message": "$D$d $H$h", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
+  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
 }

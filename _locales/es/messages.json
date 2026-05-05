@@ -263,5 +263,16 @@
       "page":  { "content": "$1" },
       "total": { "content": "$2" }
     }
-  }
+  },
+
+  "viewTabRecords":     { "message": "📋 Pestañas" },
+  "viewTabStats":       { "message": "📊 Estadísticas" },
+  "statsTierTitle":     { "message": "Distribución por Nivel" },
+  "statsTopDomainsTitle": { "message": "Dominios Principales" },
+  "statsActiveRatioTitle": { "message": "Activas vs Archivadas" },
+  "statsOldestTitle":   { "message": "Pestañas Más Antiguas" },
+  "statsActive":        { "message": "Activas" },
+  "statsArchived":      { "message": "Archivadas" },
+  "statsAgeDays":       { "message": "$D$d $H$h", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
+  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
 }
