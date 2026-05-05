@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.4.13",
+    "date": "2026-05-05",
+    "changes": [
+      { "type": "fix", "text": "Archived (T4) URL links in Tab Management now open the URL as a new T1 tab when clicked — previously the click silently did nothing.", "textTR": "Tab Yönetimi'nde arşivdeki (T4) URL linklerine tıklayınca artık URL yeni bir T1 tab olarak açılıyor — önceden tıklama sessizce hiçbir şey yapmıyordu.", "textES": "Los enlaces URL archivados (T4) en Gestión de Pestañas ahora abren la URL como una nueva pestaña T1 al hacer clic — antes el clic no hacía nada en silencio." }
+    ]
+  },
+  {
+    "version": "1.4.10",
+    "date": "2026-05-01",
+    "changes": [
+      { "type": "feat", "text": "Pagination in Tab Management: rows-per-page selector (Auto / 10 / 25 / 50 / 100 / All) with first / prev / next / last navigation shown above and below the table; \"Auto\" fits exactly as many rows as your viewport allows.", "textTR": "Tab Yönetimi'nde sayfalama: sayfa başına satır seçici (Otomatik / 10 / 25 / 50 / 100 / Tümü) ve tablonun üstü ve altında ilk / önceki / sonraki / son navigasyonu; \"Otomatik\" görüntü alanına tam sığacak sayıda satır gösterir.", "textES": "Paginación en Gestión de Pestañas: selector de filas por página (Auto / 10 / 25 / 50 / 100 / Todas) con navegación primera / anterior / siguiente / última encima y debajo de la tabla; \"Auto\" muestra exactamente cuántas filas caben en la ventana." }
+    ]
+  },
+  {
     "version": "1.4.4",
     "date": "2026-04-30",
     "changes": [
