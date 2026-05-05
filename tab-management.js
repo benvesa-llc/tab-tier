@@ -387,10 +387,10 @@ function renderTable() {
   // TR: Arşiv/kapalı linkleri — eski kaydı sil, URL'yi yeni T1 tab olarak aç. Event
   //     delegation tbody üzerinde — render sonrası kaybolmaz; hatalar console'a
   //     basılır (sessiz hatalar görünür olsun).
-  const tbody = document.getElementById("tableBody");
-  if (tbody && !tbody._openArchivedBound) {
-    tbody._openArchivedBound = true;
-    tbody.addEventListener("click", async (e) => {
+  const tbodyEl = document.getElementById("tableBody");
+  if (tbodyEl && !tbodyEl._openArchivedBound) {
+    tbodyEl._openArchivedBound = true;
+    tbodyEl.addEventListener("click", async (e) => {
       const a = e.target.closest("a.open-archived");
       if (!a) return;
       e.preventDefault();

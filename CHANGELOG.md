@@ -4,10 +4,11 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.4.11] - 2026-05-05
+## [1.4.12] - 2026-05-05
 
 ### Fixed
 - Archived (T4) URL links in Tab Management now reliably open the URL as a new T1 tab on click; switched to event-delegation on `tbody` (one-time bind that survives re-renders), and surfaces background errors and missing-URL cases in the console instead of failing silently
+- Tab Management table not rendering any rows: the prior fix shadowed an existing `tbody` const declared earlier in `renderTable`, throwing a SyntaxError that aborted the whole render; renamed the local to `tbodyEl`
 
 ## [1.4.10] - 2026-05-01
 
