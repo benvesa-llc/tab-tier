@@ -1675,7 +1675,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       //     Tab Management'i yeniler.
       (async () => {
         try {
-          const { url, oldKey } = request;
+          const { url, oldKey } = message;
           if (oldKey) {
             const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
             if (tabRecords[oldKey]) {
