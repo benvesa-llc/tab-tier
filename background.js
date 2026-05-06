@@ -733,6 +733,107 @@ async function mergeDuplicateColorGroups(windowId) {
   }
 }
 
+// =============================================================================
+// rekeyRecordsByUrl: Re-key tabRecords by pairing URLs with currently-open tabs.
+//
+// EN: After a browser restart, Chrome reassigns tabIds starting from low numbers, so a record
+//     stored under tabId=5 may now point to a completely different tab — or the previously open
+//     tab with that record's URL is now at a brand-new tabId. Trusting tabId as the record key is
+//     unsafe in that scenario. This function pairs records to open tabs by URL and rewrites the
+//     records map so every open restored tab inherits its previous record (tier, lastFocusEnd,
+//     createdAt all preserved). Idempotent — when keys already match the live tabs, no changes
+//     are made. Safe to call on every service-worker startup.
+// TR: Browser restart sonrası Chrome tabId'leri düşük sayılardan başlayarak yeniden atar; bu yüzden
+//     tabId=5 altında saklanan bir kayıt artık tamamen farklı bir sekmeye işaret edebilir — ya da
+//     o kaydın URL'sine sahip eski açık sekme şimdi yepyeni bir tabId'de olabilir. Bu senaryoda
+//     tabId'yi anahtar olarak güvenmek riskli. Bu fonksiyon kayıtları URL ile açık sekmelere eşler
+//     ve kayıt haritasını yeniden yazar; restore edilen her açık sekme önceki kaydını miras alır
+//     (tier, lastFocusEnd, createdAt korunur). Idempotent — anahtarlar zaten canlı sekmelerle
+//     uyumluysa hiçbir şey değişmez. Her servis worker başlangıcında çağrılabilir.
+// =============================================================================
+async function rekeyRecordsByUrl() {
+  const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+  const allTabs = await chrome.tabs.query({});
+  const tabById = new Map(allTabs.map((t) => [t.id, t]));
+
+  // EN: Group open tabs by URL — supports multiple open tabs with the same URL | TR: Açık sekmeleri URL'ye göre grupla — aynı URL'de birden fazla açık sekme destekli
+  const urlToTabs = new Map();
+  for (const tab of allTabs) {
+    if (!tab.url || isBrowserInternalUrl(tab.url)) continue;
+    if (!urlToTabs.has(tab.url)) urlToTabs.set(tab.url, []);
+    urlToTabs.get(tab.url).push(tab);
+  }
+
+  const newRecords = {};
+  const consumedKeys = new Set();
+  const consumedTabIds = new Set();
+  const now = Date.now();
+  let kept = 0, relinked = 0;
+
+  // EN: Phase 1 — record key matches a currently-open tab AND URLs match: keep at same key (no change)
+  // TR: Aşama 1 — kayıt anahtarı açık bir sekmeyle eşleşiyor VE URL'ler aynı: aynı anahtarda kal (değişiklik yok)
+  for (const [key, rec] of Object.entries(tabRecords)) {
+    if (rec.currentTier === 4) continue;
+    const intKey = parseInt(key);
+    const openTab = tabById.get(intKey);
+    if (openTab && openTab.url === rec.url) {
+      newRecords[key] = rec;
+      consumedKeys.add(key);
+      consumedTabIds.add(intKey);
+      kept++;
+    }
+  }
+
+  // EN: Phase 2 — remaining non-T4 records: pair to an open tab by URL (handles tabId reuse after restart)
+  // TR: Aşama 2 — kalan T4 olmayan kayıtlar: URL ile açık bir sekmeye bağla (restart sonrası tabId yeniden kullanımını yakalar)
+  for (const [key, rec] of Object.entries(tabRecords)) {
+    if (consumedKeys.has(key)) continue;
+    if (rec.currentTier === 4) continue;
+    const candidates = (urlToTabs.get(rec.url) || []).filter((t) => !consumedTabIds.has(t.id));
+    if (candidates.length === 0) continue;
+    const tab = candidates[0];
+    newRecords[tab.id] = {
+      ...rec,
+      tabId: tab.id,
+      title: tab.title || rec.title,
+      favicon: tab.favIconUrl || rec.favicon,
+      isPinned: tab.pinned || rec.isPinned,
+    };
+    consumedKeys.add(key);
+    consumedTabIds.add(tab.id);
+    relinked++;
+  }
+
+  // EN: Phase 3 — T4 archive records: keep, but use a synthetic key when the original key collides with a live tabId
+  // TR: Aşama 3 — T4 arşiv kayıtları: koru, ancak orijinal anahtar canlı bir tabId ile çakışıyorsa sentetik anahtar kullan
+  for (const [key, rec] of Object.entries(tabRecords)) {
+    if (consumedKeys.has(key)) continue;
+    if (rec.currentTier !== 4) continue;
+    const intKey = parseInt(key);
+    const collides = !isNaN(intKey) && consumedTabIds.has(intKey);
+    const finalKey = collides ? `arch_${key}_${now}` : key;
+    newRecords[finalKey] = rec;
+    consumedKeys.add(key);
+  }
+
+  // EN: Phase 4 — remaining unmatched non-T4 records (URL not currently open): keep with synthetic key when colliding so reconcile can handle them
+  // TR: Aşama 4 — kalan eşleşmemiş T4 olmayan kayıtlar (URL şu an açık değil): çakışıyorsa sentetik anahtar ile koru, reconcile'in halletmesi için
+  for (const [key, rec] of Object.entries(tabRecords)) {
+    if (consumedKeys.has(key)) continue;
+    const intKey = parseInt(key);
+    const collides = !isNaN(intKey) && consumedTabIds.has(intKey);
+    const finalKey = collides ? `orphan_${key}_${now}` : key;
+    newRecords[finalKey] = rec;
+    consumedKeys.add(key);
+  }
+
+  await chrome.storage.local.set({ tabRecords: newRecords });
+  if (relinked > 0) {
+    log(`rekeyByUrl: kept=${kept} relinked=${relinked} (browser restart or tabId reuse detected)`);
+  }
+}
+
+// =============================================================================
 // reconcileTabs: Storage'ı gerçek açık tablarla eşitle + grupları uygula
 //   - Kapalı tab'ların kayıtlarını HER ZAMAN T4'e gönder (sil değil)
 //   - Açık ama kayıtsız tab'lara yeni kayıt ekle
@@ -740,6 +841,12 @@ async function mergeDuplicateColorGroups(windowId) {
 //   - Açık tüm kayıtlı tab'ları doğru tier grubuna taşı
 // =============================================================================
 async function reconcileTabs() {
+  // EN: First pass — re-key records by URL so tabId-reuse after browser restart is handled correctly.
+  //     Idempotent: when nothing changed (extension reload, SW restart) this is a no-op.
+  // TR: İlk geçiş — URL bazlı yeniden anahtarlama; browser restart sonrası tabId yeniden kullanımı doğru işlensin.
+  //     Idempotent: hiçbir şey değişmediyse (extension reload, SW restart) hiç bir etkisi olmaz.
+  await rekeyRecordsByUrl();
+
   const { tabRecords = {}, settings = DefaultSettings } =
     await chrome.storage.local.get(["tabRecords", "settings"]);
 
@@ -1239,7 +1346,15 @@ chrome.alarms.clear("tierCheck", () => {
   log("alarm recreated on startup, interval:", DefaultSettings.timerIntervalMinutes, "min");
 });
 
-(async () => {
+// EN: Pending promise that resolves when startup rekey + reconcile + timerCheck have completed.
+//     Tab event listeners (onCreated, onUpdated) await this so they don't write fresh T1 records
+//     on top of records that the startup rekey is about to relink by URL — a race that would
+//     otherwise wipe tier and elapsed-time data on browser restart.
+// TR: Startup rekey + reconcile + timerCheck tamamlandığında çözülen bekleyen promise.
+//     Tab event listener'ları (onCreated, onUpdated) bunu bekler ki startup rekey URL ile
+//     yeniden bağlamak üzereyken yeni T1 kayıtları üzerine yazmasın — aksi halde browser
+//     restart sonrası tier ve geçen süre verisi silinir.
+let startupGate = (async () => {
   try {
     // Her penceredeki aktif tab'ları bul (birden fazla pencere olabilir)
     const activeTabs = await chrome.tabs.query({ active: true });
@@ -1252,9 +1367,13 @@ chrome.alarms.clear("tierCheck", () => {
     });
     if (currentWindowActive) currentActiveTabId = currentWindowActive.id;
 
-    // Stale null'ları düzelt:
-    // Service worker yeniden başladığında currentActiveTabId sıfırlanır.
-    // Eğer bir tab gerçekte aktif değilse ama lastFocusEnd=null ise düzelt.
+    // EN: Reconcile browser tabs with storage — catches tabs opened while service worker was stopped.
+    //     reconcileTabs() now starts with rekeyRecordsByUrl() which handles browser-restart tabId reuse.
+    // TR: Tarayıcı tablarını storage ile uzlaştır — servis worker duruyorken açılan tabları yakala.
+    //     reconcileTabs() artık browser-restart sonrası tabId yeniden kullanımını ele alan rekeyRecordsByUrl() ile başlıyor.
+    await reconcileTabs();
+
+    // EN: Fix stale null lastFocusEnd values AFTER rekey — records have correct tabIds now | TR: Bayat null lastFocusEnd değerlerini rekey sonrası düzelt — kayıtlar artık doğru tabId'lerde
     const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
     const now = Date.now();
     let fixCount = 0;
@@ -1268,10 +1387,6 @@ chrome.alarms.clear("tierCheck", () => {
       await chrome.storage.local.set({ tabRecords });
       log("startup: fixed", fixCount, "stale active(null) records");
     }
-
-    // EN: Reconcile browser tabs with storage — catches tabs opened while service worker was stopped
-    // TR: Tarayıcı tablarını storage ile uzlaştır — servis worker duruyorken açılan tabları yakala
-    await reconcileTabs();
 
     // Birikmiş tier geçişlerini işle (Edge kapalıyken geçen süre)
     await timerCheck();
@@ -1392,6 +1507,15 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 // =============================================================================
 chrome.tabs.onCreated.addListener(async (newTab) => {
   if (!newTab.url || isBrowserInternalUrl(newTab.url)) return;
+
+  // EN: Wait for startup rekey/reconcile to finish before mutating tabRecords. On browser restart,
+  //     restored tabs fire onCreated concurrently with the startup pass — without this gate, a fresh
+  //     T1 record could overwrite a record that rekey was about to relink by URL.
+  // TR: Startup rekey/reconcile bitmeden tabRecords'a dokunma. Browser restart sonrası restore edilen
+  //     sekmeler onCreated'ı eşzamanlı tetikler — bu kapı olmadan, rekey URL ile yeniden bağlamak
+  //     üzereyken yeni bir T1 kaydı eski kaydı silebilir.
+  if (startupGate) { try { await startupGate; } catch (e) {} }
+
   // EN: Count this as a tab-opened event for daily activity stats | TR: Günlük aktivite istatistikleri için sekme açma olayı say
   recordTabOpened();
 
@@ -1399,12 +1523,24 @@ chrome.tabs.onCreated.addListener(async (newTab) => {
     const { tabRecords = {}, settings = DefaultSettings } =
       await chrome.storage.local.get(["tabRecords", "settings"]);
 
-    // EN: Stale-record relink — likely a session-restored tab. If a record exists for this URL
-    //     whose tabId is no longer open, transfer it to the new tabId (preserving tier and elapsed time).
-    //     Must run BEFORE the duplicate check so a stale tabId is not mistaken for an open duplicate.
-    // TR: Bayat kayıt yeniden bağlama — büyük olasılıkla oturum-restore edilmiş sekme. Bu URL için
-    //     tabId'si artık açık olmayan bir kayıt varsa onu yeni tabId'ye taşı (tier ve geçen süre korunur).
-    //     Duplicate kontrolünden ÖNCE çalışmalı; aksi halde bayat tabId açık duplicate sanılır.
+    // EN: A record may already exist at this tabId after the startup rekey paired it by URL.
+    //     Don't overwrite — just refresh title/favicon from the live tab and exit.
+    // TR: Startup rekey URL ile eşledikten sonra bu tabId'de zaten bir kayıt olabilir.
+    //     Üzerine yazma — sadece canlı sekmeden title/favicon yenile ve çık.
+    if (tabRecords[newTab.id]) {
+      const rec = tabRecords[newTab.id];
+      let dirty = false;
+      if (newTab.title && newTab.title !== rec.title) { rec.title = newTab.title; dirty = true; }
+      if (newTab.favIconUrl && newTab.favIconUrl !== rec.favicon) { rec.favicon = newTab.favIconUrl; dirty = true; }
+      if (dirty) await chrome.storage.local.set({ tabRecords });
+      log(`onCreated record already exists, refreshed metadata: ${newTab.id} tier=T${rec.currentTier}`);
+      return;
+    }
+
+    // EN: Stale-record relink fallback — handles tabs that arrive after startup rekey ran (lazy session restore).
+    //     Looks for a record whose key cannot be parsed as a live tabId and whose URL matches.
+    // TR: Bayat kayıt yeniden bağlama yedeği — startup rekey çalıştıktan sonra gelen sekmeleri yakalar (gecikmeli session restore).
+    //     Anahtarı canlı bir tabId olarak ayrıştırılamayan ve URL'si eşleşen kayıt aranır.
     const openTabIds = new Set((await chrome.tabs.query({})).map((t) => t.id));
     const staleEntry = Object.entries(tabRecords).find(
       ([key, r]) =>
@@ -1531,6 +1667,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   if (!hasUrl && !hasTitle && !hasGroupId) return;
   if (hasUrl && isBrowserInternalUrl(changeInfo.url)) return;
+
+  // EN: Wait for startup rekey/reconcile so this listener doesn't race with URL-based relink. | TR: Startup rekey/reconcile'i bekle ki URL bazlı relink ile yarış olmasın.
+  if (startupGate) { try { await startupGate; } catch (e) {} }
 
   try {
     const { tabRecords = {}, settings = DefaultSettings } =
