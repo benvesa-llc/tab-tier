@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.5.3",
+  "version": "1.6.1",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "permissions": ["tabs", "tabGroups", "alarms", "storage"],
@@ -23,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js", "theme.js", "whatsnew.html", "whatsnew.js", "data/changelog.json", "data/roadmap.json"],
+      "resources": ["tab-management.html", "tab-management.js", "i18n-dom.js", "theme.js", "whatsnew.html", "whatsnew.js", "help.html", "help.js", "data/changelog.json", "data/roadmap.json", "data/help.json"],
       "matches": ["<all_urls>"]
     }
   ]

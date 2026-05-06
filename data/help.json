@@ -1,0 +1,72 @@
+[
+  {
+    "id": "intro",
+    "icon": "🗂️",
+    "title": "What is Tab Tier?",
+    "titleTR": "Tab Tier nedir?",
+    "titleES": "¿Qué es Tab Tier?",
+    "body": "Tab Tier organizes your open tabs into colored groups based on how recently you've used them. Tabs you haven't touched in a while drift down to a lower-priority tier and eventually get archived, so your tab bar stays tidy without you having to clean it up by hand.",
+    "bodyTR": "Tab Tier, açık sekmelerinizi en son ne zaman kullandığınıza göre renkli gruplara ayırır. Bir süredir dokunmadığınız sekmeler daha düşük öncelikli tier'a kayar ve sonunda arşivlenir; sekme barınızı elle temizlemenize gerek kalmadan düzenli kalır.",
+    "bodyES": "Tab Tier organiza tus pestañas abiertas en grupos de colores según cuán recientemente las usaste. Las pestañas que no has tocado en un tiempo bajan a un nivel de menor prioridad y eventualmente se archivan, manteniendo tu barra de pestañas ordenada sin tener que limpiarla a mano."
+  },
+  {
+    "id": "tiers",
+    "icon": "🎨",
+    "title": "The Tier System",
+    "titleTR": "Tier Sistemi",
+    "titleES": "El Sistema de Niveles",
+    "body": "There are five tiers — four browser groups plus an archive:\n\n- [[T0]] **Fixed (red)** — pinned tabs you always want to keep on hand. They never auto-archive.\n- [[T1]] **Hot (orange)** — the active tab and ones you've used recently.\n- [[T2]] **Warm (yellow)** — used in the last day or so.\n- [[T3]] **Cool (blue, collapsed)** — untouched for a while; the group is collapsed to save space.\n- [[T4]] **Archive** — the tab is closed but the record is kept; you can re-open it from Tab Management.",
+    "bodyTR": "Beş tier var — dört tarayıcı grubu artı bir arşiv:\n\n- [[T0]] **Sabit (kırmızı)** — her zaman elinizin altında tutmak istediğiniz, sabitlenmiş sekmeler. Asla otomatik arşivlenmez.\n- [[T1]] **Sıcak (turuncu)** — aktif sekme ve yakın zamanda kullandıklarınız.\n- [[T2]] **Ilık (sarı)** — son bir gün civarında kullanılan.\n- [[T3]] **Serin (mavi, daraltılmış)** — bir süredir dokunulmamış; grup yer kazanmak için daraltılır.\n- [[T4]] **Arşiv** — sekme kapalı ama kayıt saklı; Tab Yönetimi'nden geri açabilirsiniz.",
+    "bodyES": "Hay cinco niveles — cuatro grupos del navegador más un archivo:\n\n- [[T0]] **Fijo (rojo)** — pestañas fijadas que siempre quieres tener a mano. Nunca se archivan automáticamente.\n- [[T1]] **Caliente (naranja)** — la pestaña activa y las que usaste hace poco.\n- [[T2]] **Tibio (amarillo)** — usadas en el último día aproximadamente.\n- [[T3]] **Frío (azul, plegado)** — sin tocar por un tiempo; el grupo se pliega para ahorrar espacio.\n- [[T4]] **Archivo** — la pestaña está cerrada pero el registro se conserva; puedes reabrirla desde Gestión de Pestañas."
+  },
+  {
+    "id": "progression",
+    "icon": "⏱️",
+    "title": "How Tabs Move Through Tiers",
+    "titleTR": "Sekmeler Tier'lar Arasında Nasıl İlerler",
+    "titleES": "Cómo Las Pestañas Pasan por los Niveles",
+    "body": "By default a tab moves down one tier as it sits unused:\n\n- [[T1]] → [[T2]] after **1 hour** of inactivity\n- [[T2]] → [[T3]] after **24 hours**\n- [[T3]] → [[T4]] after **7 days**\n- [[T4]] records are deleted after **60 days**\n\nWhenever you click a tab and use it again, its timer resets and it bounces back to [[T1]]. You can change all of these thresholds in Settings.",
+    "bodyTR": "Varsayılan olarak bir sekme kullanılmadığı sürece bir alt tier'a iner:\n\n- [[T1]] → [[T2]]: **1 saat** hareketsizlik sonrası\n- [[T2]] → [[T3]]: **24 saat** sonra\n- [[T3]] → [[T4]]: **7 gün** sonra\n- [[T4]] kayıtları **60 gün** sonra silinir\n\nBir sekmeye tıklayıp tekrar kullandığınızda zamanlayıcı sıfırlanır ve sekme [[T1]]'e geri döner. Bu eşiklerin hepsini Ayarlar'dan değiştirebilirsiniz.",
+    "bodyES": "De forma predeterminada, una pestaña baja un nivel mientras no se usa:\n\n- [[T1]] → [[T2]] tras **1 hora** de inactividad\n- [[T2]] → [[T3]] tras **24 horas**\n- [[T3]] → [[T4]] tras **7 días**\n- Los registros [[T4]] se eliminan tras **60 días**\n\nCuando haces clic en una pestaña y vuelves a usarla, su temporizador se reinicia y vuelve a [[T1]]. Puedes cambiar todos estos umbrales en Ajustes."
+  },
+  {
+    "id": "popup",
+    "icon": "🪟",
+    "title": "The Popup",
+    "titleTR": "Popup",
+    "titleES": "El Popup",
+    "body": "Click the Tab Tier toolbar icon to open the popup. From there you can:\n\n- Search across all your tab records by title, URL, or domain.\n- Sort tabs by tier, domain, title, URL, or how long they've been idle.\n- Press **↕ Apply** to mirror the sort onto your real browser tab bar.\n- Pin tabs to [[T0]] with the 📌 icon, or unpin them.\n- Clear the [[T4]] archive in one click.",
+    "bodyTR": "Tab Tier araç çubuğu simgesine tıklayarak popup'ı açın. Buradan şunları yapabilirsiniz:\n\n- Tüm sekme kayıtlarınızda başlık, URL veya alan adına göre arama.\n- Sekmeleri tier, alan adı, başlık, URL veya hareketsizlik süresine göre sıralama.\n- **↕ Uygula** ile sıralamayı tarayıcı sekme barına yansıtma.\n- 📌 simgesiyle sekmeleri [[T0]]'a sabitleme veya sabitlemeyi kaldırma.\n- [[T4]] arşivini tek tıkla temizleme.",
+    "bodyES": "Haz clic en el icono de la barra de herramientas de Tab Tier para abrir el popup. Desde ahí puedes:\n\n- Buscar en todos tus registros por título, URL o dominio.\n- Ordenar las pestañas por nivel, dominio, título, URL, o cuánto tiempo llevan inactivas.\n- Pulsa **↕ Aplicar** para reflejar el orden en la barra real de pestañas del navegador.\n- Fijar pestañas en [[T0]] con el icono 📌, o desfijarlas.\n- Vaciar el archivo [[T4]] con un clic."
+  },
+  {
+    "id": "tab-management",
+    "icon": "📋",
+    "title": "Tab Management",
+    "titleTR": "Tab Yönetimi",
+    "titleES": "Gestión de Pestañas",
+    "body": "Tab Management opens a full-page table with every record: current tier, status (open / archived / missing), domain, title, URL, last focus time, and inactivity elapsed. Sort or paginate as you like.\n\nClosed tabs (whether [[T4]] archived or just missing from the browser) appear here too — **click their URL** to re-open them as a new tab.\n\nThe **📊 Statistics** view shows charts of your tab usage: tier distribution, top domains, time-of-day activity, and the last 30 days of opens vs. archives.",
+    "bodyTR": "Tab Yönetimi, her kaydın yer aldığı tam sayfalık bir tablo açar: mevcut tier, durum (açık / arşiv / yok), alan adı, başlık, URL, son odak zamanı ve geçen hareketsizlik süresi. İstediğiniz gibi sıralayın veya sayfalayın.\n\nKapanmış sekmeler ([[T4]] arşivinde veya tarayıcıda yok) burada da görünür — **URL'lerine tıklayarak** yeni sekme olarak yeniden açabilirsiniz.\n\n**📊 İstatistikler** görünümü sekme kullanımınızın grafiklerini gösterir: tier dağılımı, top domainler, gün-içi aktivite ve son 30 günün açılan ile arşivlenen sekme sayıları.",
+    "bodyES": "Gestión de Pestañas abre una tabla a página completa con cada registro: nivel actual, estado (abierto / archivado / ausente), dominio, título, URL, último tiempo de enfoque y tiempo transcurrido inactivo. Ordena o pagina como quieras.\n\nLas pestañas cerradas (ya sean archivadas en [[T4]] o simplemente ausentes del navegador) también aparecen aquí — **haz clic en su URL** para reabrirlas como una pestaña nueva.\n\nLa vista **📊 Estadísticas** muestra gráficos de tu uso de pestañas: distribución por nivel, dominios principales, actividad por hora del día, y los últimos 30 días de aperturas vs. archivos."
+  },
+  {
+    "id": "settings",
+    "icon": "⚙️",
+    "title": "Settings Essentials",
+    "titleTR": "Temel Ayarlar",
+    "titleES": "Ajustes Esenciales",
+    "body": "Open Settings to fine-tune Tab Tier:\n\n- **Tier thresholds** — change how long a tab stays in [[T1]], [[T2]], [[T3]] before moving down.\n- **Duplicate handling** — redirect to the existing tab, just warn, or allow duplicates.\n- **On manual close** — delete the record or send it to [[T4]] archive.\n- **Theme** — dark or light.\n- **UI language** — English, Turkish, or Spanish.\n- **Group names** — rename the tier groups (the colors stay the same).",
+    "bodyTR": "Tab Tier'ı ince ayarlamak için Ayarlar'ı açın:\n\n- **Tier eşikleri** — bir sekmenin [[T1]], [[T2]], [[T3]]'te aşağı inmeden önce ne kadar kalacağını değiştirin.\n- **Yinelenen sekme davranışı** — mevcut sekmeye yönlendir, sadece uyar veya yinelenenlere izin ver.\n- **Manuel kapatma** — kaydı sil ya da [[T4]] arşivine gönder.\n- **Tema** — koyu veya açık.\n- **Arayüz dili** — İngilizce, Türkçe veya İspanyolca.\n- **Grup adları** — tier gruplarını yeniden adlandırın (renkler aynı kalır).",
+    "bodyES": "Abre Ajustes para afinar Tab Tier:\n\n- **Umbrales de niveles** — cambia cuánto tiempo permanece una pestaña en [[T1]], [[T2]], [[T3]] antes de bajar.\n- **Pestañas duplicadas** — redirigir a la existente, solo avisar, o permitir duplicados.\n- **Al cerrar manualmente** — borrar el registro o enviarlo al archivo [[T4]].\n- **Tema** — oscuro o claro.\n- **Idioma de la interfaz** — Inglés, Turco o Español.\n- **Nombres de los grupos** — renombra los grupos de niveles (los colores se mantienen)."
+  },
+  {
+    "id": "tips",
+    "icon": "💡",
+    "title": "Tips",
+    "titleTR": "İpuçları",
+    "titleES": "Consejos",
+    "body": "- Pin tabs you always want around (inbox, music, calendar) to [[T0]] so they never archive.\n- The popup search bar searches **all** your records, not just the open ones — handy for finding something you closed last week.\n- Closing the browser preserves your tier state — when you reopen, tabs pick up exactly where they left off (the inactivity counter even keeps ticking while the browser is closed).\n- If you don't see a tab you expected, check **Tab Management** — it might be in [[T4]] or showing as *missing*. Click its URL to bring it back.\n- The **What's New** page lists the most recent improvements.",
+    "bodyTR": "- Her zaman elinizin altında olsun istediğiniz sekmeleri (e-posta, müzik, takvim) [[T0]]'a sabitleyin; arşivlenmezler.\n- Popup arama çubuğu **tüm** kayıtlarınızda arama yapar, sadece açık olanlarda değil — geçen hafta kapattığınız bir şeyi bulmak için pratik.\n- Tarayıcıyı kapatmak tier durumunu korur — tekrar açtığınızda sekmeler tam kaldığı yerden devam eder (hareketsizlik sayacı tarayıcı kapalıyken bile işlemeye devam eder).\n- Beklediğiniz bir sekmeyi göremiyorsanız **Tab Yönetimi**'ne bakın — [[T4]]'te veya *yok* olarak görünebilir. URL'ye tıklayarak geri getirin.\n- **Yenilikler** sayfası en son iyileştirmeleri listeler.",
+    "bodyES": "- Fija las pestañas que siempre quieres tener cerca (correo, música, calendario) en [[T0]] para que nunca se archiven.\n- La barra de búsqueda del popup busca en **todos** tus registros, no solo en los abiertos — útil para encontrar algo que cerraste la semana pasada.\n- Cerrar el navegador conserva el estado de los niveles — al reabrirlo las pestañas continúan exactamente donde se quedaron (el contador de inactividad sigue contando incluso con el navegador cerrado).\n- Si no ves una pestaña que esperabas, revisa **Gestión de Pestañas** — puede estar en [[T4]] o aparecer como *ausente*. Haz clic en su URL para recuperarla.\n- La página **Novedades** enumera las mejoras más recientes."
+  }
+]

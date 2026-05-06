@@ -20,6 +20,7 @@
   "clearArchiveBtnTitle": { "message": "Tier 4 arşivini temizle" },
   "tabManagementBtn":   { "message": "📋 Tab Yönetimi" },
   "settingsBtn":        { "message": "⚙️ Ayarlar" },
+  "helpBtn":            { "message": "❓ Yardım" },
 
   "timeActive":  { "message": "aktif" },
   "timeDaysAgo": {

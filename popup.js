@@ -509,6 +509,11 @@ document.getElementById("tabManagerBtn").addEventListener("click", () => {
   window.close();
 });
 
+document.getElementById("helpBtnIcon").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("help.html") });
+  window.close();
+});
+
 // EN: Load locale override then render | TR: Locale override yükle, sonra render et
 (async () => {
   try {

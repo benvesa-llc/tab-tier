@@ -4,12 +4,19 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.5.3] - 2026-05-06
+## [1.6.1] - 2026-05-06
+
+### Added
+- New in-extension Help & Guide page (`help.html` + `help.js`) — opens from Settings → Developer Tools via a "❓ Help" button, AND from a new ❓ icon in the popup header (between the theme toggle and the settings cog) for one-click access. Loads `data/help.json` and renders 7 short sections (intro, tier system, tier progression, popup, Tab Management, Settings essentials, tips) with full English / Turkish / Spanish translations. Body text supports `**bold**`, `` `code` ``, `[[T0]]…[[T4]]` tier color pills, and bulleted lists; uses the same theme/CSS variables as the other internal pages
+- New `helpBtn` i18n key in all three locale files
+- Tab Management table now ticks live: a 30-second `setInterval` re-renders the table so the elapsed-time column stays fresh between storage events. Uses the in-memory `allRecords` cache (no storage read), and skips when the page is hidden via `document.hidden`
 
 ### Changed
+- A closed tab now retains its previous tier (T1 / T2 / T3) in Tab Management instead of being immediately moved to T4 archive. `reconcileTabs` and `timerCheck` no longer mutate the tier when a tab is missing from the open-tab set — the record stays where it was, and natural tier promotion via elapsed-time thresholds (T2 → T3 after 24h, T3 → T4 after 7 days) is what eventually moves it through. Explicit user closure still respects `onManualClose` because that path is `tabs.onRemoved`, which is unchanged
 - Roadmap: removed "Statistics dashboard (focus time, tier history)" — already shipped in v1.5.0
 
 ### Fixed
+- T0 (pinned-group) and T2 tabs no longer disappear from Tab Management after a browser close/reopen — their records were being deleted by reconcile/timerCheck when Chrome's session restore was incomplete or arrived after the first reconcile pass; now they remain visible at their previous tier and can be re-opened from there
 - Browser close/reopen now reliably resumes every tab in its previous tier with its previous inactivity time intact. The earlier 1.5.1 attempt failed because Chrome reassigns tabIds starting from low numbers on restart — old `tabRecords` keyed at e.g. tabId=5 collided with brand-new restored tabs at id=5, so the URL-based relink never fired and `onCreated` overwrote the records with fresh T1 entries
 - New `rekeyRecordsByUrl()` runs at the start of `reconcileTabs()` and pairs each stored record to a currently-open tab by URL (not by tabId), then rewrites the records map — this is robust to tabId reuse after browser restart and is idempotent on extension reload / SW restart
 - Added a `startupGate` promise the IIFE assigns synchronously; `tabs.onCreated` and `tabs.onUpdated` await it before mutating records, so concurrent restored-tab events can no longer race with the rekey pass

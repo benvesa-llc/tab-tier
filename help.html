@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help — Tab Tier</title>
+    <style>
+      :root {
+        --bg:       #1e1e2e;
+        --mantle:   #181825;
+        --surface0: #313244;
+        --surface1: #45475a;
+        --overlay:  #6c7086;
+        --text:     #cdd6f4;
+        --subtext:  #a6adc8;
+        --accent:   #cba6f7;
+        --green:    #a6e3a1;
+        --yellow:   #f9e2af;
+        --red:      #f38ba8;
+        --blue:     #89b4fa;
+      }
+      [data-theme="light"] {
+        --bg:       #eff1f5;
+        --mantle:   #e6e9ef;
+        --surface0: #ccd0da;
+        --surface1: #bcc0cc;
+        --overlay:  #9ca0b0;
+        --text:     #4c4f69;
+        --subtext:  #6c6f85;
+        --accent:   #8839ef;
+        --green:    #166534;
+        --yellow:   #df8e1d;
+        --red:      #d20f39;
+        --blue:     #0369a1;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+      .header-icon { font-size: 40px; flex-shrink: 0; }
+      .header-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent);
+        line-height: 1.2;
+      }
+      .header-text p {
+        font-size: 13px;
+        color: var(--subtext);
+        margin-top: 4px;
+      }
+
+      .help-section {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 14px;
+      }
+      .help-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .help-section-icon { font-size: 22px; flex-shrink: 0; }
+      .help-section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .help-section-body {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--text);
+      }
+      .help-section-body p { margin-bottom: 8px; }
+      .help-section-body p:last-child { margin-bottom: 0; }
+      .help-section-body strong { color: var(--text); font-weight: 700; }
+      .help-section-body ul { padding-left: 20px; margin: 6px 0; }
+      .help-section-body li { margin-bottom: 4px; }
+      .help-section-body code {
+        background: var(--surface0);
+        color: var(--accent);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12.5px;
+      }
+
+      .tier-pill {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 5px;
+        font-weight: 700;
+        font-size: 12px;
+        margin-right: 4px;
+      }
+      .tier-t0 { background: rgba(243, 139, 168, 0.18); color: var(--red); }
+      .tier-t1 { background: rgba(250, 179, 135, 0.18); color: #fab387; }
+      .tier-t2 { background: rgba(249, 226, 175, 0.18); color: var(--yellow); }
+      .tier-t3 { background: rgba(137, 180, 250, 0.18); color: var(--blue); }
+      .tier-t4 { background: var(--surface0);             color: var(--subtext); }
+
+      .footer {
+        margin-top: 36px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #1e1e2e;
+        border: none;
+        border-radius: 10px;
+        padding: 11px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .btn-primary:hover { opacity: 0.88; }
+      .btn-secondary {
+        background: var(--surface0);
+        color: var(--subtext);
+        border: none;
+        border-radius: 10px;
+        padding: 11px 20px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .btn-secondary:hover { opacity: 0.85; }
+
+      .loading { text-align: center; padding: 40px; color: var(--overlay); font-size: 13px; }
+    </style>
+    <script src="theme.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="header-icon">❓</div>
+        <div class="header-text">
+          <h1 id="pageTitle">Help &amp; Guide</h1>
+          <p id="pageSubtitle">A quick walkthrough of how Tab Tier works.</p>
+        </div>
+      </div>
+
+      <div id="sectionsContainer" class="loading">Loading…</div>
+
+      <div class="footer">
+        <button class="btn-primary"   id="openPopupBtn">Open Tab Tier</button>
+        <button class="btn-secondary" id="openSettingsBtn">Settings</button>
+        <button class="btn-secondary" id="openWhatsNewBtn">What's New</button>
+      </div>
+    </div>
+
+    <script src="help.js"></script>
+  </body>
+</html>

@@ -20,6 +20,7 @@
   "clearArchiveBtnTitle": { "message": "Limpiar archivo de Tier 4" },
   "tabManagementBtn":  { "message": "📋 Gestión de Pestañas" },
   "settingsBtn":       { "message": "⚙️ Ajustes" },
+  "helpBtn":           { "message": "❓ Ayuda" },
 
   "timeActive":  { "message": "activo" },
   "timeDaysAgo": {

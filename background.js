@@ -942,17 +942,18 @@ async function reconcileTabs() {
         log(`reconcile skip re-archive (restore cooldown): url=${rec.url}`);
         continue;
       }
-      // EN: Tab is truly gone — apply onManualClose setting | TR: Tab gerçekten yok — onManualClose ayarını uygula
-      if (settings.onManualClose === "delete") {
-        log(`reconcile delete (onManualClose=delete): key=${key} url=${rec.url}`);
-        delete tabRecords[key];
-      } else {
-        const wasNotArchived = rec.currentTier !== 4;
-        rec.currentTier = 4;
-        rec.lastFocusEnd = now;
-        archived++;
-        if (wasNotArchived) recordTabArchived();
-      }
+      // EN: Tab is gone — leave the record at its current tier (do NOT auto-archive to T4).
+      //     The user's mental model is that the tier represents recency-of-use; a closed T2 tab
+      //     should keep showing as T2 in Tab Management until natural tier promotion (T2→T3→T4)
+      //     ages it out via elapsed-time thresholds in timerCheck. Deletion still happens through
+      //     tabs.onRemoved (which respects onManualClose) for explicit user closures.
+      // TR: Sekme yok — kaydı mevcut tier'ında bırak (T4'e otomatik arşivleme YAPMA).
+      //     Kullanıcı modeli: tier kullanım yakınlığını temsil eder; kapanmış bir T2 sekme,
+      //     timerCheck'teki geçen süre eşikleri ile doğal tier yükselmesi (T2→T3→T4) gerçekleşene
+      //     kadar Tab Management'ta T2 olarak görünmeli. Silme yine tabs.onRemoved üzerinden olur
+      //     (orası onManualClose'a uyar) — manuel kapatma için.
+      // Just preserve lastFocusEnd if it was null
+      if (rec.lastFocusEnd === null) rec.lastFocusEnd = now;
     }
   }
 
@@ -1159,19 +1160,16 @@ async function timerCheck() {
           log(`timerCheck skip re-archive (restore cooldown): url=${rec.url}`);
           continue;
         }
-        // EN: Tab is truly gone — apply onManualClose setting | TR: Tab gerçekten yok — onManualClose ayarını uygula
-        log(
-          `timerCheck stale (onManualClose=${settings.onManualClose}): tabId=${key} tier=${rec.currentTier} url=${rec.url}`,
-        );
-        if (settings.onManualClose === "delete") {
-          delete tabRecords[key];
-        } else {
-          const wasNotArchived = rec.currentTier !== 4;
-          rec.currentTier = 4;
+        // EN: Tab is gone — leave the record at its current tier. Same rationale as reconcile:
+        //     a closed T2 tab should remain visible as T2 in Tab Management until natural tier
+        //     promotion ages it out. Explicit closures still go through tabs.onRemoved.
+        // TR: Sekme yok — kaydı mevcut tier'ında bırak. reconcile ile aynı gerekçe:
+        //     kapanmış bir T2 sekme, doğal tier yükselmesi gerçekleşene kadar Tab Management'ta
+        //     T2 olarak görünmeli. Manuel kapatma yine tabs.onRemoved üzerinden işlenir.
+        if (rec.lastFocusEnd === null) {
           rec.lastFocusEnd = now;
-          if (wasNotArchived) recordTabArchived();
+          hasChanges = true;
         }
-        hasChanges = true;
       }
     }
   }

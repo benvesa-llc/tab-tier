@@ -22,6 +22,7 @@
   "clearArchiveBtnTitle": { "message": "Clear Tier 4 archive" },
   "tabManagementBtn": { "message": "📋 Tab Management" },
   "settingsBtn": { "message": "⚙️ Settings" },
+  "helpBtn": { "message": "❓ Help" },
 
   "timeActive": { "message": "active" },
   "timeDaysAgo": {

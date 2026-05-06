@@ -1090,3 +1090,19 @@ chrome.storage.onChanged.addListener((changes, area) => {
   clearTimeout(reloadTimer);
   reloadTimer = setTimeout(loadData, 150);
 });
+
+// EN: Live tick — re-render every 30 seconds so the elapsed-time column stays fresh.
+//     fmtElapsed() reads Date.now() at render time, so a re-render naturally advances counters.
+//     No storage fetch — uses the in-memory allRecords cache. Cheap.
+// TR: Canlı tick — 30 saniyede bir yeniden render et; elapsed-süre sütunu güncel kalsın.
+//     fmtElapsed() render anında Date.now() okuyor, render edilince sayaçlar otomatik ilerliyor.
+//     Storage'a gitmiyor — bellekteki allRecords önbelleğini kullanıyor. Ucuz.
+setInterval(() => {
+  if (!allRecords || allRecords.length === 0) return;
+  if (document.hidden) return; // EN: Skip when the tab is in the background | TR: Sekme arka plandayken atla
+  renderTable();
+  const refreshEl = document.getElementById("refreshTime");
+  if (refreshEl) {
+    refreshEl.textContent = i18n("lastUpdated") + new Date().toLocaleTimeString();
+  }
+}, 30 * 1000);
