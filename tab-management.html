@@ -474,6 +474,96 @@
       .oldest-age { color: var(--yellow); font-family: monospace; flex: 0 0 auto; }
       .stats-empty { color: var(--overlay); font-size: 12px; text-align: center; padding: 20px 0; }
 
+      /* ── Hourly activity (24-bar chart) ── */
+      .hourly-wrap {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: 2px;
+        align-items: end;
+        height: 120px;
+        margin-bottom: 6px;
+      }
+      .hourly-bar {
+        background: var(--accent);
+        border-radius: 2px 2px 0 0;
+        min-height: 2px;
+        position: relative;
+        transition: height 200ms;
+      }
+      .hourly-bar:hover { background: var(--blue); }
+      .hourly-bar[data-count="0"] { background: var(--surface0); }
+      .hourly-axis {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: 2px;
+        font-size: 9px;
+        color: var(--overlay);
+        text-align: center;
+      }
+      .hourly-axis span { font-family: monospace; }
+
+      /* ── Daily activity (last 30 days stacked bars) ── */
+      .daily-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 140px;
+        margin-bottom: 6px;
+      }
+      .daily-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 1px;
+        min-width: 0;
+        cursor: default;
+      }
+      .daily-seg-opened   { background: var(--green); border-radius: 2px 2px 0 0; }
+      .daily-seg-archived { background: var(--red);   border-radius: 0; }
+      .daily-axis {
+        display: flex;
+        gap: 3px;
+        font-size: 9px;
+        color: var(--overlay);
+        font-family: monospace;
+      }
+      .daily-axis > div {
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .stats-legend {
+        display: flex;
+        gap: 14px;
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--subtext);
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .stats-legend-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+
+      /* ── Focus time bar (reuses .bar-* but with time label) ── */
+      .focus-bar-time {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 600;
+        font-family: monospace;
+      }
+
     </style>
     <script src="theme.js"></script>
     <script src="i18n-dom.js"></script>
@@ -556,6 +646,18 @@
         <div class="stat-card" style="grid-column: 1 / -1">
           <h3>__MSG_statsOldestTitle__</h3>
           <div id="statsOldest"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <h3>__MSG_statsFocusTimeTitle__</h3>
+          <div id="statsFocusTime"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <h3>__MSG_statsHourlyTitle__</h3>
+          <div id="statsHourly"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <h3>__MSG_statsDailyTitle__</h3>
+          <div id="statsDaily"></div>
         </div>
       </div>
     </div>

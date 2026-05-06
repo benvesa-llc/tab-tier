@@ -141,6 +141,94 @@ function log(...args) {
   console.log("[TabTier]", ...args);
 }
 
+// ─── Stats aggregation ───────────────────────────────────────────────────────
+// EN: `statsAggregate` is a separate storage key (does NOT touch tabRecords)
+//     populated whenever a focus session ends, a tab is opened, or a tab is
+//     archived. Cumulative domain-level focus time + 24-hour activity buckets
+//     + last-30-day rolling daily counts. Powers the Statistics view.
+// TR: `statsAggregate` ayrı bir storage anahtarı (tabRecords'a dokunmaz);
+//     odak oturumu bittiğinde, sekme açıldığında veya arşivlendiğinde güncellenir.
+//     Domain bazında toplam odak süresi + 24-saat aktivite kovaları + son 30 gün
+//     günlük sayımları. İstatistikler görünümünü besler.
+
+const STATS_RETAIN_DAYS = 30;
+const STATS_MIN_FOCUS_MS = 1000;          // EN: ignore <1s blur-and-back blips | TR: <1s'lik kısa odak değişimlerini yok say
+const STATS_MAX_FOCUS_MS = 12 * 3600 * 1000; // EN: cap one session at 12h to ignore overnight tabs | TR: tek oturumu 12 saatle sınırla (gece açık kalanları sayma)
+
+function statsDayKey(d = new Date()) {
+  const y  = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mm}-${dd}`;
+}
+
+async function loadStatsAggregate() {
+  const { statsAggregate = null } = await chrome.storage.local.get("statsAggregate");
+  const stats = statsAggregate || {};
+  if (!stats.domainFocusMs) stats.domainFocusMs = {};
+  if (!Array.isArray(stats.hourlyActivity) || stats.hourlyActivity.length !== 24) {
+    stats.hourlyActivity = new Array(24).fill(0);
+  }
+  if (!stats.daily) stats.daily = {};
+  stats.schemaVersion = 1;
+  return stats;
+}
+
+function pruneOldDaily(stats) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - STATS_RETAIN_DAYS);
+  const cutoffKey = statsDayKey(cutoff);
+  for (const k of Object.keys(stats.daily)) {
+    if (k < cutoffKey) delete stats.daily[k];
+  }
+}
+
+function ensureDailyBucket(stats, key = statsDayKey()) {
+  if (!stats.daily[key]) stats.daily[key] = { opened: 0, archived: 0, focusMs: 0 };
+  return stats.daily[key];
+}
+
+async function recordFocusEnd(rec, endTime) {
+  if (!rec || !rec.lastFocusStart) return;
+  const delta = endTime - rec.lastFocusStart;
+  if (delta < STATS_MIN_FOCUS_MS || delta > STATS_MAX_FOCUS_MS) return;
+  try {
+    const stats = await loadStatsAggregate();
+    const domain = (rec.domain || "—").trim() || "—";
+    stats.domainFocusMs[domain] = (stats.domainFocusMs[domain] || 0) + delta;
+    const hour = new Date(rec.lastFocusStart).getHours();
+    if (hour >= 0 && hour < 24) stats.hourlyActivity[hour]++;
+    ensureDailyBucket(stats).focusMs += delta;
+    pruneOldDaily(stats);
+    await chrome.storage.local.set({ statsAggregate: stats });
+  } catch (e) { log("recordFocusEnd error:", e?.message); }
+}
+
+async function recordTabOpened() {
+  try {
+    const stats = await loadStatsAggregate();
+    ensureDailyBucket(stats).opened++;
+    pruneOldDaily(stats);
+    await chrome.storage.local.set({ statsAggregate: stats });
+  } catch (e) { log("recordTabOpened error:", e?.message); }
+}
+
+async function recordTabArchived(count = 1) {
+  if (count <= 0) return;
+  try {
+    const stats = await loadStatsAggregate();
+    ensureDailyBucket(stats).archived += count;
+    pruneOldDaily(stats);
+    await chrome.storage.local.set({ statsAggregate: stats });
+  } catch (e) { log("recordTabArchived error:", e?.message); }
+}
+
+async function clearStatsAggregate() {
+  await chrome.storage.local.set({
+    statsAggregate: { domainFocusMs: {}, hourlyActivity: new Array(24).fill(0), daily: {}, schemaVersion: 1 },
+  });
+}
+
 /*
  * EN: Sort tier groups so T0 → T1 → T2 → T3 left to right.
  *     Only moves groups when they are out of order; tabs within groups are untouched.
@@ -752,9 +840,11 @@ async function reconcileTabs() {
         log(`reconcile delete (onManualClose=delete): key=${key} url=${rec.url}`);
         delete tabRecords[key];
       } else {
+        const wasNotArchived = rec.currentTier !== 4;
         rec.currentTier = 4;
         rec.lastFocusEnd = now;
         archived++;
+        if (wasNotArchived) recordTabArchived();
       }
     }
   }
@@ -969,8 +1059,10 @@ async function timerCheck() {
         if (settings.onManualClose === "delete") {
           delete tabRecords[key];
         } else {
+          const wasNotArchived = rec.currentTier !== 4;
           rec.currentTier = 4;
           rec.lastFocusEnd = now;
+          if (wasNotArchived) recordTabArchived();
         }
         hasChanges = true;
       }
@@ -1040,6 +1132,7 @@ async function timerCheck() {
     if (expectedTier === 4) {
       // EN: Archive: close the tab | TR: Arşiv: tab'ı kapat
       try { await chrome.tabs.remove(parseInt(tabId)); } catch (e) {}
+      recordTabArchived();
       log(`tier T${prevTier}→T4 (archive)`, tabId, tab.url);
     } else {
       // EN: Move to the correct group — works for both demotions and corrections
@@ -1199,6 +1292,8 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 
     // Önceki tab'dan çıkış: lastFocusEnd başlat
     if (currentActiveTabId && tabRecords[currentActiveTabId]) {
+      // EN: Capture aggregate stats BEFORE overwriting lastFocusEnd | TR: lastFocusEnd üzerine yazmadan önce toplam istatistiği kaydet
+      recordFocusEnd(tabRecords[currentActiveTabId], now);
       tabRecords[currentActiveTabId].lastFocusEnd = now;
     }
 
@@ -1297,17 +1392,51 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 // =============================================================================
 chrome.tabs.onCreated.addListener(async (newTab) => {
   if (!newTab.url || isBrowserInternalUrl(newTab.url)) return;
+  // EN: Count this as a tab-opened event for daily activity stats | TR: Günlük aktivite istatistikleri için sekme açma olayı say
+  recordTabOpened();
 
   try {
     const { tabRecords = {}, settings = DefaultSettings } =
       await chrome.storage.local.get(["tabRecords", "settings"]);
 
+    // EN: Stale-record relink — likely a session-restored tab. If a record exists for this URL
+    //     whose tabId is no longer open, transfer it to the new tabId (preserving tier and elapsed time).
+    //     Must run BEFORE the duplicate check so a stale tabId is not mistaken for an open duplicate.
+    // TR: Bayat kayıt yeniden bağlama — büyük olasılıkla oturum-restore edilmiş sekme. Bu URL için
+    //     tabId'si artık açık olmayan bir kayıt varsa onu yeni tabId'ye taşı (tier ve geçen süre korunur).
+    //     Duplicate kontrolünden ÖNCE çalışmalı; aksi halde bayat tabId açık duplicate sanılır.
+    const openTabIds = new Set((await chrome.tabs.query({})).map((t) => t.id));
+    const staleEntry = Object.entries(tabRecords).find(
+      ([key, r]) =>
+        r.url === newTab.url &&
+        r.currentTier !== 4 &&
+        parseInt(key) !== newTab.id &&
+        !openTabIds.has(parseInt(key)),
+    );
+    if (staleEntry) {
+      const [oldKey, rec] = staleEntry;
+      delete tabRecords[oldKey];
+      tabRecords[newTab.id] = {
+        ...rec,
+        tabId: newTab.id,
+        title: newTab.title || rec.title,
+        favicon: newTab.favIconUrl || rec.favicon,
+      };
+      await chrome.storage.local.set({ tabRecords });
+      await moveTabToTierGroup(newTab.id, rec.currentTier, settings);
+      log(`onCreated relinked stale record: ${oldKey} → ${newTab.id} tier=T${rec.currentTier} url=${rec.url}`);
+      return;
+    }
+
     // Duplikasyon kontrolü (T4 arşiv kayıtları duplicate sayılmaz —
     // PROMOTE_TABS ile açılan tablar T4 kaydı varken tetiklenir ve
-    // yanlışlıkla redirect'e düşmemeli)
+    // yanlışlıkla redirect'e düşmemeli). Sadece açık tabId'li kayıtlar duplicate sayılır.
     const dup = Object.values(tabRecords).find(
       (r) =>
-        r.url === newTab.url && r.tabId !== newTab.id && r.currentTier !== 4,
+        r.url === newTab.url &&
+        r.tabId !== newTab.id &&
+        r.currentTier !== 4 &&
+        openTabIds.has(r.tabId),
     );
 
     if (dup && settings.duplicateAction === "redirect") {
@@ -1350,21 +1479,42 @@ chrome.tabs.onCreated.addListener(async (newTab) => {
 // =============================================================================
 // EVENT 3: tabs.onRemoved — Tab kapatıldı
 // =============================================================================
-chrome.tabs.onRemoved.addListener(async (tabId) => {
+chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
   try {
+    // EN: Browser/window shutdown fires onRemoved for every tab with isWindowClosing=true.
+    //     Do NOT apply onManualClose here — the tabs are not being manually closed, the browser
+    //     is shutting down and will restore them on next launch. Records must persist with their
+    //     existing tier/elapsed time so onCreated/onUpdated can re-link to the new tabIds on restore.
+    // TR: Browser/pencere kapanışında her sekme için isWindowClosing=true ile onRemoved tetiklenir.
+    //     Burada onManualClose'u UYGULAMA — sekmeler manuel kapatılmıyor, browser kapanıyor ve
+    //     bir sonraki açılışta restore edecek. Kayıtlar mevcut tier/geçen süre ile korunmalı ki
+    //     restore sırasında onCreated/onUpdated yeni tabId'lere yeniden bağlayabilsin.
+    if (removeInfo && removeInfo.isWindowClosing) {
+      log("onRemoved skipped (window closing — preserving record for session restore)", tabId);
+      return;
+    }
+
     const { tabRecords = {}, settings = DefaultSettings } =
       await chrome.storage.local.get(["tabRecords", "settings"]);
 
     if (!tabRecords[tabId]) return;
 
+    const wasActive = currentActiveTabId === tabId;
+    const wasNotArchived = tabRecords[tabId].currentTier !== 4;
+    if (wasActive) {
+      // EN: Active tab closed — record final focus session before mutating | TR: Aktif sekme kapatıldı — değiştirmeden önce son odak oturumunu kaydet
+      recordFocusEnd(tabRecords[tabId], Date.now());
+    }
+
     if (settings.onManualClose === "archive") {
       tabRecords[tabId].currentTier = 4;
       tabRecords[tabId].lastFocusEnd = Date.now();
+      if (wasNotArchived) recordTabArchived();
     } else {
       delete tabRecords[tabId];
     }
 
-    if (currentActiveTabId === tabId) currentActiveTabId = null;
+    if (wasActive) currentActiveTabId = null;
     await chrome.storage.local.set({ tabRecords });
   } catch (e) {
     log("onRemoved error:", e?.message);
@@ -1392,10 +1542,41 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       if (!changeInfo.url) return;
       const now = Date.now();
 
-      // Duplicate check before creating a new record
+      // EN: Stale-record relink — likely a session-restored discarded tab whose URL only resolved now.
+      //     If a record exists for this URL with a no-longer-open tabId, transfer it to preserve tier and elapsed time.
+      // TR: Bayat kayıt yeniden bağlama — büyük olasılıkla URL'si ancak şimdi çözülen oturum-restore'lu discarded sekme.
+      //     Bu URL için açık olmayan tabId'li bir kayıt varsa, tier ve geçen süreyi korumak için onu taşı.
+      const openTabIds = new Set((await chrome.tabs.query({})).map((t) => t.id));
+      const staleEntry = Object.entries(tabRecords).find(
+        ([key, r]) =>
+          r.url === changeInfo.url &&
+          r.currentTier !== 4 &&
+          parseInt(key) !== tabId &&
+          !openTabIds.has(parseInt(key)),
+      );
+      if (staleEntry) {
+        const [oldKey, rec] = staleEntry;
+        delete tabRecords[oldKey];
+        tabRecords[tabId] = {
+          ...rec,
+          tabId,
+          url: changeInfo.url,
+          title: tab.title || rec.title,
+          favicon: tab.favIconUrl || rec.favicon,
+        };
+        await chrome.storage.local.set({ tabRecords });
+        await moveTabToTierGroup(tabId, rec.currentTier, settings);
+        log(`onUpdated relinked stale record: ${oldKey} → ${tabId} tier=T${rec.currentTier} url=${changeInfo.url}`);
+        return;
+      }
+
+      // Duplicate check before creating a new record (only open tabIds count as duplicates)
       const dup = Object.values(tabRecords).find(
         (r) =>
-          r.url === changeInfo.url && r.tabId !== tabId && r.currentTier !== 4,
+          r.url === changeInfo.url &&
+          r.tabId !== tabId &&
+          r.currentTier !== 4 &&
+          openTabIds.has(r.tabId),
       );
       if (dup && settings.duplicateAction === "redirect") {
         await chrome.tabs.remove(tabId);
@@ -1662,6 +1843,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
     case "DISSOLVE_ALL_GROUPS":
       dissolveAllGroups()
+        .then(() => sendResponse({ ok: true }))
+        .catch((e) => sendResponse({ ok: false, error: e?.message }));
+      return true;
+
+    case "CLEAR_STATS":
+      clearStatsAggregate()
         .then(() => sendResponse({ ok: true }))
         .catch((e) => sendResponse({ ok: false, error: e?.message }));
       return true;

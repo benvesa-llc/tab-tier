@@ -4,10 +4,20 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.4.14] - 2026-05-05
+## [1.5.1] - 2026-05-06
+
+### Fixed
+- Browser close/reopen no longer resets every tab to T1 with a fresh timer: `tabs.onRemoved` now skips its onManualClose action when `removeInfo.isWindowClosing` is true, preserving each record's tier and `lastFocusEnd` so session-restored tabs resume exactly where they left off
+- `tabs.onCreated` and `tabs.onUpdated` now relink existing records by URL when the prior tabId is no longer open (session-restored tabs receive new IDs) — restored tabs are reattached to their preserved record instead of getting a new T1 record
+- Duplicate-redirect check in `onCreated`/`onUpdated` now ignores records whose tabId is no longer open, so stale tabIds can no longer be mistaken for an open duplicate (which previously closed the just-restored tab)
+
+## [1.5.0] - 2026-05-05
 
 ### Added
 - Statistics view in Tab Management — a new "📊 Statistics" tab next to "📋 Tab Records" derives charts from the existing `tabRecords` snapshot (no new data tracking required): tier distribution donut, active vs archived counts, top-10 domains horizontal bar chart, and a list of the longest-lived (oldest createdAt) tabs; cards live-refresh whenever data changes if the Stats view is open
+- Persistent activity tracking (`statsAggregate` storage key, separate from `tabRecords`): cumulative focus time per domain, 24-bucket hourly activity histogram, last-30-day rolling daily counts of tabs opened/archived/focused
+- Three additional stat cards driven by `statsAggregate`: "Top Domains by Focus Time" (cumulative), "Activity by Hour" (24-bar chart), "Last 30 Days — Tabs Opened & Archived" (stacked daily bars with green=opened, red=archived)
+- "📊 Reset Statistics" button in Settings → Data Management to clear `statsAggregate` without touching tab records or settings; new background message handler `CLEAR_STATS`
 
 ### Fixed
 - Archived (T4) URL links in Tab Management now reliably open the URL as a new T1 tab on click; switched to event-delegation on `tbody` (one-time bind that survives re-renders), and surfaces background errors and missing-URL cases in the console instead of failing silently

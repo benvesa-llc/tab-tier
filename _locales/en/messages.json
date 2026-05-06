@@ -299,5 +299,14 @@
   "statsActive":        { "message": "Active" },
   "statsArchived":      { "message": "Archived" },
   "statsAgeDays":       { "message": "$D$d $H$h", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
-  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
+  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } },
+  "statsFocusTimeTitle": { "message": "Top Domains by Focus Time (All Time)" },
+  "statsHourlyTitle":   { "message": "Activity by Hour (All Time, 0–23h)" },
+  "statsDailyTitle":    { "message": "Last 30 Days — Tabs Opened & Archived" },
+  "statsDailyOpened":   { "message": "Opened" },
+  "statsDailyArchived": { "message": "Archived" },
+  "statsCollectingData": { "message": "Collecting data — check back after a day or two of usage." },
+  "clearStatsBtn":      { "message": "📊 Reset Statistics" },
+  "confirmClearStats":  { "message": "Reset all collected statistics (focus time per domain, hourly activity, last-30-day counts)? Tab records and settings are not affected." },
+  "statsClearedMsg":    { "message": "Statistics cleared." }
 }

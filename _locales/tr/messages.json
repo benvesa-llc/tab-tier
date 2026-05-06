@@ -277,5 +277,14 @@
   "statsActive":        { "message": "Aktif" },
   "statsArchived":      { "message": "Arşiv" },
   "statsAgeDays":       { "message": "$D$g $H$s", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
-  "statsAgeHours":      { "message": "$H$s $M$d", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
+  "statsAgeHours":      { "message": "$H$s $M$d", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } },
+  "statsFocusTimeTitle": { "message": "Odak Süresine Göre Top Domain (Tüm Zamanlar)" },
+  "statsHourlyTitle":   { "message": "Saate Göre Aktivite (Tüm Zamanlar, 0–23 saat)" },
+  "statsDailyTitle":    { "message": "Son 30 Gün — Açılan & Arşivlenen Sekmeler" },
+  "statsDailyOpened":   { "message": "Açılan" },
+  "statsDailyArchived": { "message": "Arşivlenen" },
+  "statsCollectingData": { "message": "Veri toplanıyor — bir-iki gün kullanımdan sonra tekrar bak." },
+  "clearStatsBtn":      { "message": "📊 İstatistikleri Sıfırla" },
+  "confirmClearStats":  { "message": "Toplanan tüm istatistikler sıfırlansın mı (domain başına odak süresi, saatlik aktivite, son 30 gün sayımları)? Sekme kayıtları ve ayarlar etkilenmez." },
+  "statsClearedMsg":    { "message": "İstatistikler temizlendi." }
 }

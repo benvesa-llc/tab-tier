@@ -274,5 +274,14 @@
   "statsActive":        { "message": "Activas" },
   "statsArchived":      { "message": "Archivadas" },
   "statsAgeDays":       { "message": "$D$d $H$h", "placeholders": { "d": { "content": "$1" }, "h": { "content": "$2" } } },
-  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } }
+  "statsAgeHours":      { "message": "$H$h $M$m", "placeholders": { "h": { "content": "$1" }, "m": { "content": "$2" } } },
+  "statsFocusTimeTitle": { "message": "Dominios por Tiempo de Enfoque (Todo el Tiempo)" },
+  "statsHourlyTitle":   { "message": "Actividad por Hora (Todo el Tiempo, 0–23h)" },
+  "statsDailyTitle":    { "message": "Últimos 30 Días — Pestañas Abiertas y Archivadas" },
+  "statsDailyOpened":   { "message": "Abiertas" },
+  "statsDailyArchived": { "message": "Archivadas" },
+  "statsCollectingData": { "message": "Recolectando datos — vuelve a comprobar después de un día o dos de uso." },
+  "clearStatsBtn":      { "message": "📊 Restablecer Estadísticas" },
+  "confirmClearStats":  { "message": "¿Restablecer todas las estadísticas recopiladas (tiempo de enfoque por dominio, actividad por hora, conteos de los últimos 30 días)? Los registros de pestañas y los ajustes no se verán afectados." },
+  "statsClearedMsg":    { "message": "Estadísticas restablecidas." }
 }

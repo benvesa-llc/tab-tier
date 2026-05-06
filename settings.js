@@ -203,6 +203,15 @@ async function init() {
     }
   });
 
+  document.getElementById("clearStatsBtn").addEventListener("click", async () => {
+    // EN: Reset only the statsAggregate storage key — tabRecords and settings are untouched
+    // TR: Yalnızca statsAggregate anahtarını sıfırla — tabRecords ve ayarlar etkilenmez
+    if (confirm(i18n("confirmClearStats"))) {
+      await chrome.runtime.sendMessage({ type: "CLEAR_STATS" });
+      alert(i18n("statsClearedMsg"));
+    }
+  });
+
   document.getElementById("clearAllBtn").addEventListener("click", async () => {
     if (confirm(i18n("confirmClearAll"))) {
       await chrome.storage.local.clear();

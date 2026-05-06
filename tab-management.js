@@ -780,9 +780,13 @@ document.querySelectorAll(".view-tab").forEach((btn) => {
   });
 });
 
-// EN: Render all stats cards from the current allRecords snapshot.
-// TR: Mevcut allRecords anlık görüntüsünden tüm istatistik kartlarını render et.
-function renderStats() {
+// EN: Render all stats cards. The first four use the in-memory allRecords
+//     snapshot (synchronous). The last three pull from the persistent
+//     `statsAggregate` storage key (asynchronous, populated by background.js).
+// TR: Tüm istatistik kartlarını render et. İlk dördü bellekteki allRecords
+//     anlık görüntüsünü kullanır (senkron). Son üçü kalıcı `statsAggregate`
+//     storage anahtarından çekilir (asenkron, background.js tarafından doldurulur).
+async function renderStats() {
   const total = allRecords.length;
   const tierCounts = [0, 0, 0, 0, 0];
   const domainCounts = new Map();
@@ -798,6 +802,17 @@ function renderStats() {
   renderActiveRatio(tierCounts, total);
   renderTopDomains([...domainCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10));
   renderOldestTabs([...allRecords].filter((r) => r.createdAt).sort((a, b) => a.createdAt - b.createdAt).slice(0, 8));
+
+  // EN: Aggregate-driven cards — read once and pass to each renderer | TR: Toplam veri kartları — bir kez oku ve her renderer'a aktar
+  try {
+    const { statsAggregate = null } = await chrome.storage.local.get("statsAggregate");
+    const agg = statsAggregate || { domainFocusMs: {}, hourlyActivity: new Array(24).fill(0), daily: {} };
+    renderFocusTime(agg.domainFocusMs || {});
+    renderHourlyActivity(Array.isArray(agg.hourlyActivity) ? agg.hourlyActivity : new Array(24).fill(0));
+    renderDailyActivity(agg.daily || {});
+  } catch (e) {
+    console.error("[TabTier] renderStats aggregate read failed:", e);
+  }
 }
 
 // EN: Tier color palette — keep aligned with tier-badge classes in CSS.
@@ -918,6 +933,106 @@ function renderOldestTabs(oldest) {
         </div>`;
     })
     .join("");
+}
+
+// EN: Format milliseconds as "Xh Ym" or "Ym Zs"; <1s → "<1s".
+// TR: Milisaniyeyi "Xs Yd" veya "Yd Zsn" olarak biçimlendir; <1sn → "<1sn".
+function fmtFocusMs(ms) {
+  if (!ms || ms < 0) return "—";
+  if (ms < 1000) return "<1s";
+  const totalSec = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSec / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  if (mins > 0)  return `${mins}m ${secs}s`;
+  return `${secs}s`;
+}
+
+function renderFocusTime(domainFocusMs) {
+  const host = document.getElementById("statsFocusTime");
+  const entries = Object.entries(domainFocusMs).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (!entries.length) {
+    host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
+    return;
+  }
+  const max = entries[0][1];
+  host.innerHTML = entries
+    .map(([d, ms]) => `
+      <div class="bar-row">
+        <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
+          <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
+        </div>
+      </div>`)
+    .join("");
+}
+
+function renderHourlyActivity(hourly) {
+  const host = document.getElementById("statsHourly");
+  const total = hourly.reduce((s, n) => s + n, 0);
+  if (total === 0) {
+    host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
+    return;
+  }
+  const max = Math.max(...hourly);
+  const bars = hourly
+    .map((n) => {
+      const heightPct = max > 0 ? (n / max) * 100 : 0;
+      return `<div class="hourly-bar" data-count="${n}" style="height:${heightPct}%" title="${n}"></div>`;
+    })
+    .join("");
+  // EN: Show every 3rd hour label to keep axis readable | TR: Eksenin okunaklı kalması için her 3. saati göster
+  const labels = Array.from({ length: 24 }, (_, h) => `<span>${h % 3 === 0 ? String(h).padStart(2, "0") : ""}</span>`).join("");
+  host.innerHTML = `
+    <div class="hourly-wrap">${bars}</div>
+    <div class="hourly-axis">${labels}</div>`;
+}
+
+function renderDailyActivity(daily) {
+  const host = document.getElementById("statsDaily");
+  // EN: Build last-30-days array (oldest → newest), filling gaps with zero buckets | TR: Son 30 günlük dizi oluştur (eskiden yeniye), boşlukları sıfırla doldur
+  const days = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const b = daily[k] || { opened: 0, archived: 0 };
+    days.push({ key: k, opened: b.opened || 0, archived: b.archived || 0, day: d });
+  }
+  const totalEvents = days.reduce((s, d) => s + d.opened + d.archived, 0);
+  if (totalEvents === 0) {
+    host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
+    return;
+  }
+  const maxStack = Math.max(...days.map((d) => d.opened + d.archived));
+  const cols = days
+    .map((d) => {
+      const stack = d.opened + d.archived;
+      const stackHeightPct = maxStack > 0 ? (stack / maxStack) * 100 : 0;
+      const openedPct = stack > 0 ? (d.opened / stack) * stackHeightPct : 0;
+      const archivedPct = stack > 0 ? (d.archived / stack) * stackHeightPct : 0;
+      const tip = `${d.key} — ${i18n("statsDailyOpened")}: ${d.opened}, ${i18n("statsDailyArchived")}: ${d.archived}`;
+      return `
+        <div class="daily-col" title="${escHtml(tip)}">
+          ${d.opened > 0   ? `<div class="daily-seg-opened"   style="height:${openedPct}%"></div>` : ""}
+          ${d.archived > 0 ? `<div class="daily-seg-archived" style="height:${archivedPct}%"></div>` : ""}
+        </div>`;
+    })
+    .join("");
+  // EN: Axis: show day-of-month labels every 5 days | TR: Eksen: ay-içi gün etiketlerini her 5 günde bir göster
+  const axis = days
+    .map((d, i) => `<div>${i % 5 === 0 ? d.day.getDate() : ""}</div>`)
+    .join("");
+  host.innerHTML = `
+    <div class="daily-wrap">${cols}</div>
+    <div class="daily-axis">${axis}</div>
+    <div class="stats-legend">
+      <span><span class="stats-legend-dot" style="background:var(--green)"></span>${escHtml(i18n("statsDailyOpened"))}</span>
+      <span><span class="stats-legend-dot" style="background:var(--red)"></span>${escHtml(i18n("statsDailyArchived"))}</span>
+    </div>`;
 }
 
 // ─── Init and live update ────────────────────────────────────────────────────
