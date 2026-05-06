@@ -4,12 +4,16 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.5.1] - 2026-05-06
+## [1.5.2] - 2026-05-06
+
+### Changed
+- Roadmap: removed "Statistics dashboard (focus time, tier history)" — already shipped in v1.5.0
 
 ### Fixed
 - Browser close/reopen no longer resets every tab to T1 with a fresh timer: `tabs.onRemoved` now skips its onManualClose action when `removeInfo.isWindowClosing` is true, preserving each record's tier and `lastFocusEnd` so session-restored tabs resume exactly where they left off
 - `tabs.onCreated` and `tabs.onUpdated` now relink existing records by URL when the prior tabId is no longer open (session-restored tabs receive new IDs) — restored tabs are reattached to their preserved record instead of getting a new T1 record
 - Duplicate-redirect check in `onCreated`/`onUpdated` now ignores records whose tabId is no longer open, so stale tabIds can no longer be mistaken for an open duplicate (which previously closed the just-restored tab)
+- What's New page category badges now show localized labels ("Feature/Fix/Change", "Özellik/Düzeltme/Değişiklik", "Función/Corrección/Cambio") instead of the raw English type code; `whatsnew.js` was looking up `feature`/`improvement` keys while data uses the canonical `feat`/`change` types, so the lookup fell back to the raw string. CSS class names aligned to `.type-feat` / `.type-change` so feature and change badges also render with the correct background color
 
 ## [1.5.0] - 2026-05-05
 

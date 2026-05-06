@@ -2,7 +2,6 @@
   { "title": "Tab export / import (JSON + CSV)", "titleTR": "Sekme dışa / içe aktarma (JSON + CSV)", "titleES": "Exportar / importar pestañas (JSON + CSV)" },
   { "title": "Per-domain custom tier rules",     "titleTR": "Domain bazlı özel tier kuralları",      "titleES": "Reglas de nivel personalizadas por dominio" },
   { "title": "Session snapshot & restore",       "titleTR": "Oturum anlık görüntüsü ve geri yükleme","titleES": "Instantánea de sesión y restauración" },
-  { "title": "Statistics dashboard (focus time, tier history)", "titleTR": "İstatistik paneli (odak süresi, tier geçmişi)", "titleES": "Panel de estadísticas (tiempo de foco, historial de niveles)" },
   { "title": "German (Deutsch) locale",          "titleTR": "Almanca (Deutsch) dil desteği",         "titleES": "Idioma alemán (Deutsch)" },
   { "title": "Portuguese (Português) locale",    "titleTR": "Portekizce (Português) dil desteği",    "titleES": "Idioma portugués (Português)" },
   { "title": "French (Français) locale",         "titleTR": "Fransızca (Français) dil desteği",      "titleES": "Idioma francés (Français)" }

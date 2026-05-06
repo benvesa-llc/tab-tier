@@ -13,9 +13,9 @@ async function detectLang() {
 
 function typeLabel(type, lang) {
   const labels = {
-    feature:     { en: "Feature",     tr: "Özellik",     es: "Función" },
-    fix:         { en: "Fix",         tr: "Düzeltme",    es: "Corrección" },
-    improvement: { en: "Improvement", tr: "İyileştirme", es: "Mejora" },
+    feat:   { en: "Feature", tr: "Özellik",    es: "Función" },
+    fix:    { en: "Fix",     tr: "Düzeltme",   es: "Corrección" },
+    change: { en: "Change",  tr: "Değişiklik", es: "Cambio" },
   };
   return (labels[type] || {})[lang] || (labels[type] || {}).en || type;
 }
