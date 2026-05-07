@@ -4,11 +4,19 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.6.4] - 2026-05-07
+
+### Added
+- Language combo (`<select>`) in the popup header — a compact AUTO / EN / TR / ES dropdown next to the theme toggle. Pick a language and the popup reloads in it immediately; persists to `settings.uiLanguage` so other extension pages (Settings, Tab Management, Help, What's New) follow suit. Uses short language codes instead of country flags so the choice stays neutral for English/Spanish speakers in any region. New `langCycleTitle` i18n key for the tooltip in all three locales
+
+### Fixed
+- Tab Management summary warnings no longer render with a doubled "⚠️" icon — the per-warning "⚠️" prefix was redundant with the row label and produced text like "⚠️: ⚠️ 4 in records / missing in browser". Removed the prefix from `staleWarning` / `missingWarning` in all three locales, and reworded `missingWarning` to "N closed (record kept)" / "N kapalı (kaydı tutuldu)" / "N cerradas (registro conservado)" since closed records are now intentionally retained at their previous tier (1.5.5 behavior change), not "missing"
+- Closing the Reconcile result panel now re-runs `renderTable()` when Auto pagination is active, so the rows-per-page value recovers to the pre-panel viewport size; previously the row count stayed stuck at the smaller value the panel had forced
+
 ## [1.6.1] - 2026-05-06
 
 ### Added
-- New in-extension Help & Guide page (`help.html` + `help.js`) — opens from Settings → Developer Tools via a "❓ Help" button, AND from a new ❓ icon in the popup header (between the theme toggle and the settings cog) for one-click access. Loads `data/help.json` and renders 7 short sections (intro, tier system, tier progression, popup, Tab Management, Settings essentials, tips) with full English / Turkish / Spanish translations. Body text supports `**bold**`, `` `code` ``, `[[T0]]…[[T4]]` tier color pills, and bulleted lists; uses the same theme/CSS variables as the other internal pages
-- New `helpBtn` i18n key in all three locale files
+- New in-extension Help & Guide page (`help.html` + `help.js`) — opens from Settings → Developer Tools via a "❓ Help" button AND from a new ❓ icon in the popup header (between the theme toggle and the settings cog) for one-click access. Loads `data/help.json` and renders 7 short sections (intro, tier system, tier progression, popup, Tab Management, Settings essentials, tips) with full English / Turkish / Spanish translations. Body text supports `**bold**`, `` `code` ``, `[[T0]]…[[T4]]` tier color pills, and bulleted lists; uses the same theme/CSS variables as the other internal pages. New `helpBtn` i18n key in all three locale files
 - Tab Management table now ticks live: a 30-second `setInterval` re-renders the table so the elapsed-time column stays fresh between storage events. Uses the in-memory `allRecords` cache (no storage read), and skips when the page is hidden via `document.hidden`
 
 ### Changed
