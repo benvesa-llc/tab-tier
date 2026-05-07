@@ -4,10 +4,13 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.6.4] - 2026-05-07
+## [1.6.5] - 2026-05-07
 
 ### Added
 - Language combo (`<select>`) in the popup header — a compact AUTO / EN / TR / ES dropdown next to the theme toggle. Pick a language and the popup reloads in it immediately; persists to `settings.uiLanguage` so other extension pages (Settings, Tab Management, Help, What's New) follow suit. Uses short language codes instead of country flags so the choice stays neutral for English/Spanish speakers in any region. New `langCycleTitle` i18n key for the tooltip in all three locales
+
+### Changed
+- What's New page now groups changes by category (Added / Changed / Fixed) under coloured headings, mirroring the structure of `CHANGELOG.md`. Replaces the previous per-item type badges with one heading per group; categories follow the fixed order `feat → change → fix` so the same vocabulary and ordering appear in both surfaces. Heading labels are translated in all three locales
 
 ### Fixed
 - Tab Management summary warnings no longer render with a doubled "⚠️" icon — the per-warning "⚠️" prefix was redundant with the row label and produced text like "⚠️: ⚠️ 4 in records / missing in browser". Removed the prefix from `staleWarning` / `missingWarning` in all three locales, and reworded `missingWarning` to "N closed (record kept)" / "N kapalı (kaydı tutuldu)" / "N cerradas (registro conservado)" since closed records are now intentionally retained at their previous tier (1.5.5 behavior change), not "missing"

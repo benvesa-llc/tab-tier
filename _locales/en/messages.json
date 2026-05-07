@@ -23,6 +23,7 @@
   "tabManagementBtn": { "message": "📋 Tab Management" },
   "settingsBtn": { "message": "⚙️ Settings" },
   "helpBtn": { "message": "❓ Help" },
+  "langCycleTitle": { "message": "Cycle language (Auto → English → Türkçe → Español)" },
 
   "timeActive": { "message": "active" },
   "timeDaysAgo": {
@@ -189,11 +190,11 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "staleWarning": {
-    "message": "⚠️ $COUNT$ stale active",
+    "message": "$COUNT$ stale active",
     "placeholders": { "count": { "content": "$1" } }
   },
   "missingWarning": {
-    "message": "⚠️ $COUNT$ in records / missing in browser",
+    "message": "$COUNT$ closed (record kept)",
     "placeholders": { "count": { "content": "$1" } }
   },
   "reconciling": { "message": "⏳ Reconciling…" },

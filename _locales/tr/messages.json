@@ -21,6 +21,7 @@
   "tabManagementBtn":   { "message": "📋 Tab Yönetimi" },
   "settingsBtn":        { "message": "⚙️ Ayarlar" },
   "helpBtn":            { "message": "❓ Yardım" },
+  "langCycleTitle":     { "message": "Dili değiştir (Otomatik → English → Türkçe → Español)" },
 
   "timeActive":  { "message": "aktif" },
   "timeDaysAgo": {
@@ -173,11 +174,11 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "staleWarning": {
-    "message": "⚠️ $COUNT$ stale aktif",
+    "message": "$COUNT$ bayat aktif",
     "placeholders": { "count": { "content": "$1" } }
   },
   "missingWarning": {
-    "message": "⚠️ $COUNT$ kayıtta var / browserde yok",
+    "message": "$COUNT$ kapalı (kaydı tutuldu)",
     "placeholders": { "count": { "content": "$1" } }
   },
   "reconciling": { "message": "⏳ Uzlaştırılıyor…" },

@@ -21,6 +21,7 @@
   "tabManagementBtn":  { "message": "📋 Gestión de Pestañas" },
   "settingsBtn":       { "message": "⚙️ Ajustes" },
   "helpBtn":           { "message": "❓ Ayuda" },
+  "langCycleTitle":    { "message": "Cambiar idioma (Auto → English → Türkçe → Español)" },
 
   "timeActive":  { "message": "activo" },
   "timeDaysAgo": {
@@ -173,11 +174,11 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "staleWarning": {
-    "message": "⚠️ $COUNT$ obsoletos activos",
+    "message": "$COUNT$ obsoletos activos",
     "placeholders": { "count": { "content": "$1" } }
   },
   "missingWarning": {
-    "message": "⚠️ $COUNT$ en registros / ausentes en navegador",
+    "message": "$COUNT$ cerradas (registro conservado)",
     "placeholders": { "count": { "content": "$1" } }
   },
   "reconciling":          { "message": "⏳ Reconciliando…" },

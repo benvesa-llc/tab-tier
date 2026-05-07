@@ -572,6 +572,11 @@ function showReconcileResult(res) {
 
 document.getElementById("reconcileClose").addEventListener("click", () => {
   document.getElementById("reconcileResult").style.display = "none";
+  // EN: The result panel was occupying vertical space above the table; closing it gives the table
+  //     more room. Re-render so Auto pagination recomputes rows-per-page for the new viewport.
+  // TR: Sonuç paneli tablonun üstünde dikey alan kaplıyordu; kapanınca tabloya daha fazla yer
+  //     açılır. Auto sayfalama yeni alana göre satır sayısını yeniden hesaplasın diye yeniden render et.
+  if (pageSize === -1) renderTable();
 });
 
 // EN: Render duplicate preview panel — groups of duplicate tabs for user to review before deleting

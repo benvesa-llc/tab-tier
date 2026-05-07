@@ -111,31 +111,42 @@
         letter-spacing: 0.06em;
       }
 
-      .change-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-      .change-item {
+      /* EN: Category heading per group (Added / Changed / Fixed). Color matches the type;
+              first heading in a card has no top margin to avoid extra space.
+         TR: Grup başına kategori başlığı (Added / Changed / Fixed). Renk tipe göre değişir;
+              karttaki ilk başlığın üst boşluğu yok. */
+      .change-category {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 3px 9px;
+        border-radius: 5px;
+        margin: 12px 0 8px;
+      }
+      .change-category:first-of-type { margin-top: 4px; }
+      .change-category.type-feat   { background: #2a1a3a; color: var(--accent); }
+      .change-category.type-fix    { background: #2a1a1a; color: var(--red); }
+      .change-category.type-change { background: #1a2a1a; color: var(--green); }
+      [data-theme="light"] .change-category.type-feat   { background: #ede0f9; }
+      [data-theme="light"] .change-category.type-fix    { background: #fce8ec; }
+      [data-theme="light"] .change-category.type-change { background: #e0f4e8; }
+
+      .change-list {
+        list-style: disc;
+        padding-left: 22px;
+        margin-bottom: 4px;
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .change-item {
         font-size: 13px;
         line-height: 1.5;
         color: var(--text);
       }
-      .change-type {
-        flex-shrink: 0;
-        font-size: 10px;
-        font-weight: 700;
-        border-radius: 5px;
-        padding: 2px 7px;
-        margin-top: 2px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      .type-feat   { background: #2a1a3a; color: var(--accent); }
-      .type-fix    { background: #2a1a1a; color: var(--red); }
-      .type-change { background: #1a2a1a; color: var(--green); }
-      [data-theme="light"] .type-feat   { background: #ede0f9; }
-      [data-theme="light"] .type-fix    { background: #fce8ec; }
-      [data-theme="light"] .type-change { background: #e0f4e8; }
+      .change-item::marker { color: var(--overlay); }
 
       .roadmap-list { display: flex; flex-direction: column; gap: 10px; }
       .roadmap-item {

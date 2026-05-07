@@ -116,6 +116,33 @@ body {
 }
 .icon-btn:hover { background: var(--surface0); }
 
+/* EN: Compact language combo in header — short, language-neutral codes (AUTO/EN/TR/ES) | TR: Header'da kompakt dil combo'su — kısa, dil-nötr kodlar */
+.lang-select {
+  background: none;
+  border: 1px solid var(--surface0);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-align: center;
+  text-align-last: center;
+}
+.lang-select:hover { background: var(--surface0); border-color: var(--surface1); }
+.lang-select:focus { outline: none; border-color: var(--accent); }
+.lang-select option {
+  background: var(--mantle);
+  color: var(--text);
+  font-weight: 700;
+}
+
 /* ── Search ── */
 .search-bar {
   padding: 8px 12px 6px;

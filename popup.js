@@ -514,6 +514,32 @@ document.getElementById("helpBtnIcon").addEventListener("click", () => {
   window.close();
 });
 
+// EN: Language combo in popup header — picks Auto / EN / TR / ES. Saves to settings.uiLanguage and
+//     reloads so i18n-dom.js re-renders all labels in the chosen language. Uses short codes instead
+//     of flags to avoid country/region ambiguity (English is not just UK; Spanish is not just Spain).
+// TR: Popup başlığındaki dil combo'su — Auto / EN / TR / ES seçer. settings.uiLanguage'a yazılır ve
+//     popup yenilenir; i18n-dom.js tüm etiketleri seçilen dilde basar. Bayrak yerine kısa kod kullanıldı:
+//     ülke/bölge belirsizliğine düşmemek için (English yalnız UK değil; Español yalnız İspanya değil).
+(async () => {
+  const sel = document.getElementById("langSelectPopup");
+  if (!sel) return;
+
+  try {
+    const { settings = {} } = await chrome.storage.local.get("settings");
+    sel.value = settings.uiLanguage || "auto";
+  } catch (_) {}
+
+  sel.addEventListener("change", async () => {
+    try {
+      const { settings = {} } = await chrome.storage.local.get("settings");
+      await chrome.storage.local.set({ settings: { ...settings, uiLanguage: sel.value } });
+      window.location.reload();
+    } catch (e) {
+      console.error("[TabTier] lang change failed:", e?.message);
+    }
+  });
+})();
+
 // EN: Load locale override then render | TR: Locale override yükle, sonra render et
 (async () => {
   try {

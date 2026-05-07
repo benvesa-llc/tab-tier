@@ -11,11 +11,16 @@ async function detectLang() {
        : "en";
 }
 
-function typeLabel(type, lang) {
+// EN: Category labels match CHANGELOG.md headings (Added / Changed / Fixed) so users see the same
+//     category vocabulary in both places. Order is fixed: feat → change → fix.
+// TR: Kategori etiketleri CHANGELOG.md başlıklarıyla aynıdır (Added / Changed / Fixed); kullanıcı
+//     iki yerde de aynı kategori sözlüğünü görür. Sıra sabit: feat → change → fix.
+const CATEGORY_ORDER = ["feat", "change", "fix"];
+function categoryLabel(type, lang) {
   const labels = {
-    feat:   { en: "Feature", tr: "Özellik",    es: "Función" },
-    fix:    { en: "Fix",     tr: "Düzeltme",   es: "Corrección" },
-    change: { en: "Change",  tr: "Değişiklik", es: "Cambio" },
+    feat:   { en: "Added",   tr: "Eklenenler",    es: "Añadido" },
+    change: { en: "Changed", tr: "Değişenler",    es: "Cambiado" },
+    fix:    { en: "Fixed",   tr: "Düzeltilenler", es: "Corregido" },
   };
   return (labels[type] || {})[lang] || (labels[type] || {}).en || type;
 }
@@ -68,25 +73,42 @@ function renderChangelog(changelog, version, lang) {
       header.appendChild(badge);
     }
 
-    const list = document.createElement("ul");
-    list.className = "change-list";
-    entry.changes.forEach(c => {
-      const li = document.createElement("li");
-      li.className = "change-item";
-      const badge = document.createElement("span");
-      badge.className = "change-type type-" + c.type;
-      badge.textContent = typeLabel(c.type, lang);
-      const txt = document.createElement("span");
-      txt.textContent = lang === "tr" && c.textTR ? c.textTR
-                      : lang === "es" && c.textES ? c.textES
-                      : c.text;
-      li.appendChild(badge);
-      li.appendChild(txt);
-      list.appendChild(li);
+    card.appendChild(header);
+
+    // EN: Group changes by type and render each group under a category heading,
+    //     mirroring CHANGELOG.md (### Added / ### Changed / ### Fixed). Empty groups are skipped.
+    // TR: Değişiklikleri tipine göre grupla ve her grubu kategori başlığı altında göster;
+    //     CHANGELOG.md ile aynı yapı (### Added / ### Changed / ### Fixed). Boş gruplar atlanır.
+    const byType = {};
+    for (const c of entry.changes) {
+      (byType[c.type] = byType[c.type] || []).push(c);
+    }
+
+    const ordered = [
+      ...CATEGORY_ORDER.filter((t) => byType[t]),
+      ...Object.keys(byType).filter((t) => !CATEGORY_ORDER.includes(t)),
+    ];
+
+    ordered.forEach((type) => {
+      const heading = document.createElement("div");
+      heading.className = "change-category type-" + type;
+      heading.textContent = categoryLabel(type, lang);
+      card.appendChild(heading);
+
+      const list = document.createElement("ul");
+      list.className = "change-list";
+      byType[type].forEach((c) => {
+        const li = document.createElement("li");
+        li.className = "change-item";
+        li.textContent =
+          lang === "tr" && c.textTR ? c.textTR :
+          lang === "es" && c.textES ? c.textES :
+          c.text;
+        list.appendChild(li);
+      });
+      card.appendChild(list);
     });
 
-    card.appendChild(header);
-    card.appendChild(list);
     container.appendChild(card);
   });
 }
