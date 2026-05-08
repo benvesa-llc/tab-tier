@@ -1,8 +1,6 @@
 [
-  { "title": "Tab export / import (JSON + CSV)", "titleTR": "Sekme dışa / içe aktarma (JSON + CSV)", "titleES": "Exportar / importar pestañas (JSON + CSV)" },
-  { "title": "Per-domain custom tier rules",     "titleTR": "Domain bazlı özel tier kuralları",      "titleES": "Reglas de nivel personalizadas por dominio" },
-  { "title": "Session snapshot & restore",       "titleTR": "Oturum anlık görüntüsü ve geri yükleme","titleES": "Instantánea de sesión y restauración" },
-  { "title": "German (Deutsch) locale",          "titleTR": "Almanca (Deutsch) dil desteği",         "titleES": "Idioma alemán (Deutsch)" },
-  { "title": "Portuguese (Português) locale",    "titleTR": "Portekizce (Português) dil desteği",    "titleES": "Idioma portugués (Português)" },
-  { "title": "French (Français) locale",         "titleTR": "Fransızca (Français) dil desteği",      "titleES": "Idioma francés (Français)" }
+  { "title": "Tab export / import (JSON + CSV)", "titleTR": "Sekme dışa / içe aktarma (JSON + CSV)", "titleES": "Exportar / importar pestañas (JSON + CSV)", "titleDE": "Tabs exportieren / importieren (JSON + CSV)", "titleFR": "Exporter / importer des onglets (JSON + CSV)" },
+  { "title": "Per-domain custom tier rules",     "titleTR": "Domain bazlı özel tier kuralları",      "titleES": "Reglas de nivel personalizadas por dominio", "titleDE": "Domain-spezifische Stufenregeln", "titleFR": "Règles de niveau personnalisées par domaine" },
+  { "title": "Session snapshot & restore",       "titleTR": "Oturum anlık görüntüsü ve geri yükleme","titleES": "Instantánea de sesión y restauración",       "titleDE": "Sitzungs-Snapshot & Wiederherstellung", "titleFR": "Instantané et restauration de session" },
+  { "title": "Portuguese (Português) locale",    "titleTR": "Portekizce (Português) dil desteği",    "titleES": "Idioma portugués (Português)",               "titleDE": "Portugiesisch (Português)",            "titleFR": "Langue portugaise (Português)" }
 ]

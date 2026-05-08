@@ -1,14 +1,18 @@
 // EN: Detect UI language — stored preference wins; falls back to browser locale
 // TR: UI dilini tespit et — saklanan tercih önce gelir; yoksa tarayıcı dili
+const SUPPORTED_LANGS = ["en", "tr", "es", "de", "fr"];
+
 async function detectLang() {
   try {
     const { settings = {} } = await chrome.storage.local.get("settings");
     const stored = settings.uiLanguage;
     if (stored && stored !== "auto") return stored;
   } catch (e) {}
-  return chrome.i18n.getUILanguage().toLowerCase().startsWith("tr") ? "tr"
-       : chrome.i18n.getUILanguage().toLowerCase().startsWith("es") ? "es"
-       : "en";
+  const ui = chrome.i18n.getUILanguage().toLowerCase();
+  for (const code of SUPPORTED_LANGS) {
+    if (code !== "en" && ui.startsWith(code)) return code;
+  }
+  return "en";
 }
 
 // EN: Category labels match CHANGELOG.md headings (Added / Changed / Fixed) so users see the same
@@ -18,15 +22,17 @@ async function detectLang() {
 const CATEGORY_ORDER = ["feat", "change", "fix"];
 function categoryLabel(type, lang) {
   const labels = {
-    feat:   { en: "Added",   tr: "Eklenenler",    es: "Añadido" },
-    change: { en: "Changed", tr: "Değişenler",    es: "Cambiado" },
-    fix:    { en: "Fixed",   tr: "Düzeltilenler", es: "Corregido" },
+    feat:   { en: "Added",   tr: "Eklenenler",    es: "Añadido",  de: "Hinzugefügt", fr: "Ajouté" },
+    change: { en: "Changed", tr: "Değişenler",    es: "Cambiado", de: "Geändert",    fr: "Modifié" },
+    fix:    { en: "Fixed",   tr: "Düzeltilenler", es: "Corregido", de: "Behoben",    fr: "Corrigé" },
   };
   return (labels[type] || {})[lang] || (labels[type] || {}).en || type;
 }
 
+const LOCALE_BCP47 = { en: "en-US", tr: "tr-TR", es: "es-ES", de: "de-DE", fr: "fr-FR" };
+
 function formatDate(dateStr, lang) {
-  const locale = lang === "tr" ? "tr-TR" : lang === "es" ? "es-ES" : "en-US";
+  const locale = LOCALE_BCP47[lang] || "en-US";
   try {
     return new Date(dateStr).toLocaleDateString(locale, {
       year: "numeric", month: "long", day: "numeric",
@@ -34,10 +40,10 @@ function formatDate(dateStr, lang) {
   } catch (e) { return dateStr; }
 }
 
-function t(lang, en, tr, es) {
-  if (lang === "tr") return tr;
-  if (lang === "es") return es;
-  return en;
+// EN: Translate a fixed UI string. Pass an object keyed by language code; falls back to en.
+// TR: Sabit bir UI metnini çevir. Anahtar dil kodu olan obje al; en'e fallback yapar.
+function t(lang, dict) {
+  return dict[lang] || dict.en || "";
 }
 
 function showError(id, msg) {
@@ -69,7 +75,7 @@ function renderChangelog(changelog, version, lang) {
     if (isCurrent) {
       const badge = document.createElement("span");
       badge.className = "version-badge";
-      badge.textContent = t(lang, "Installed", "Yüklü", "Instalado");
+      badge.textContent = t(lang, { en: "Installed", tr: "Yüklü", es: "Instalado", de: "Installiert", fr: "Installé" });
       header.appendChild(badge);
     }
 
@@ -100,10 +106,9 @@ function renderChangelog(changelog, version, lang) {
       byType[type].forEach((c) => {
         const li = document.createElement("li");
         li.className = "change-item";
-        li.textContent =
-          lang === "tr" && c.textTR ? c.textTR :
-          lang === "es" && c.textES ? c.textES :
-          c.text;
+        // EN: pick localized field text → textTR / textES / textDE / textFR; fall back to text | TR: yerelleştirilmiş alanı seç; yoksa text'e dön
+        const localized = lang !== "en" && c["text" + lang.toUpperCase()];
+        li.textContent = localized || c.text;
         list.appendChild(li);
       });
       card.appendChild(list);
@@ -125,9 +130,8 @@ function renderRoadmap(roadmap, lang) {
     dot.className = "roadmap-dot";
     const title = document.createElement("span");
     title.className = "roadmap-title";
-    title.textContent = lang === "tr" && item.titleTR ? item.titleTR
-                      : lang === "es" && item.titleES ? item.titleES
-                      : item.title;
+    const localized = lang !== "en" && item["title" + lang.toUpperCase()];
+    title.textContent = localized || item.title;
     div.appendChild(dot);
     div.appendChild(title);
     container.appendChild(div);
@@ -138,16 +142,48 @@ async function load() {
   const lang = await detectLang();
   const version = chrome.runtime.getManifest().version;
 
-  document.getElementById("pageTitle").textContent      = t(lang, "What's New in Tab Tier", "Tab Tier'daki Yenilikler", "Novedades en Tab Tier");
-  document.getElementById("pageSubtitle").textContent   = t(lang,
-    "Version v" + version + " installed — thanks for using Tab Tier!",
-    "Sürüm v" + version + " yüklendi — teşekkürler!",
-    "Versión v" + version + " instalada — ¡gracias por usar Tab Tier!"
-  );
-  document.getElementById("changelogTitle").textContent = t(lang, "Recent Changes", "Son Değişiklikler", "Cambios Recientes");
-  document.getElementById("roadmapTitle").textContent   = t(lang, "Coming Up", "Yakında", "Próximamente");
-  document.getElementById("openPopupBtn").textContent   = t(lang, "Open Tab Tier", "Tab Tier'ı Aç", "Abrir Tab Tier");
-  document.getElementById("openSettingsBtn").textContent = t(lang, "Settings", "Ayarlar", "Ajustes");
+  document.getElementById("pageTitle").textContent      = t(lang, {
+    en: "What's New in Tab Tier",
+    tr: "Tab Tier'daki Yenilikler",
+    es: "Novedades en Tab Tier",
+    de: "Neuerungen in Tab Tier",
+    fr: "Nouveautés de Tab Tier",
+  });
+  document.getElementById("pageSubtitle").textContent   = t(lang, {
+    en: "Version v" + version + " installed — thanks for using Tab Tier!",
+    tr: "Sürüm v" + version + " yüklendi — teşekkürler!",
+    es: "Versión v" + version + " instalada — ¡gracias por usar Tab Tier!",
+    de: "Version v" + version + " installiert — danke, dass du Tab Tier nutzt!",
+    fr: "Version v" + version + " installée — merci d'utiliser Tab Tier !",
+  });
+  document.getElementById("changelogTitle").textContent = t(lang, {
+    en: "Recent Changes",
+    tr: "Son Değişiklikler",
+    es: "Cambios Recientes",
+    de: "Neueste Änderungen",
+    fr: "Changements récents",
+  });
+  document.getElementById("roadmapTitle").textContent   = t(lang, {
+    en: "Coming Up",
+    tr: "Yakında",
+    es: "Próximamente",
+    de: "Demnächst",
+    fr: "À venir",
+  });
+  document.getElementById("openPopupBtn").textContent   = t(lang, {
+    en: "Open Tab Tier",
+    tr: "Tab Tier'ı Aç",
+    es: "Abrir Tab Tier",
+    de: "Tab Tier öffnen",
+    fr: "Ouvrir Tab Tier",
+  });
+  document.getElementById("openSettingsBtn").textContent = t(lang, {
+    en: "Settings",
+    tr: "Ayarlar",
+    es: "Ajustes",
+    de: "Einstellungen",
+    fr: "Paramètres",
+  });
 
   try {
     const resp = await fetch(chrome.runtime.getURL("data/changelog.json"));
@@ -156,19 +192,18 @@ async function load() {
     const latestEntry = changelog[0];
     if (latestEntry) {
       const d = formatDate(latestEntry.date, lang);
-      document.getElementById("pageSubtitle").textContent = t(lang,
-        "v" + latestEntry.version + " — " + d,
-        "v" + latestEntry.version + " — " + d,
-        "v" + latestEntry.version + " — " + d
-      );
+      document.getElementById("pageSubtitle").textContent =
+        "v" + latestEntry.version + " — " + d;
     }
     renderChangelog(changelog, version, lang);
   } catch (e) {
-    showError("changelogContainer", t(lang,
-      "Could not load changelog.",
-      "Değişiklikler yüklenemedi.",
-      "No se pudo cargar el historial."
-    ) + " (" + e.message + ")");
+    showError("changelogContainer", t(lang, {
+      en: "Could not load changelog.",
+      tr: "Değişiklikler yüklenemedi.",
+      es: "No se pudo cargar el historial.",
+      de: "Änderungsprotokoll konnte nicht geladen werden.",
+      fr: "Impossible de charger le journal des changements.",
+    }) + " (" + e.message + ")");
   }
 
   try {
@@ -177,11 +212,13 @@ async function load() {
     const roadmap = await resp.json();
     renderRoadmap(roadmap, lang);
   } catch (e) {
-    showError("roadmapContainer", t(lang,
-      "Could not load roadmap.",
-      "Yol haritası yüklenemedi.",
-      "No se pudo cargar la hoja de ruta."
-    ) + " (" + e.message + ")");
+    showError("roadmapContainer", t(lang, {
+      en: "Could not load roadmap.",
+      tr: "Yol haritası yüklenemedi.",
+      es: "No se pudo cargar la hoja de ruta.",
+      de: "Roadmap konnte nicht geladen werden.",
+      fr: "Impossible de charger la feuille de route.",
+    }) + " (" + e.message + ")");
   }
 }
 

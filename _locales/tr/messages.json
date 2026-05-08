@@ -21,7 +21,7 @@
   "tabManagementBtn":   { "message": "📋 Tab Yönetimi" },
   "settingsBtn":        { "message": "⚙️ Ayarlar" },
   "helpBtn":            { "message": "❓ Yardım" },
-  "langCycleTitle":     { "message": "Dili değiştir (Otomatik → English → Türkçe → Español)" },
+  "langCycleTitle":     { "message": "Dili değiştir" },
 
   "timeActive":  { "message": "aktif" },
   "timeDaysAgo": {
@@ -102,6 +102,8 @@
   "langEn":    { "message": "İngilizce" },
   "langTr":    { "message": "Türkçe" },
   "langEs":    { "message": "İspanyolca" },
+  "langDe":    { "message": "Almanca" },
+  "langFr":    { "message": "Fransızca" },
 
   "groupNamesTitle":   { "message": "🏷 Grup Adları" },
   "groupNamesHint":    { "message": "Tab gruplarının tarayıcı tab bar'da görünen adlarını özelleştir." },

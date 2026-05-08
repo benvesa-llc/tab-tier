@@ -1,25 +1,31 @@
 // EN: Detect UI language — stored preference wins; falls back to browser locale | TR: UI dilini tespit et — saklanan tercih önce gelir; yoksa tarayıcı dili
+const SUPPORTED_LANGS = ["en", "tr", "es", "de", "fr"];
+
 async function detectLang() {
   try {
     const { settings = {} } = await chrome.storage.local.get("settings");
     const stored = settings.uiLanguage;
     if (stored && stored !== "auto") return stored;
   } catch (e) {}
-  return chrome.i18n.getUILanguage().toLowerCase().startsWith("tr") ? "tr"
-       : chrome.i18n.getUILanguage().toLowerCase().startsWith("es") ? "es"
-       : "en";
+  const ui = chrome.i18n.getUILanguage().toLowerCase();
+  for (const code of SUPPORTED_LANGS) {
+    if (code !== "en" && ui.startsWith(code)) return code;
+  }
+  return "en";
 }
 
-function t(lang, en, tr, es) {
-  if (lang === "tr") return tr;
-  if (lang === "es") return es;
-  return en;
+// EN: Translate a fixed UI string. Pass an object keyed by language code; falls back to en.
+// TR: Sabit bir UI metnini çevir. Anahtar dil kodu olan obje al; en'e fallback yapar.
+function t(lang, dict) {
+  return dict[lang] || dict.en || "";
 }
 
-// EN: Pick the localized field of a section (body / bodyTR / bodyES, etc.) | TR: Bir bölümün dil-alanını seç
+// EN: Pick the localized field of a section (body, bodyTR, bodyES, bodyDE, bodyFR…) | TR: Bir bölümün dil-alanını seç
 function pickField(section, base, lang) {
-  if (lang === "tr") return section[base + "TR"] || section[base];
-  if (lang === "es") return section[base + "ES"] || section[base];
+  if (lang !== "en") {
+    const localized = section[base + lang.toUpperCase()];
+    if (localized) return localized;
+  }
   return section[base];
 }
 
@@ -106,36 +112,41 @@ function showError(msg) {
 async function load() {
   const lang = await detectLang();
 
-  document.getElementById("pageTitle").textContent = t(
-    lang,
-    "Help & Guide",
-    "Yardım ve Rehber",
-    "Ayuda y Guía"
-  );
-  document.getElementById("pageSubtitle").textContent = t(
-    lang,
-    "A quick walkthrough of how Tab Tier works.",
-    "Tab Tier'ın nasıl çalıştığına dair kısa bir rehber.",
-    "Una guía rápida de cómo funciona Tab Tier."
-  );
-  document.getElementById("openPopupBtn").textContent = t(
-    lang,
-    "Open Tab Tier",
-    "Tab Tier'ı Aç",
-    "Abrir Tab Tier"
-  );
-  document.getElementById("openSettingsBtn").textContent = t(
-    lang,
-    "Settings",
-    "Ayarlar",
-    "Ajustes"
-  );
-  document.getElementById("openWhatsNewBtn").textContent = t(
-    lang,
-    "What's New",
-    "Yenilikler",
-    "Novedades"
-  );
+  document.getElementById("pageTitle").textContent = t(lang, {
+    en: "Help & Guide",
+    tr: "Yardım ve Rehber",
+    es: "Ayuda y Guía",
+    de: "Hilfe & Anleitung",
+    fr: "Aide et Guide",
+  });
+  document.getElementById("pageSubtitle").textContent = t(lang, {
+    en: "A quick walkthrough of how Tab Tier works.",
+    tr: "Tab Tier'ın nasıl çalıştığına dair kısa bir rehber.",
+    es: "Una guía rápida de cómo funciona Tab Tier.",
+    de: "Eine kurze Übersicht, wie Tab Tier funktioniert.",
+    fr: "Un aperçu rapide du fonctionnement de Tab Tier.",
+  });
+  document.getElementById("openPopupBtn").textContent = t(lang, {
+    en: "Open Tab Tier",
+    tr: "Tab Tier'ı Aç",
+    es: "Abrir Tab Tier",
+    de: "Tab Tier öffnen",
+    fr: "Ouvrir Tab Tier",
+  });
+  document.getElementById("openSettingsBtn").textContent = t(lang, {
+    en: "Settings",
+    tr: "Ayarlar",
+    es: "Ajustes",
+    de: "Einstellungen",
+    fr: "Paramètres",
+  });
+  document.getElementById("openWhatsNewBtn").textContent = t(lang, {
+    en: "What's New",
+    tr: "Yenilikler",
+    es: "Novedades",
+    de: "Neuerungen",
+    fr: "Nouveautés",
+  });
 
   try {
     const resp = await fetch(chrome.runtime.getURL("data/help.json"));
@@ -144,12 +155,13 @@ async function load() {
     renderSections(sections, lang);
   } catch (e) {
     showError(
-      t(
-        lang,
-        "Could not load help content.",
-        "Yardım içeriği yüklenemedi.",
-        "No se pudo cargar el contenido de ayuda."
-      ) +
+      t(lang, {
+        en: "Could not load help content.",
+        tr: "Yardım içeriği yüklenemedi.",
+        es: "No se pudo cargar el contenido de ayuda.",
+        de: "Hilfeinhalt konnte nicht geladen werden.",
+        fr: "Impossible de charger le contenu d'aide.",
+      }) +
         " (" +
         e.message +
         ")"

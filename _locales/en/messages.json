@@ -23,7 +23,7 @@
   "tabManagementBtn": { "message": "📋 Tab Management" },
   "settingsBtn": { "message": "⚙️ Settings" },
   "helpBtn": { "message": "❓ Help" },
-  "langCycleTitle": { "message": "Cycle language (Auto → English → Türkçe → Español)" },
+  "langCycleTitle": { "message": "Change language" },
 
   "timeActive": { "message": "active" },
   "timeDaysAgo": {
@@ -110,6 +110,8 @@
   "langEn":    { "message": "English" },
   "langTr":    { "message": "Turkish" },
   "langEs":    { "message": "Spanish" },
+  "langDe":    { "message": "German" },
+  "langFr":    { "message": "French" },
 
   "groupNamesTitle": { "message": "🏷 Group Names" },
   "groupNamesHint": { "message": "Customize names shown in the browser tab bar." },

@@ -21,7 +21,7 @@
   "tabManagementBtn":  { "message": "📋 Gestión de Pestañas" },
   "settingsBtn":       { "message": "⚙️ Ajustes" },
   "helpBtn":           { "message": "❓ Ayuda" },
-  "langCycleTitle":    { "message": "Cambiar idioma (Auto → English → Türkçe → Español)" },
+  "langCycleTitle":    { "message": "Cambiar idioma" },
 
   "timeActive":  { "message": "activo" },
   "timeDaysAgo": {
@@ -102,6 +102,8 @@
   "langEn":    { "message": "Inglés" },
   "langTr":    { "message": "Turco" },
   "langEs":    { "message": "Español" },
+  "langDe":    { "message": "Alemán" },
+  "langFr":    { "message": "Francés" },
 
   "groupNamesTitle":    { "message": "🏷 Nombres de Grupos" },
   "groupNamesHint":     { "message": "Personaliza los nombres mostrados en la barra de pestañas." },
