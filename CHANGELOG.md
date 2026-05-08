@@ -4,6 +4,14 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.7.0] - 2026-05-08
+
+### Added
+- New `tools/screenshots.js` — automated Chrome Web Store asset generator. Loads the unpacked extension into Chromium via Playwright, injects realistic demo `tabRecords`, then captures the popup, Tab Management, Settings, Help, and What's New pages in EN/TR/ES at every accepted Web Store size: five 1280×800 primaries, five 640×400 downscales, plus a 440×280 promo tile and a 1400×560 marquee banner per locale. Output lands in `store-assets/{locale}/{size}/*.png`. Companion `tools/package.json` and `tools/README.md` document setup (`npm install` + `npx playwright install chromium`) and the one-command run (`npm run screenshots`). Promo banners use a soft accent→mantle gradient with a localized tagline; the popup is centered as a thumbnail. Output and Chromium profile are added to `.gitignore`
+
+### Fixed
+- Clicking a sleeping (Edge "Sleeping Tabs") T2/T3 tab now promotes it to T1 immediately on wake — previously the tier stayed stuck until the user clicked away and back. Edge fires `tabs.onReplaced` and `tabs.onActivated` concurrently when waking a discarded tab; if `onReplaced` read storage before `onActivated` wrote, it would overwrite the freshly-promoted record with the pre-wake tier. Fixed by re-checking the latest state in `onReplaced`, skipping the relink when the new ID is already linked, and applying activation effects (lastFocusEnd=null, T2/T3→T1, group move) inside `onReplaced` itself when `chrome.tabs.get(addedTabId).active` is true
+
 ## [1.6.5] - 2026-05-07
 
 ### Added

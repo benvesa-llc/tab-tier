@@ -16,3 +16,10 @@ dist/
 
 # Node
 node_modules/
+
+# Store asset generator
+store-assets/
+tools/.chromium-profile/
+
+# Project rules
+CLAUDE.md

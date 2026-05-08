@@ -1,0 +1,13 @@
+{
+  "name": "tabtier-store-assets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generates Chrome Web Store screenshots and promo banners for Tab Tier in EN/TR/ES.",
+  "scripts": {
+    "screenshots": "node screenshots.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0",
+    "sharp": "^0.33.5"
+  }
+}

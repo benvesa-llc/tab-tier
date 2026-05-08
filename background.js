@@ -1811,18 +1811,66 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 // =============================================================================
 chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
   try {
-    const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
-    const key = String(removedTabId);
-    if (!tabRecords[key]) return; // EN: No record for old ID, nothing to do | TR: Eski ID için kayıt yok, işlem gerekmez
+    const oldKey = String(removedTabId);
+    const newKey = String(addedTabId);
 
-    // EN: Move the record to the new tab ID, preserving all tier/timing data | TR: Kaydı yeni tab ID'ye taşı, tüm tier/zamanlama verilerini koru
-    const rec = tabRecords[key];
-    tabRecords[String(addedTabId)] = { ...rec, tabId: addedTabId };
-    delete tabRecords[key];
+    // EN: Read latest state right before mutating to narrow the race window with onActivated.
+    //     Edge wakes a sleeping tab in response to a user click — both onReplaced and onActivated
+    //     fire concurrently for the same wake. If onActivated has already URL-relinked the record
+    //     to the new ID and promoted it to T1, we must NOT overwrite that with the pre-wake tier.
+    // TR: Mutasyondan hemen önce en güncel state'i oku — onActivated ile yarış aralığını daralt.
+    //     Edge uyuyan tabı kullanıcı tıklamasıyla uyandırır; aynı uyanma için onReplaced ve
+    //     onActivated eş zamanlı tetiklenir. onActivated zaten URL üzerinden yeni ID'ye bağlamış
+    //     ve T1'e yükseltmişse, uyanma öncesi tier ile üzerine YAZMAMALIYIZ.
+    const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+
+    if (tabRecords[newKey]) {
+      // EN: onActivated raced ahead and already linked at the new ID. Just clean up the stale old key.
+      // TR: onActivated önce davranıp yeni ID'ye bağladı. Sadece bayat eski anahtarı temizle.
+      if (tabRecords[oldKey]) {
+        delete tabRecords[oldKey];
+        await chrome.storage.local.set({ tabRecords });
+        log(`onReplaced: cleaned stale ${removedTabId} (newKey ${addedTabId} already linked)`);
+      }
+      return;
+    }
+
+    if (!tabRecords[oldKey]) return; // EN: No record for old ID either, nothing to do | TR: Eski ID için de kayıt yok, işlem gerekmez
+
+    const rec = tabRecords[oldKey];
+    tabRecords[newKey] = { ...rec, tabId: addedTabId };
+    delete tabRecords[oldKey];
+
+    // EN: If the wake puts the tab in the active state (typical case: user clicked a sleeping tab),
+    //     apply activation effects here so a concurrent onActivated either matches our write or runs
+    //     against state that already has tier=1 and lastFocusEnd=null. Without this, the tier stays
+    //     stuck at the pre-wake value (e.g. T3) until the user clicks elsewhere and back.
+    // TR: Uyanma sonucu tab aktif duruma geçtiyse (tipik: kullanıcı uyuyan taba tıkladı), aktivasyon
+    //     efektlerini burada uygula — eş zamanlı onActivated ya bizim yazımızla eşleşir ya da zaten
+    //     tier=1 / lastFocusEnd=null olan state üzerinde çalışır. Bu olmadan, kullanıcı başka taba
+    //     tıklayıp geri dönene kadar tier uyanma öncesi değerinde (örn. T3) takılı kalıyor.
+    let promoted = false;
+    try {
+      const liveTab = await chrome.tabs.get(addedTabId);
+      if (liveTab && liveTab.active && tabRecords[newKey].currentTier !== 0) {
+        tabRecords[newKey].lastFocusStart = Date.now();
+        tabRecords[newKey].lastFocusEnd = null;
+        if (tabRecords[newKey].currentTier > 1) {
+          tabRecords[newKey].currentTier = 1;
+          promoted = true;
+        }
+        currentActiveTabId = addedTabId;
+      }
+    } catch (_) {}
 
     await chrome.storage.local.set({ tabRecords });
+
+    if (promoted) {
+      try { await moveTabToTierGroup(addedTabId, 1); } catch (_) {}
+    }
+
     log(
-      `onReplaced: re-linked tabId ${removedTabId} → ${addedTabId} url=${rec.url}`,
+      `onReplaced: re-linked tabId ${removedTabId} → ${addedTabId} url=${rec.url}${promoted ? " (active, promoted →T1)" : ""}`,
     );
   } catch (e) {
     log("onReplaced error:", e?.message);
