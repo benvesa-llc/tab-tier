@@ -204,8 +204,27 @@ async function captureLocale(context, extId, locale) {
     await page.goto(`chrome-extension://${extId}/${cfg.file}`);
     await page.waitForLoadState("networkidle").catch(() => {});
     await page.waitForTimeout(800); // EN: let dynamic JS render | TR: dinamik JS render'ı için bekle
+
+    // EN: Hide scrollbars before snapshot — content longer than the viewport (Tab Management,
+    //     Settings, Help) otherwise leaves a grey scrollbar in the right edge of the PNG.
+    //     The page is still scrollable in the live extension; this only affects the capture.
+    // TR: Snapshot'tan önce scrollbar'ı gizle — viewport'tan uzun içerik (Tab Yönetimi, Ayarlar,
+    //     Yardım) PNG'nin sağ kenarında gri scrollbar bırakıyordu. Canlı eklentide sayfa hâlâ
+    //     scroll'lanabilir; bu sadece yakalamayı etkiler.
+    await page.addStyleTag({
+      content: `
+        html, body { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        ::-webkit-scrollbar, *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+      `,
+    });
+    await page.waitForTimeout(100); // EN: let layout reflow without scrollbar gutter | TR: scrollbar boşluğu olmadan layout yeniden hesaplansın
+
     const tmp = path.join(baseDir, `_temp-${cfg.name}.png`);
-    await page.screenshot({ path: tmp, fullPage: false });
+    await page.screenshot({
+      path: tmp,
+      fullPage: false,
+      clip: { x: 0, y: 0, width: cfg.width, height: cfg.height },
+    });
     tempScreens[cfg.name] = tmp;
     console.log(`  • captured ${cfg.name} (${cfg.width}×${cfg.height})`);
   }
@@ -265,6 +284,11 @@ async function captureLocale(context, extId, locale) {
       "--no-default-browser-check",
     ],
     viewport: { width: 1280, height: 800 },
+    // EN: Force 1× rendering so HiDPI / Retina screens don't produce 2× PNGs (e.g. 2560×1600
+    //     instead of 1280×800), which would make the Web Store reject or downscale awkwardly.
+    // TR: HiDPI / Retina ekranlarda 2× PNG (örn. 1280×800 yerine 2560×1600) üretmeyi engelle —
+    //     Web Store reddedebilir veya çirkince küçültür. 1× render zorunlu.
+    deviceScaleFactor: 1,
   });
 
   let [sw] = context.serviceWorkers();
