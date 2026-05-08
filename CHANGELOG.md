@@ -4,9 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.7.0] - 2026-05-08
+## [1.7.1] - 2026-05-08
 
 ### Added
+- New `build.ps1` — packages the extension into `dist/tabtier-X.Y.Z.zip` ready for the Chrome Web Store dashboard. Reads the version straight from `manifest.json`, includes only runtime files (`manifest.json`, root-level `*.html`/`*.js`/`*.css`, `_locales/`, `icons/`, `data/`), and excludes everything else (`tools/`, `store-assets/`, `node_modules/`, `.git/`, all `*.md`, `CLAUDE.md`, `*.zip`, the build script itself). One command from the repo root: `.\build.ps1`. Reports file count and final ZIP size on success
 - New `tools/screenshots.js` — automated Chrome Web Store asset generator. Loads the unpacked extension into Chromium via Playwright, injects realistic demo `tabRecords`, then captures the popup, Tab Management, Settings, Help, and What's New pages in EN/TR/ES at every accepted Web Store size: five 1280×800 primaries, five 640×400 downscales, plus a 440×280 promo tile and a 1400×560 marquee banner per locale. Output lands in `store-assets/{locale}/{size}/*.png`. Companion `tools/package.json` and `tools/README.md` document setup (`npm install` + `npx playwright install chromium`) and the one-command run (`npm run screenshots`). Promo banners use a soft accent→mantle gradient with a localized tagline; the popup is centered as a thumbnail. Output and Chromium profile are added to `.gitignore`
 
 ### Fixed
