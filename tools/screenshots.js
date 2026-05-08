@@ -27,7 +27,7 @@ const fs = require("fs").promises;
 const EXT_PATH = path.resolve(__dirname, "..");
 const OUT_DIR = path.resolve(__dirname, "..", "store-assets");
 const PROFILE_DIR = path.join(__dirname, ".chromium-profile");
-const LOCALES = ["en", "tr", "es"];
+const LOCALES = ["en", "tr", "es", "de", "fr"];
 
 const NOW = Date.now();
 const HOUR = 3600 * 1000;
@@ -67,6 +67,8 @@ const PROMO = {
   en: { title: "Tab Tier", tagline: "Tier your tabs by recency." },
   tr: { title: "Tab Tier", tagline: "Sekmelerini etkinliğe göre sırala." },
   es: { title: "Tab Tier", tagline: "Ordena tus pestañas por uso reciente." },
+  de: { title: "Tab Tier", tagline: "Tabs nach Aktivität geordnet." },
+  fr: { title: "Tab Tier", tagline: "Trie tes onglets par récence." },
 };
 
 // EN: Pages to capture as primary 1280×800 screenshots | TR: Birincil 1280×800 ekran görüntüsü olarak yakalanacak sayfalar
