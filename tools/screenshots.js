@@ -300,6 +300,56 @@ async function captureLocale(context, extId, locale) {
   const extId = sw.url().split("/")[2];
   console.log(`Extension ID:   ${extId}`);
 
+  // EN: Monkey-patch chrome.tabs.query in every page so the demo records' tabIds (101…108)
+  //     appear as if they're real open tabs. Without this Tab Management would show every
+  //     demo record with the "✗ missing" status because no real browser tabs back them.
+  //     The currently-active record (id 101 — its lastFocusEnd is null) is marked active so
+  //     the status column renders "● active" and the row isn't flagged as `isStale`.
+  // TR: Her sayfada chrome.tabs.query'i monkey-patch'le; demo kayıtların tabId'leri (101…108)
+  //     gerçek açık tablar gibi görünsün. Bu olmadan Tab Yönetimi her demo kaydı "✗ yok"
+  //     statüsüyle gösterirdi (gerçek tab yok). lastFocusEnd: null olan kayıt (id 101) aktif
+  //     işaretlenir; durum "● active" olur ve satır `isStale` olarak işaretlenmez.
+  const FAKE_OPEN_TAB_IDS = [101, 102, 103, 104, 105, 106, 107, 108];
+  const FAKE_ACTIVE_TAB_ID = 101;
+  await context.addInitScript(
+    ({ ids, activeId }) => {
+      if (typeof chrome === "undefined" || !chrome.tabs || !chrome.tabs.query) return;
+      const orig = chrome.tabs.query.bind(chrome.tabs);
+      const buildSynthetic = (qi) => {
+        const wantActive = qi && qi.active === true;
+        return ids
+          .filter((id) => !wantActive || id === activeId)
+          .map((id) => ({
+            id,
+            url: "",
+            title: "",
+            windowId: 1,
+            index: 0,
+            pinned: false,
+            active: id === activeId,
+            discarded: false,
+            audible: false,
+            autoDiscardable: true,
+            highlighted: false,
+            incognito: false,
+            mutedInfo: { muted: false },
+            selected: false,
+            status: "complete",
+          }));
+      };
+      chrome.tabs.query = function (queryInfo, callback) {
+        if (typeof callback === "function") {
+          orig(queryInfo || {}, (tabs) => callback([...tabs, ...buildSynthetic(queryInfo)]));
+          return;
+        }
+        return new Promise((resolve) => {
+          orig(queryInfo || {}, (tabs) => resolve([...tabs, ...buildSynthetic(queryInfo)]));
+        });
+      };
+    },
+    { ids: FAKE_OPEN_TAB_IDS, activeId: FAKE_ACTIVE_TAB_ID }
+  );
+
   for (const locale of LOCALES) {
     await captureLocale(context, extId, locale);
   }
