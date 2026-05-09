@@ -132,9 +132,45 @@ async function save() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
+// EN: Sort the langSelect options alphabetically by their localized name in the current
+//     UI language, keeping "auto" at the top. Called from init() after the locale-override
+//     i18n() helper is available so the displayed names match the active language exactly.
+//     Examples: in EN → Auto, English, French, German, Spanish, Turkish; in TR → Otomatik,
+//     Almanca, Fransızca, İngilizce, İspanyolca, Türkçe.
+// TR: langSelect seçeneklerini mevcut UI dilindeki yerel adlarına göre alfabetik sırala;
+//     "auto" en üstte sabit. init() içinde, locale-override i18n() hazırlandıktan sonra çağrılır
+//     ki gösterilen adlar aktif dile uyumlu olsun. Örnek: TR'de Otomatik, Almanca, Fransızca,
+//     İngilizce, İspanyolca, Türkçe; EN'de Auto, English, French, German, Spanish, Turkish.
+function sortLangOptionsByLocalizedName() {
+  const sel = document.getElementById("langSelect");
+  if (!sel) return;
+  const saved = sel.value;
+  const auto = sel.querySelector('option[value="auto"]');
+  const others = Array.from(sel.querySelectorAll('option:not([value="auto"])'));
+
+  // Refresh each option's text from i18n() — covers both the case where i18n-dom.js has
+  // already substituted the placeholder AND the case where it has not yet (race-free).
+  for (const opt of others) {
+    const code = opt.value;
+    const key = "lang" + code.charAt(0).toUpperCase() + code.slice(1);
+    const label = i18n(key);
+    if (label && !label.startsWith("[")) opt.textContent = label;
+  }
+
+  others.sort((a, b) =>
+    a.textContent.localeCompare(b.textContent, undefined, { sensitivity: "base" })
+  );
+
+  while (sel.firstChild) sel.removeChild(sel.firstChild);
+  sel.appendChild(auto);
+  for (const opt of others) sel.appendChild(opt);
+  sel.value = saved;
+}
+
 async function init() {
   currentSettings = await loadSettings();
   applyToUI(currentSettings);
+  sortLangOptionsByLocalizedName();
 
   syncSliderNumber("t1t2Range", "t1t2");
   syncSliderNumber("t2t3Range", "t2t3");

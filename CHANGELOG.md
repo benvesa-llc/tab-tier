@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.8.3] - 2026-05-09
+## [1.8.4] - 2026-05-09
+
+### Changed
+- Settings → Language combo is now sorted alphabetically by the localized language name in the currently active UI language (Auto stays pinned at the top). EN → Auto / English / French / German / Spanish / Turkish; TR → Otomatik / Almanca / Fransızca / İngilizce / İspanyolca / Türkçe; DE → Automatisch / Deutsch / Englisch / Französisch / Spanisch / Türkisch; ES → Auto / Alemán / Español / Francés / Inglés / Turco; FR → Auto / Allemand / Anglais / Espagnol / Français / Turc. Achieved by sorting the `langSelect <option>` list at init via `localeCompare` on each option's localized text content; the popup combo continues to use the locale-neutral two-letter code order (DE / EN / ES / FR / TR), since codes don't have a per-locale collation
 
 ### Fixed
 - Sleeping/discarded tabs in **background** windows no longer get wrongly promoted to T1 with their inactivity counter reset when Edge wakes them automatically (memory saver, sleeping-tabs auto-wake, etc.). The 1.6.6 `onReplaced` activation logic was treating any tab whose `chrome.tabs.get(...)` reported `active === true` as user-focused — but `tab.active` is true for the currently-selected tab of *any* window, including unfocused ones. Now `onReplaced` additionally calls `chrome.windows.get(liveTab.windowId)` and only applies activation effects (`lastFocusEnd = null`, `T2/T3 → T1`, group move) when the window is actually focused. Wakes in background windows leave the tier and elapsed timer untouched, as the user expects
