@@ -1852,7 +1852,24 @@ chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
     let promoted = false;
     try {
       const liveTab = await chrome.tabs.get(addedTabId);
-      if (liveTab && liveTab.active && tabRecords[newKey].currentTier !== 0) {
+      // EN: Only treat as activation if the tab's WINDOW is currently focused. Otherwise
+      //     `liveTab.active` is true for any background window's currently-selected tab,
+      //     and a wake event there (Edge memory saver, sleeping tabs auto-wake, etc.)
+      //     would wrongly promote it to T1 + reset its inactivity timer. The user is only
+      //     truly looking at the tab when its window is the focused one.
+      // TR: Tabın PENCERESİ gerçekten odaklanmışsa aktivasyon say. Aksi halde `liveTab.active`
+      //     herhangi bir arka pencerenin seçili tabı için true; orada bir uyandırma olayı
+      //     (Edge memory saver, sleeping tabs otomatik wake, vb.) yanlışlıkla T1'e yükseltir
+      //     ve hareketsizlik sayacını sıfırlar. Kullanıcı sekmeye gerçekten ancak penceresi
+      //     odaklı iken bakar.
+      let windowFocused = false;
+      if (liveTab && liveTab.active) {
+        try {
+          const win = await chrome.windows.get(liveTab.windowId);
+          windowFocused = !!(win && win.focused);
+        } catch (_) {}
+      }
+      if (liveTab && liveTab.active && windowFocused && tabRecords[newKey].currentTier !== 0) {
         tabRecords[newKey].lastFocusStart = Date.now();
         tabRecords[newKey].lastFocusEnd = null;
         if (tabRecords[newKey].currentTier > 1) {
