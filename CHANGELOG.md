@@ -4,6 +4,13 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.8.5] - 2026-05-10
+
+### Fixed
+- Tabs no longer spontaneously jump to T1 with their inactivity counter reset for multi-window users. The 1.8.3 fix only handled `tabs.onReplaced` (Edge sleeping-tab wakes) — but `tabs.onActivated` does NOT fire when the user switches between browser windows without clicking a tab in the new one. The previous window's active tab kept its `lastFocusEnd: null` indefinitely (no event ever flipped it), and on the next service-worker restart `reconcileTabs` would force-promote every such stale-null record to T1 + the IIFE stale-null fix would reset its elapsed counter. Two changes resolve this:
+  1. New `chrome.windows.onFocusChanged` listener — when the user switches windows, the previously-focused window's active tab gets its `lastFocusEnd` set to now (focus ended), and the newly-focused window's active tab gets activation effects (`lastFocusEnd = null`, T2/T3 → T1, group move). `WINDOW_ID_NONE` (user clicked desktop / switched apps) just clears `currentActiveTabId`
+  2. The startup stale-null cleanup now uses `chrome.windows.getLastFocused()` to identify the single tab that is *truly* active (focused window's selected tab), instead of treating every `chrome.tabs.query({active:true})` result (one per window) as live. Records with `lastFocusEnd: null` whose tab is not that one are reset to `lastFocusEnd: now`, healing any stale state accumulated before this fix
+
 ## [1.8.4] - 2026-05-09
 
 ### Changed

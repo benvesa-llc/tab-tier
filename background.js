@@ -1371,19 +1371,34 @@ let startupGate = (async () => {
     //     reconcileTabs() artık browser-restart sonrası tabId yeniden kullanımını ele alan rekeyRecordsByUrl() ile başlıyor.
     await reconcileTabs();
 
-    // EN: Fix stale null lastFocusEnd values AFTER rekey — records have correct tabIds now | TR: Bayat null lastFocusEnd değerlerini rekey sonrası düzelt — kayıtlar artık doğru tabId'lerde
+    // EN: Fix stale null lastFocusEnd values AFTER rekey — records have correct tabIds now.
+    //     Only the truly-focused window's active tab is allowed to keep `lastFocusEnd: null`;
+    //     "active in a non-focused window" no longer counts as active (chrome.tabs.query({active:true})
+    //     returns one per window, so without filtering we'd treat all of them as live).
+    // TR: Bayat null lastFocusEnd'leri rekey sonrası düzelt — kayıtlar artık doğru tabId'lerde.
+    //     `lastFocusEnd: null` yalnızca gerçek odaklı pencerenin aktif sekmesinde kalabilir;
+    //     "odaksız penceredeki aktif sekme" artık aktif sayılmaz.
+    let focusedActiveTabId = null;
+    try {
+      const focusedWin = await chrome.windows.getLastFocused({});
+      if (focusedWin && focusedWin.focused) {
+        const [a] = await chrome.tabs.query({ active: true, windowId: focusedWin.id });
+        if (a) focusedActiveTabId = a.id;
+      }
+    } catch (_) {}
+
     const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
     const now = Date.now();
     let fixCount = 0;
     for (const [tabId, record] of Object.entries(tabRecords)) {
-      if (record.lastFocusEnd === null && !activeTabIds.has(parseInt(tabId))) {
+      if (record.lastFocusEnd === null && parseInt(tabId) !== focusedActiveTabId) {
         record.lastFocusEnd = now;
         fixCount++;
       }
     }
     if (fixCount > 0) {
       await chrome.storage.local.set({ tabRecords });
-      log("startup: fixed", fixCount, "stale active(null) records");
+      log("startup: fixed", fixCount, "stale active(null) records (multi-window cleanup)");
     }
 
     // Birikmiş tier geçişlerini işle (Edge kapalıyken geçen süre)
@@ -1891,6 +1906,71 @@ chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
     );
   } catch (e) {
     log("onReplaced error:", e?.message);
+  }
+});
+
+// =============================================================================
+// EVENT 6: windows.onFocusChanged — switch between browser windows
+//
+// EN: tabs.onActivated only fires when the active tab changes inside a single window.
+//     If the user switches to a different window without clicking a tab there, no event
+//     fires natively — yet conceptually the "current" tab has changed (the previous
+//     window's active tab loses focus, the new window's active tab gains focus).
+//     Without this listener, multi-window users accumulate stale `lastFocusEnd: null`
+//     records on tabs that were once active in some window. On the next SW startup
+//     reconcile force-promotes them to T1 and the IIFE stale-null fix resets their
+//     elapsed timer, producing the "spontaneous T1 + focus ended" symptom.
+// TR: tabs.onActivated yalnızca tek bir pencere içinde aktif sekme değişince ateşler.
+//     Kullanıcı başka pencereye geçer ama orada bir tab'a tıklamazsa hiçbir olay
+//     tetiklenmez — ama "şu an kullanılan" tab kavramsal olarak değişmiştir (önceki
+//     pencerenin aktif sekmesi odağı kaybeder, yeni pencerenin aktif sekmesi odağı
+//     kazanır). Bu listener olmadan, çok pencereli kullanıcılarda bir kez aktif olmuş
+//     sekmelerde bayat `lastFocusEnd: null` birikiyor. Bir sonraki SW başlatımında
+//     reconcile bunları T1'e zorluyor ve IIFE stale-null fix sayacı sıfırlıyor —
+//     "kendiliğinden T1 + odak bitti" semptomunu doğuruyor.
+// =============================================================================
+chrome.windows.onFocusChanged.addListener(async (newWindowId) => {
+  try {
+    const { tabRecords = {} } = await chrome.storage.local.get("tabRecords");
+    const now = Date.now();
+    let changed = false;
+
+    // EN: Previously-tracked active tab (in the now-unfocused window) gets focus-end. | TR: Önceden izlenen aktif tab (şimdi odaktan çıkan pencerede) odak biter.
+    if (currentActiveTabId && tabRecords[currentActiveTabId]) {
+      const prev = tabRecords[currentActiveTabId];
+      if (prev.lastFocusEnd === null) {
+        recordFocusEnd(prev, now);
+        prev.lastFocusEnd = now;
+        changed = true;
+      }
+    }
+
+    if (newWindowId === chrome.windows.WINDOW_ID_NONE) {
+      // EN: No window focused (user clicked desktop, switched to another app, etc.) | TR: Hiçbir pencere odaklı değil
+      currentActiveTabId = null;
+    } else {
+      // EN: Newly-focused window's active tab gains focus | TR: Yeni odaklanan pencerenin aktif sekmesi odağı kazanır
+      try {
+        const [newActive] = await chrome.tabs.query({ active: true, windowId: newWindowId });
+        if (newActive && tabRecords[newActive.id]) {
+          const rec = tabRecords[newActive.id];
+          if (rec.currentTier !== 0) {
+            rec.lastFocusStart = now;
+            rec.lastFocusEnd = null;
+            if (rec.currentTier > 1) {
+              rec.currentTier = 1;
+              try { await moveTabToTierGroup(newActive.id, 1); } catch (_) {}
+            }
+          }
+          currentActiveTabId = newActive.id;
+          changed = true;
+        }
+      } catch (_) {}
+    }
+
+    if (changed) await chrome.storage.local.set({ tabRecords });
+  } catch (e) {
+    log("onFocusChanged error:", e?.message);
   }
 });
 
