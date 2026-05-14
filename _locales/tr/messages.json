@@ -92,6 +92,8 @@
   "closeActionDelete": { "message": "Kaydı tamamen sil (varsayılan)" },
   "closeActionArchive":{ "message": "Tier 4 Arşiv'e gönder" },
   "closeActionHint":   { "message": "Kullanıcı X ile kapatırken ne yapılsın?" },
+  "autoSortLabel":     { "message": "Sekmeleri yakın kullanıma göre otomatik sırala" },
+  "autoSortHint":      { "message": "Her dakika \"Tier + Geçen Süre\" sıralamasını tarayıcı sekmelerine otomatik uygular; her tier'da en son kullanılan sekme üstte kalır." },
   "themeLabel": { "message": "Tema" },
   "themeDark":  { "message": "🌙 Koyu" },
   "themeLight": { "message": "☀️ Açık" },

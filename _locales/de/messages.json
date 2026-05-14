@@ -76,6 +76,8 @@
   "closeActionDelete":  { "message": "Eintrag löschen (Standard)" },
   "closeActionArchive": { "message": "An Stufe-4-Archiv senden" },
   "closeActionHint":    { "message": "Was passiert, wenn der Tab mit X geschlossen wird?" },
+  "autoSortLabel":      { "message": "Tabs automatisch nach kürzlicher Nutzung sortieren" },
+  "autoSortHint":       { "message": "Wendet jede Minute die Sortierung „Stufe + Inaktivität\" automatisch auf die Browser-Tabs an, sodass der kürzlich genutzte Tab jeder Stufe oben bleibt." },
   "themeLabel": { "message": "Design" },
   "themeDark":  { "message": "🌙 Dunkel" },
   "themeLight": { "message": "☀️ Hell" },

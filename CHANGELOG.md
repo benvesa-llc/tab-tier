@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.8.9] - 2026-05-13
+## [1.9.0] - 2026-05-13
+
+### Added
+- New Settings option **"Auto-sort tabs by recent use"** (off by default). When on, every `tierCheck` alarm tick (configured by `timerIntervalMinutes`, default 1 minute) the extension re-applies the "Tier + Elapsed" sort to every open browser window — the most recently used tab in each tier stays at the top automatically, no need to click `↕ Apply` from the popup. New `autoSortByElapsed` boolean in `DefaultSettings`, new checkbox in `settings.html` Behavior section, load/save wired through `settings.js`. New `autoSortLabel` + `autoSortHint` i18n keys in all five locales (EN/TR/ES/DE/FR). The auto-sort uses the same `extensionMovingTabs` pre-flag protection added in this release so the elapsed timer is never disturbed by the periodic shuffle
 
 ### Fixed
 - `↕ Apply to Tabs` (sort) no longer collapses 4-5 sleeping tabs into "T1 with the same just-now timestamp". `sortTabsInWindow` was setting `extensionMovingTabs` only around the T0 group move; the per-tab `chrome.tabs.move` loop ran without it. While a tab transited between two tabs of a different tier-color group, Chrome auto-assigned it to that adjacent group and fired `onUpdated(groupId)`. The handler, seeing no flag, took the **user-drag** branch and reset `lastFocusEnd` to `Date.now()` (and changed `currentTier`) for every affected tab. Fix: pre-add every tab-ID we're about to shuffle to `extensionMovingTabs` BEFORE the first `tabs.move`, wrap the entire move+regroup+internal-group flow in a try/finally, and clear the flags in `finally`. Same physical reorder, but the intermediate group reassignments are correctly recognized as extension moves and the records' inactivity timestamps stay intact

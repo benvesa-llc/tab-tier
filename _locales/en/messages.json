@@ -100,6 +100,8 @@
   "closeActionDelete": { "message": "Delete record (default)" },
   "closeActionArchive": { "message": "Send to Tier 4 Archive" },
   "closeActionHint": { "message": "What happens when user closes with X?" },
+  "autoSortLabel": { "message": "Auto-sort tabs by recent use" },
+  "autoSortHint":  { "message": "Every minute, automatically re-apply the \"Tier + Elapsed\" sort to the browser tabs so the most recently used tab in each tier stays at the top." },
   "themeLabel": { "message": "Theme" },
   "themeDark":  { "message": "🌙 Dark" },
   "themeLight": { "message": "☀️ Light" },

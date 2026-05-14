@@ -92,6 +92,8 @@
   "closeActionDelete": { "message": "Eliminar registro (por defecto)" },
   "closeActionArchive":{ "message": "Enviar al Archivo Tier 4" },
   "closeActionHint":   { "message": "¿Qué pasa cuando el usuario cierra con X?" },
+  "autoSortLabel":     { "message": "Ordenar pestañas automáticamente por uso reciente" },
+  "autoSortHint":      { "message": "Cada minuto reaplica automáticamente el orden \"Nivel + Transcurrido\" a las pestañas del navegador, de modo que la más recientemente usada en cada nivel queda arriba." },
   "themeLabel": { "message": "Tema" },
   "themeDark":  { "message": "🌙 Oscuro" },
   "themeLight": { "message": "☀️ Claro" },

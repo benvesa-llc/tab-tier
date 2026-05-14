@@ -56,6 +56,7 @@ function applyToUI(s) {
 
   document.getElementById("dupAction").value    = s.duplicateAction;
   document.getElementById("closeAction").value  = s.onManualClose;
+  document.getElementById("autoSortByElapsed").checked = !!s.autoSortByElapsed;
   document.getElementById("themeSelect").value  = s.theme || "dark";
   document.getElementById("langSelect").value   = s.uiLanguage || "auto";
 
@@ -88,10 +89,11 @@ function readFromUI(existing) {
     tier4_delete_days:
       parseInt(document.getElementById("t4del").value) ??
       DefaultSettings.tier4_delete_days,
-    duplicateAction: document.getElementById("dupAction").value,
-    onManualClose:   document.getElementById("closeAction").value,
-    theme:           document.getElementById("themeSelect").value,
-    uiLanguage:      document.getElementById("langSelect").value,
+    duplicateAction:    document.getElementById("dupAction").value,
+    onManualClose:      document.getElementById("closeAction").value,
+    autoSortByElapsed:  document.getElementById("autoSortByElapsed").checked,
+    theme:              document.getElementById("themeSelect").value,
+    uiLanguage:         document.getElementById("langSelect").value,
     // EN: Store only user-typed custom names; empty = let locale defaults show through
     // TR: Sadece kullanıcının yazdığı özel adları sakla; boş = locale varsayılanı göster
     groupNames: {

@@ -76,6 +76,8 @@
   "closeActionDelete":  { "message": "Supprimer l'entrée (par défaut)" },
   "closeActionArchive": { "message": "Envoyer à l'archive Niveau 4" },
   "closeActionHint":    { "message": "Que se passe-t-il quand l'utilisateur ferme avec X ?" },
+  "autoSortLabel":      { "message": "Trier automatiquement les onglets par utilisation récente" },
+  "autoSortHint":       { "message": "Toutes les minutes, applique automatiquement le tri « Niveau + Inactivité » aux onglets du navigateur ; l'onglet le plus récemment utilisé de chaque niveau reste en haut." },
   "themeLabel": { "message": "Thème" },
   "themeDark":  { "message": "🌙 Sombre" },
   "themeLight": { "message": "☀️ Clair" },

@@ -68,6 +68,11 @@ const DefaultSettings = {
   // EN: Empty by default — i18n defaults are resolved at runtime, not stored
   // TR: Varsayılan olarak boş — i18n varsayılanları çalışma zamanında çözülür, saklanmaz
   groupNames: {},
+  // EN: Auto-sort tabs by "Tier + Elapsed" on every timerCheck alarm tick. Off by default
+  //     because re-shuffling tabs while the user is browsing is jarring; opt-in via Settings.
+  // TR: Her timerCheck alarmında "Tier + Geçen Süre" ile sekmeleri otomatik sırala. Varsayılan kapalı —
+  //     kullanıcı gezerken sekmelerin altından kayması rahatsız edici, Ayarlar'dan opt-in.
+  autoSortByElapsed: false,
   initialized: false,
 };
 
@@ -1280,6 +1285,24 @@ async function timerCheck() {
       }
     }
     await chrome.storage.local.set({ tabRecords });
+  }
+
+  // EN: Auto-sort by "Tier + Elapsed" on every alarm tick when the user opted in.
+  //     This keeps the most recently used tabs at the top of each tier group automatically.
+  //     Sorts every window so multi-window layouts stay consistent.
+  // TR: Kullanıcı opt-in ettiyse her alarm tick'inde "Tier + Geçen Süre" ile otomatik sırala.
+  //     En son kullanılan sekmeler her tier grubunun en üstünde otomatik kalır.
+  //     Çoklu pencere düzenleri tutarlı kalsın diye her pencere ayrı sıralanır.
+  if (settings.autoSortByElapsed) {
+    try {
+      const windows = await chrome.windows.getAll();
+      for (const win of windows) {
+        try { await sortTabsInWindow(win.id, "elapsed"); }
+        catch (e) { log("autoSort window error:", win.id, e?.message); }
+      }
+    } catch (e) {
+      log("autoSort error:", e?.message);
+    }
   }
 }
 
