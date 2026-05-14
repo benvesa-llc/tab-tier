@@ -77,6 +77,9 @@ const DefaultSettings = {
   // TR: İstatistik kartlarının kullanıcı tarafından özelleştirilen sırası (sürükle-bırak ile kaydedilir).
   //     Boş dizi = varsayılan sıra.
   statsCardOrder: [],
+  // EN: Per-card width in quarters (1=¼, 2=½, 3=¾, 4=full). Empty object = use defaults from tab-management.js.
+  // TR: Çeyrek bazlı kart genişlikleri (1=¼, 2=½, 3=¾, 4=tam). Boş obje = tab-management.js'teki varsayılanlar.
+  statsCardWidths: {},
   initialized: false,
 };
 

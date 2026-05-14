@@ -4,9 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.11.0] - 2026-05-13
+## [1.12.0] - 2026-05-13
 
 ### Added
+- Statistics cards now have a **per-card width selector** (`¼ ½ ¾ 1`) in their header. Pick how wide each card should be — narrow cards flow side-by-side on the same row, wide cards take the whole row. The grid is a 4-column CSS grid, and each card spans 1–4 columns based on its setting. Defaults: tier-donut and active-ratio start at ½ each (share row), every other card starts at full width. Choices are saved to `settings.statsCardWidths` and applied on each visit. Below 820px viewport every card forces back to full width so things don't get cramped. The "↺ Reset order" button now also clears widths so it's a single "back to defaults" control. New `statsCardWidths` field in `DefaultSettings`
 - Statistics cards are now **drag-and-drop reorderable**. Each card has a `⋮⋮` grab handle in its header; grab any card and drop it where you want it. Layout switched from a 2-column responsive grid to a single column so reordering is always unambiguous. A small `↺ Reset order` button at the top right of the Statistics view restores the default sequence. The chosen order is saved to `settings.statsCardOrder` and applied on every visit; new cards added in future releases are appended at the end so they're discoverable. New i18n keys `statsResetOrderBtn` and `dragHandleTitle` in all five locales
 
 ### Fixed

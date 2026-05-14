@@ -823,6 +823,21 @@ const DEFAULT_STATS_CARD_ORDER = [
   "daily",
 ];
 
+// EN: Default per-card width in quarters (1=¼, 2=½, 3=¾, 4=full). Donut + ratio pair as ½ each
+//     so they share a row out of the box; everything else starts full-width.
+// TR: Çeyrek bazlı varsayılan kart genişliği (1=¼, 2=½, 3=¾, 4=tam). Donut + ratio çift olarak
+//     ½'şer başlar (aynı satırı paylaşırlar); geri kalan tam genişlik.
+const DEFAULT_STATS_CARD_WIDTHS = {
+  "tier-donut":     2,
+  "active-ratio":   2,
+  "top-domains":    4,
+  "longest-lived":  4,
+  "focus-time":     4,
+  "url-focus-time": 4,
+  "hourly":         4,
+  "daily":          4,
+};
+
 async function applyStatsCardOrder() {
   const grid = document.getElementById("statsGrid");
   if (!grid) return;
@@ -838,6 +853,26 @@ async function applyStatsCardOrder() {
     if (c) { grid.appendChild(c); byId.delete(id); }
   }
   for (const [, c] of byId) grid.appendChild(c);
+
+  // EN: Apply per-card width from settings (or defaults) and reflect active state on the selector buttons.
+  // TR: Her kartın genişliğini ayardan (veya default'tan) uygula; selector butonlarında aktif durumu yansıt.
+  const widths = (settings.statsCardWidths && typeof settings.statsCardWidths === "object")
+    ? settings.statsCardWidths
+    : {};
+  for (const card of cards) {
+    const id = card.dataset.cardId;
+    const w = String(widths[id] ?? DEFAULT_STATS_CARD_WIDTHS[id] ?? 4);
+    card.setAttribute("data-width", w);
+    card.querySelectorAll(".width-selector button").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.w === w);
+    });
+  }
+}
+
+async function saveStatsCardWidth(cardId, width) {
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  const next = { ...(settings.statsCardWidths || {}), [cardId]: width };
+  await chrome.storage.local.set({ settings: { ...settings, statsCardWidths: next } });
 }
 
 async function saveStatsCardOrder() {
@@ -905,13 +940,29 @@ function bindStatsCardDragDrop() {
     });
   });
 
-  // EN: Reset order button — clear settings.statsCardOrder and re-apply default | TR: Sıfırla butonu — settings.statsCardOrder'ı temizle ve default'a dön
+  // EN: Width selector buttons (¼ / ½ / ¾ / 1) per card | TR: Kart başına genişlik seçici (¼ / ½ / ¾ / 1)
+  grid.querySelectorAll(".width-selector").forEach((sel) => {
+    if (sel._bound) return;
+    sel._bound = true;
+    sel.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-w]");
+      if (!btn) return;
+      const card = sel.closest(".stat-card[data-card-id]");
+      if (!card) return;
+      const w = btn.dataset.w;
+      card.setAttribute("data-width", w);
+      sel.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+      saveStatsCardWidth(card.dataset.cardId, parseInt(w, 10)).catch(() => {});
+    });
+  });
+
+  // EN: Reset order button — also clears per-card widths so user returns to true defaults | TR: Sıfırla butonu — kart genişliklerini de temizler, gerçek default'a döner
   const resetBtn = document.getElementById("statsResetOrderBtn");
   if (resetBtn && !resetBtn._bound) {
     resetBtn._bound = true;
     resetBtn.addEventListener("click", async () => {
       const { settings = {} } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({ settings: { ...settings, statsCardOrder: [] } });
+      await chrome.storage.local.set({ settings: { ...settings, statsCardOrder: [], statsCardWidths: {} } });
       await applyStatsCardOrder();
     });
   }
