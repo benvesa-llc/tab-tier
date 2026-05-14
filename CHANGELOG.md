@@ -4,9 +4,11 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.10.1] - 2026-05-13
+## [1.10.2] - 2026-05-13
 
 ### Fixed
+- Top Domains (by tab count) card now uses the same "label · track · value" flex layout as the focus-time cards — the numeric count sits to the right of the bar instead of being absolutely positioned over the fill. CSS `.bar-count` switched to `flex: 0 0 auto; min-width: 40px; text-align: right`, matching `.focus-bar-time`. All bar-chart cards (counts and focus-times) now look consistent and never overlap their value labels onto the coloured fill
+- Bar tracks gained a little more horizontal room: `.bar-label` flex-basis reduced from `140px` to `120px`, so each bar fill has 20 extra pixels to grow into. Long domain / URL labels still truncate with ellipsis as before
 - Focus-time bar charts (Top Domains / Top URLs) had a hard-to-read time label sitting on top of the coloured bar — the `--text` colour clashed with the green/blue fill, especially on the light theme. The label is now a flex sibling **after** the track instead of `position: absolute` over the fill, so it never overlaps the bar regardless of how wide the bar grows. CSS `.focus-bar-time` switched from absolute-positioning to `flex: 0 0 auto; min-width: 64px; text-align: right`
 - `fmtFocusMs` (used by both focus-time cards) was hard-coding `h` / `m` / `s` so Turkish, German, French and Spanish all saw English units. It now reads `unitAbbrHour` / `unitAbbrMin` / `unitAbbrSec` from the active locale — Turkish now shows `1s 30d` instead of `1h 30m`, German keeps `1h 30m` (which matches its locale), etc.
 

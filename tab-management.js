@@ -983,8 +983,8 @@ function renderTopDomains(sorted) {
         <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (c / max) * 100)}%"></div>
-          <span class="bar-count">${c}</span>
         </div>
+        <span class="bar-count">${c}</span>
       </div>`)
     .join("");
 }
