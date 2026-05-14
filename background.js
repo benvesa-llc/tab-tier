@@ -80,6 +80,9 @@ const DefaultSettings = {
   // EN: Per-card width in quarters (1=¼, 2=½, 3=¾, 4=full). Empty object = use defaults from tab-management.js.
   // TR: Çeyrek bazlı kart genişlikleri (1=¼, 2=½, 3=¾, 4=tam). Boş obje = tab-management.js'teki varsayılanlar.
   statsCardWidths: {},
+  // EN: User-set width (in px) of the bar-label column on Statistics bar charts. Falsy = default 180.
+  // TR: İstatistik bar grafiklerinde etiket sütunu genişliği (px). Boş ise default 180.
+  statsBarLabelWidth: 0,
   initialized: false,
 };
 

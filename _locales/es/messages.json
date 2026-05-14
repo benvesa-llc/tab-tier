@@ -289,6 +289,7 @@
   "statsRange1d":           { "message": "24h" },
   "statsResetOrderBtn":     { "message": "↺ Restablecer orden" },
   "dragHandleTitle":        { "message": "Arrastra para reordenar" },
+  "resizeBarLabelTitle":    { "message": "Arrastra para redimensionar la columna de etiqueta" },
   "statsHourlyTitle":   { "message": "Actividad por Hora (Todo el Tiempo, 0–23h)" },
   "statsDailyTitle":    { "message": "Últimos 30 Días — Pestañas Abiertas y Archivadas" },
   "statsDailyOpened":   { "message": "Abiertas" },

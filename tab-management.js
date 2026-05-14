@@ -794,6 +794,7 @@ document.querySelectorAll(".view-tab").forEach((btn) => {
     if (view === "stats") {
       applyStatsCardOrder();
       bindStatsCardDragDrop();
+      bindBarLabelResize();
       renderStats();
     }
   });
@@ -873,6 +874,62 @@ async function saveStatsCardWidth(cardId, width) {
   const { settings = {} } = await chrome.storage.local.get("settings");
   const next = { ...(settings.statsCardWidths || {}), [cardId]: width };
   await chrome.storage.local.set({ settings: { ...settings, statsCardWidths: next } });
+}
+
+// EN: User-resizable label column for bar charts. Mouse-drag on any `.bar-resize`
+//     handle updates `--bar-label-width` on the stats grid for ALL bar rows (one
+//     setting applies globally), persisted to `settings.statsBarLabelWidth`.
+//     Range clamped to [80, 480] pixels so it can't disappear or eat the whole card.
+// TR: Bar grafiklerinde kullanıcı tarafından genişletilebilir etiket sütunu. `.bar-resize`
+//     tutamacında mouse sürükleme `--bar-label-width`'i tüm bar satırları için günceller
+//     (tek ayar global). `settings.statsBarLabelWidth`'e kaydedilir. [80, 480] piksel arasında
+//     sınırlandırılır — yok olmasın ya da kartı tamamen yutmasın.
+let _barResize = null; // EN: { startX, startWidth, grid } | TR: { startX, startWidth, grid }
+
+async function bindBarLabelResize() {
+  const grid = document.getElementById("statsGrid");
+  if (!grid) return;
+
+  // Apply saved width on every (re)bind so a fresh stats-view open picks up persisted size.
+  try {
+    const { settings = {} } = await chrome.storage.local.get("settings");
+    const saved = settings.statsBarLabelWidth;
+    if (typeof saved === "number" && saved >= 80 && saved <= 480) {
+      grid.style.setProperty("--bar-label-width", saved + "px");
+    }
+  } catch (_) {}
+
+  if (grid._barResizeBound) return;
+  grid._barResizeBound = true;
+
+  grid.addEventListener("mousedown", (e) => {
+    const handle = e.target.closest(".bar-resize");
+    if (!handle) return;
+    const cs = getComputedStyle(grid);
+    const cur = parseInt(cs.getPropertyValue("--bar-label-width")) || 180;
+    _barResize = { startX: e.clientX, startWidth: cur, grid };
+    document.body.classList.add("bar-resizing");
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!_barResize) return;
+    const delta = e.clientX - _barResize.startX;
+    const next = Math.max(80, Math.min(480, _barResize.startWidth + delta));
+    _barResize.grid.style.setProperty("--bar-label-width", next + "px");
+  });
+
+  document.addEventListener("mouseup", async () => {
+    if (!_barResize) return;
+    const cs = getComputedStyle(_barResize.grid);
+    const finalW = parseInt(cs.getPropertyValue("--bar-label-width")) || 180;
+    _barResize = null;
+    document.body.classList.remove("bar-resizing");
+    try {
+      const { settings = {} } = await chrome.storage.local.get("settings");
+      await chrome.storage.local.set({ settings: { ...settings, statsBarLabelWidth: finalW } });
+    } catch (_) {}
+  });
 }
 
 async function saveStatsCardOrder() {
@@ -956,13 +1013,17 @@ function bindStatsCardDragDrop() {
     });
   });
 
-  // EN: Reset order button — also clears per-card widths so user returns to true defaults | TR: Sıfırla butonu — kart genişliklerini de temizler, gerçek default'a döner
+  // EN: Reset order button — also clears per-card widths AND the bar-label resize so user returns to true defaults | TR: Sıfırla butonu — kart genişliklerini ve bar etiket genişliğini de temizler, gerçek default'a döner
   const resetBtn = document.getElementById("statsResetOrderBtn");
   if (resetBtn && !resetBtn._bound) {
     resetBtn._bound = true;
     resetBtn.addEventListener("click", async () => {
       const { settings = {} } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({ settings: { ...settings, statsCardOrder: [], statsCardWidths: {} } });
+      await chrome.storage.local.set({
+        settings: { ...settings, statsCardOrder: [], statsCardWidths: {}, statsBarLabelWidth: 0 },
+      });
+      const grid = document.getElementById("statsGrid");
+      if (grid) grid.style.removeProperty("--bar-label-width");
       await applyStatsCardOrder();
     });
   }
@@ -1003,7 +1064,9 @@ async function renderStats() {
 
   renderTierDonut(tierCounts, total);
   renderActiveRatio(tierCounts, total);
-  renderTopDomains([...domainCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10));
+  const domainSorted = [...domainCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const domainTotal = domainSorted.reduce((s, [, c]) => s + c, 0);
+  renderTopDomains(domainSorted.slice(0, 10), domainTotal);
   renderOldestTabs([...liveRecords].filter((r) => r.createdAt).sort((a, b) => a.createdAt - b.createdAt).slice(0, 8));
 
   // EN: Aggregate-driven cards — read once and pass to each renderer | TR: Toplam veri kartları — bir kez oku ve her renderer'a aktar
@@ -1143,7 +1206,7 @@ function renderActiveRatio(counts, total) {
     </div>`;
 }
 
-function renderTopDomains(sorted) {
+function renderTopDomains(sorted, total) {
   const host = document.getElementById("statsTopDomains");
   if (!sorted.length) {
     host.innerHTML = `<p class="stats-empty">${i18n("noRecords")}</p>`;
@@ -1151,14 +1214,18 @@ function renderTopDomains(sorted) {
   }
   const max = sorted[0][1];
   host.innerHTML = sorted
-    .map(([d, c]) => `
+    .map(([d, c]) => {
+      const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+      return `
       <div class="bar-row">
         <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (c / max) * 100)}%"></div>
         </div>
-        <span class="bar-count">${c}</span>
-      </div>`)
+        <span class="bar-count">${c}<span class="bar-pct">${pct}%</span></span>
+      </div>`;
+    })
     .join("");
 }
 
@@ -1214,21 +1281,27 @@ function fmtFocusMs(ms) {
 function renderFocusTime(range, agg) {
   const host = document.getElementById("statsFocusTime");
   const map = pickFocusMap(agg, "domain", range);
-  const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const all = Object.entries(map).sort((a, b) => b[1] - a[1]);
+  const total = all.reduce((s, [, ms]) => s + ms, 0);
+  const entries = all.slice(0, 10);
   if (!entries.length) {
     host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
     return;
   }
   const max = entries[0][1];
   host.innerHTML = entries
-    .map(([d, ms]) => `
+    .map(([d, ms]) => {
+      const pct = total > 0 ? Math.round((ms / total) * 100) : 0;
+      return `
       <div class="bar-row">
         <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
         </div>
-        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
-      </div>`)
+        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}<span class="bar-pct">${pct}%</span></span>
+      </div>`;
+    })
     .join("");
 }
 
@@ -1239,21 +1312,27 @@ function renderFocusTime(range, agg) {
 function renderUrlFocusTime(range, agg) {
   const host = document.getElementById("statsUrlFocusTime");
   const map = pickFocusMap(agg, "url", range);
-  const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const all = Object.entries(map).sort((a, b) => b[1] - a[1]);
+  const total = all.reduce((s, [, ms]) => s + ms, 0);
+  const entries = all.slice(0, 10);
   if (!entries.length) {
     host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
     return;
   }
   const max = entries[0][1];
   host.innerHTML = entries
-    .map(([u, ms]) => `
+    .map(([u, ms]) => {
+      const pct = total > 0 ? Math.round((ms / total) * 100) : 0;
+      return `
       <div class="bar-row">
         <span class="bar-label" title="${escHtml(u)}">${escHtml(u)}</span>
+        <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--blue)"></div>
         </div>
-        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
-      </div>`)
+        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}<span class="bar-pct">${pct}%</span></span>
+      </div>`;
+    })
     .join("");
 }
 

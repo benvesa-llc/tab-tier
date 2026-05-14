@@ -292,6 +292,7 @@
   "statsRange1d":           { "message": "24s" },
   "statsResetOrderBtn":     { "message": "↺ Sırayı sıfırla" },
   "dragHandleTitle":        { "message": "Yeniden sıralamak için sürükle" },
+  "resizeBarLabelTitle":    { "message": "Etiket sütununu yeniden boyutlandırmak için sürükle" },
   "statsHourlyTitle":   { "message": "Saate Göre Aktivite (Tüm Zamanlar, 0–23 saat)" },
   "statsDailyTitle":    { "message": "Son 30 Gün — Açılan & Arşivlenen Sekmeler" },
   "statsDailyOpened":   { "message": "Açılan" },

@@ -511,11 +511,48 @@
         font-size: 12px;
       }
       .bar-label {
-        flex: 0 0 120px;
+        flex: 0 0 var(--bar-label-width, 180px);
         color: var(--subtext);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      /* EN: Drag handle between label and bar. Visible thin line at rest (so users can discover it),
+              brighter accent on hover. Wider hit area than the visible line (~6px) for easy grab.
+         TR: Etiket ile bar arasında sürükle tutamacı. Sürükle özelliğini görebilmeleri için durağan
+              halde ince bir çizgi görünür; hover'da accent renkle vurgulanır. Tıklama alanı (~6px)
+              görünür çizgiden geniş — kolay yakalama. */
+      .bar-resize {
+        flex: 0 0 6px;
+        cursor: col-resize;
+        align-self: stretch;
+        position: relative;
+        margin: 0 -3px;
+      }
+      .bar-resize::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 20%;
+        bottom: 20%;
+        width: 2px;
+        transform: translateX(-50%);
+        background: var(--surface1);
+        border-radius: 1px;
+        transition: background 0.12s, width 0.12s;
+      }
+      .bar-resize:hover::before,
+      body.bar-resizing .bar-resize::before {
+        background: var(--accent);
+        width: 3px;
+      }
+      body.bar-resizing { cursor: col-resize; user-select: none; }
+      /* EN: Faint % suffix next to the count / time label. | TR: Sayı/zaman etiketinin yanında soluk % eki. */
+      .bar-pct {
+        color: var(--subtext);
+        font-weight: 400;
+        font-size: 10px;
+        margin-left: 4px;
       }
       .bar-track {
         flex: 1;

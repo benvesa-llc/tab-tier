@@ -4,9 +4,15 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.12.0] - 2026-05-13
+## [1.13.1] - 2026-05-13
+
+### Changed
+- The resize handle between a bar chart's label column and the bar itself is now visible at rest (a thin 2px gray line, brightens to accent on hover and widens to 3px while dragging). Previously it was transparent and only revealed itself on hover, so the resize feature was hidden — users had to know it existed to find it
 
 ### Added
+- Each bar-chart row on the Statistics page now shows a **percentage suffix** next to the count or focus-time value (e.g. `1h 30m  25%`, `42  18%`). The percentage is computed against the full set behind the chart, not just the visible top-10 — so a domain that takes 18% of all your focus time still reads 18% even when the bar reflects only the top 10 entries. Subtle gray styling so the primary number stays dominant
+- Bar-chart **label column is user-resizable**: a thin drag handle between every row's label and bar lets you widen / narrow the left column with the mouse. Cursor switches to col-resize, the handle highlights in accent, and the new width is saved to `settings.statsBarLabelWidth` (single global value; applies to Top Domains, Top URLs, and the focus-time cards). Default 180px (up from 120px) so URLs fit better out of the box. Clamped to 80-480px. The "↺ Reset order" button now also clears this width along with order + per-card widths
+- New i18n key `resizeBarLabelTitle` (drag-handle tooltip) in all five locales
 - Statistics cards now have a **per-card width selector** (`¼ ½ ¾ 1`) in their header. Pick how wide each card should be — narrow cards flow side-by-side on the same row, wide cards take the whole row. The grid is a 4-column CSS grid, and each card spans 1–4 columns based on its setting. Defaults: tier-donut and active-ratio start at ½ each (share row), every other card starts at full width. Choices are saved to `settings.statsCardWidths` and applied on each visit. Below 820px viewport every card forces back to full width so things don't get cramped. The "↺ Reset order" button now also clears widths so it's a single "back to defaults" control. New `statsCardWidths` field in `DefaultSettings`
 - Statistics cards are now **drag-and-drop reorderable**. Each card has a `⋮⋮` grab handle in its header; grab any card and drop it where you want it. Layout switched from a 2-column responsive grid to a single column so reordering is always unambiguous. A small `↺ Reset order` button at the top right of the Statistics view restores the default sequence. The chosen order is saved to `settings.statsCardOrder` and applied on every visit; new cards added in future releases are appended at the end so they're discoverable. New i18n keys `statsResetOrderBtn` and `dragHandleTitle` in all five locales
 
