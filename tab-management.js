@@ -1025,14 +1025,17 @@ function renderOldestTabs(oldest) {
 // TR: Milisaniyeyi "Xs Yd" veya "Yd Zsn" olarak biçimlendir; <1sn → "<1sn".
 function fmtFocusMs(ms) {
   if (!ms || ms < 0) return "—";
-  if (ms < 1000) return "<1s";
+  const sAbbr = i18n("unitAbbrSec");
+  const mAbbr = i18n("unitAbbrMin");
+  const hAbbr = i18n("unitAbbrHour");
+  if (ms < 1000) return "<1" + sAbbr;
   const totalSec = Math.floor(ms / 1000);
   const hours = Math.floor(totalSec / 3600);
   const mins = Math.floor((totalSec % 3600) / 60);
   const secs = totalSec % 60;
-  if (hours > 0) return `${hours}h ${mins}m`;
-  if (mins > 0)  return `${mins}m ${secs}s`;
-  return `${secs}s`;
+  if (hours > 0) return `${hours}${hAbbr} ${mins}${mAbbr}`;
+  if (mins > 0)  return `${mins}${mAbbr} ${secs}${sAbbr}`;
+  return `${secs}${sAbbr}`;
 }
 
 function renderFocusTime(range, agg) {
@@ -1050,8 +1053,8 @@ function renderFocusTime(range, agg) {
         <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
-          <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
         </div>
+        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
       </div>`)
     .join("");
 }
@@ -1075,8 +1078,8 @@ function renderUrlFocusTime(range, agg) {
         <span class="bar-label" title="${escHtml(u)}">${escHtml(u)}</span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--blue)"></div>
-          <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
         </div>
+        <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
       </div>`)
     .join("");
 }

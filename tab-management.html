@@ -577,16 +577,16 @@
         vertical-align: middle;
       }
 
-      /* ── Focus time bar (reuses .bar-* but with time label) ── */
+      /* ── Focus time bar — time label sits AFTER the track (flex sibling), never overlaps the fill ── */
       .focus-bar-time {
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
+        flex: 0 0 auto;
+        min-width: 64px;
+        text-align: right;
         font-size: 11px;
         color: var(--text);
         font-weight: 600;
         font-family: monospace;
+        white-space: nowrap;
       }
 
     </style>
