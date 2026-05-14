@@ -401,6 +401,31 @@
         letter-spacing: 0.5px;
         margin-bottom: 14px;
       }
+      .stat-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .stat-card-header h3 { margin-bottom: 0; }
+      .stat-range { display: inline-flex; gap: 2px; background: var(--surface0); border-radius: 6px; padding: 2px; }
+      .stat-range .range-btn {
+        background: none;
+        border: none;
+        color: var(--subtext);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.12s, color 0.12s;
+      }
+      .stat-range .range-btn:hover { color: var(--text); }
+      .stat-range .range-btn.active {
+        background: var(--mantle);
+        color: var(--accent);
+      }
       .donut-wrap { display: flex; align-items: center; gap: 16px; }
       .donut-svg { width: 140px; height: 140px; flex: 0 0 140px; }
       .donut-center { font-size: 18px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: middle; }
@@ -648,8 +673,26 @@
           <div id="statsOldest"></div>
         </div>
         <div class="stat-card" style="grid-column: 1 / -1">
-          <h3>__MSG_statsFocusTimeTitle__</h3>
+          <div class="stat-card-header">
+            <h3>__MSG_statsFocusTimeTitle__</h3>
+            <div class="stat-range" data-target="statsFocusTime">
+              <button class="range-btn active" data-range="all">__MSG_statsRangeAll__</button>
+              <button class="range-btn" data-range="7d">__MSG_statsRange7d__</button>
+              <button class="range-btn" data-range="1d">__MSG_statsRange1d__</button>
+            </div>
+          </div>
           <div id="statsFocusTime"></div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1">
+          <div class="stat-card-header">
+            <h3>__MSG_statsUrlFocusTimeTitle__</h3>
+            <div class="stat-range" data-target="statsUrlFocusTime">
+              <button class="range-btn active" data-range="all">__MSG_statsRangeAll__</button>
+              <button class="range-btn" data-range="7d">__MSG_statsRange7d__</button>
+              <button class="range-btn" data-range="1d">__MSG_statsRange1d__</button>
+            </div>
+          </div>
+          <div id="statsUrlFocusTime"></div>
         </div>
         <div class="stat-card" style="grid-column: 1 / -1">
           <h3>__MSG_statsHourlyTitle__</h3>

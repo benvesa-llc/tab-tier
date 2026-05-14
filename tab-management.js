@@ -836,13 +836,69 @@ async function renderStats() {
   // EN: Aggregate-driven cards — read once and pass to each renderer | TR: Toplam veri kartları — bir kez oku ve her renderer'a aktar
   try {
     const { statsAggregate = null } = await chrome.storage.local.get("statsAggregate");
-    const agg = statsAggregate || { domainFocusMs: {}, hourlyActivity: new Array(24).fill(0), daily: {} };
-    renderFocusTime(agg.domainFocusMs || {});
+    const agg = statsAggregate || { domainFocusMs: {}, urlFocusMs: {}, hourlyActivity: new Array(24).fill(0), daily: {} };
+    _statsAggCache = agg; // EN: cache for range-button re-renders without re-fetching | TR: range butonlarının yeniden render'ı için cache
+    renderFocusTime(_focusRange.domain, agg);
+    renderUrlFocusTime(_focusRange.url, agg);
     renderHourlyActivity(Array.isArray(agg.hourlyActivity) ? agg.hourlyActivity : new Array(24).fill(0));
     renderDailyActivity(agg.daily || {});
+    bindRangeButtons();
   } catch (e) {
     console.error("[TabTier] renderStats aggregate read failed:", e);
   }
+}
+
+// EN: Cached aggregate so range buttons can re-render without another storage read | TR: Range butonları yeniden render için aggregate cache'i
+let _statsAggCache = null;
+// EN: Per-card range selection (all / 7d / 1d). Persists in-memory while Stats view is open. | TR: Kart başına range seçimi (all / 7d / 1d)
+const _focusRange = { domain: "all", url: "all" };
+
+// EN: Sum focus time per key across the last N daily buckets. Used for 7d / 1d filters.
+// TR: Son N günlük bucket boyunca anahtar başına odak süresini topla. 7g / 1g filtreleri için.
+function sumDailyFocus(daily, field /* "domainFocusMs" | "urlFocusMs" */, days) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffKey =
+    `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+  const out = {};
+  for (const [day, bucket] of Object.entries(daily)) {
+    if (day < cutoffKey) continue;
+    const map = bucket[field] || {};
+    for (const [k, v] of Object.entries(map)) {
+      out[k] = (out[k] || 0) + v;
+    }
+  }
+  return out;
+}
+
+function pickFocusMap(agg, kind /* "domain" | "url" */, range /* "all" | "7d" | "1d" */) {
+  if (range === "all") {
+    return kind === "domain" ? (agg.domainFocusMs || {}) : (agg.urlFocusMs || {});
+  }
+  const days = range === "7d" ? 7 : 1;
+  return sumDailyFocus(agg.daily || {}, kind === "domain" ? "domainFocusMs" : "urlFocusMs", days);
+}
+
+function bindRangeButtons() {
+  document.querySelectorAll(".stat-range").forEach((wrap) => {
+    if (wrap._bound) return;
+    wrap._bound = true;
+    wrap.addEventListener("click", (e) => {
+      const btn = e.target.closest(".range-btn");
+      if (!btn) return;
+      const range = btn.dataset.range;
+      const targetId = wrap.dataset.target;
+      wrap.querySelectorAll(".range-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      if (!_statsAggCache) return;
+      if (targetId === "statsFocusTime") {
+        _focusRange.domain = range;
+        renderFocusTime(range, _statsAggCache);
+      } else if (targetId === "statsUrlFocusTime") {
+        _focusRange.url = range;
+        renderUrlFocusTime(range, _statsAggCache);
+      }
+    });
+  });
 }
 
 // EN: Tier color palette — keep aligned with tier-badge classes in CSS.
@@ -979,9 +1035,10 @@ function fmtFocusMs(ms) {
   return `${secs}s`;
 }
 
-function renderFocusTime(domainFocusMs) {
+function renderFocusTime(range, agg) {
   const host = document.getElementById("statsFocusTime");
-  const entries = Object.entries(domainFocusMs).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const map = pickFocusMap(agg, "domain", range);
+  const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 10);
   if (!entries.length) {
     host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
     return;
@@ -993,6 +1050,31 @@ function renderFocusTime(domainFocusMs) {
         <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
+          <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
+        </div>
+      </div>`)
+    .join("");
+}
+
+// EN: Per-URL focus time (top 10) — mirrors renderFocusTime but with URLs as labels.
+//     URLs are normalized server-side (protocol + host + path, no query/hash).
+// TR: URL bazlı odak süresi (ilk 10) — renderFocusTime ile aynı yapı ama etiket URL.
+//     URL'ler arka tarafta normalize edilir (protocol + host + path, query/hash yok).
+function renderUrlFocusTime(range, agg) {
+  const host = document.getElementById("statsUrlFocusTime");
+  const map = pickFocusMap(agg, "url", range);
+  const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (!entries.length) {
+    host.innerHTML = `<p class="stats-empty">${i18n("statsCollectingData")}</p>`;
+    return;
+  }
+  const max = entries[0][1];
+  host.innerHTML = entries
+    .map(([u, ms]) => `
+      <div class="bar-row">
+        <span class="bar-label" title="${escHtml(u)}">${escHtml(u)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--blue)"></div>
           <span class="focus-bar-time">${escHtml(fmtFocusMs(ms))}</span>
         </div>
       </div>`)

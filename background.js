@@ -167,15 +167,34 @@ function statsDayKey(d = new Date()) {
   return `${y}-${mm}-${dd}`;
 }
 
+// EN: Strip query string + fragment from URL before using it as a stats key. Keeps the path
+//     so `github.com/anthropics/anthropic-sdk-python` and `…-typescript` stay distinct, but
+//     drops search queries and hashes that would otherwise inflate the URL set and leak
+//     potentially-sensitive data into stats storage.
+// TR: URL'yi stat anahtarı yapmadan önce query string ve fragment'ı at. Yol kalır
+//     (`github.com/anthropics/anthropic-sdk-python` ile `…-typescript` ayrı kalsın), ama
+//     arama sorguları ve hash'ler atılır — URL kümesini şişirir ve potansiyel hassas veriyi
+//     stat depolamasına sızdırırdı.
+function normalizeUrlForStats(url) {
+  if (!url) return "—";
+  try {
+    const u = new URL(url);
+    return u.protocol + "//" + u.host + u.pathname;
+  } catch (e) {
+    return url;
+  }
+}
+
 async function loadStatsAggregate() {
   const { statsAggregate = null } = await chrome.storage.local.get("statsAggregate");
   const stats = statsAggregate || {};
   if (!stats.domainFocusMs) stats.domainFocusMs = {};
+  if (!stats.urlFocusMs) stats.urlFocusMs = {};
   if (!Array.isArray(stats.hourlyActivity) || stats.hourlyActivity.length !== 24) {
     stats.hourlyActivity = new Array(24).fill(0);
   }
   if (!stats.daily) stats.daily = {};
-  stats.schemaVersion = 1;
+  stats.schemaVersion = 2;
   return stats;
 }
 
@@ -189,7 +208,13 @@ function pruneOldDaily(stats) {
 }
 
 function ensureDailyBucket(stats, key = statsDayKey()) {
-  if (!stats.daily[key]) stats.daily[key] = { opened: 0, archived: 0, focusMs: 0 };
+  if (!stats.daily[key]) {
+    stats.daily[key] = { opened: 0, archived: 0, focusMs: 0, domainFocusMs: {}, urlFocusMs: {} };
+  } else {
+    // EN: Lazily backfill new fields on older buckets created by schema v1 | TR: Eski bucket'larda yeni alanları geç-doldur
+    if (!stats.daily[key].domainFocusMs) stats.daily[key].domainFocusMs = {};
+    if (!stats.daily[key].urlFocusMs) stats.daily[key].urlFocusMs = {};
+  }
   return stats.daily[key];
 }
 
@@ -200,10 +225,18 @@ async function recordFocusEnd(rec, endTime) {
   try {
     const stats = await loadStatsAggregate();
     const domain = (rec.domain || "—").trim() || "—";
+    const urlKey = normalizeUrlForStats(rec.url);
+    // Cumulative all-time
     stats.domainFocusMs[domain] = (stats.domainFocusMs[domain] || 0) + delta;
+    stats.urlFocusMs[urlKey] = (stats.urlFocusMs[urlKey] || 0) + delta;
+    // Hourly histogram
     const hour = new Date(rec.lastFocusStart).getHours();
     if (hour >= 0 && hour < 24) stats.hourlyActivity[hour]++;
-    ensureDailyBucket(stats).focusMs += delta;
+    // Daily bucket (totals + per-domain + per-url) — supports last-N-days filters
+    const bucket = ensureDailyBucket(stats);
+    bucket.focusMs += delta;
+    bucket.domainFocusMs[domain] = (bucket.domainFocusMs[domain] || 0) + delta;
+    bucket.urlFocusMs[urlKey] = (bucket.urlFocusMs[urlKey] || 0) + delta;
     pruneOldDaily(stats);
     await chrome.storage.local.set({ statsAggregate: stats });
   } catch (e) { log("recordFocusEnd error:", e?.message); }
@@ -230,7 +263,13 @@ async function recordTabArchived(count = 1) {
 
 async function clearStatsAggregate() {
   await chrome.storage.local.set({
-    statsAggregate: { domainFocusMs: {}, hourlyActivity: new Array(24).fill(0), daily: {}, schemaVersion: 1 },
+    statsAggregate: {
+      domainFocusMs: {},
+      urlFocusMs: {},
+      hourlyActivity: new Array(24).fill(0),
+      daily: {},
+      schemaVersion: 2,
+    },
   });
 }
 

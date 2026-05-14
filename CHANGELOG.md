@@ -4,6 +4,14 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.10.0] - 2026-05-13
+
+### Added
+- New **Top URLs by Focus Time** card on the Statistics view, alongside the existing Top Domains card. URLs are normalized to `protocol://host/path` (query string and fragment stripped) so paths are differentiated but search queries / hashes don't leak into stats. Bars use the blue accent to distinguish from the green domain bars
+- Time-range selector (**All / 7d / 24h**) on both focus-time cards (domain and URL). "All" reads the cumulative all-time map; 7d / 24h sums the per-day buckets within the window. Range buttons are styled as pill segments next to each card heading and re-render the card in-place without re-fetching storage (cached aggregate)
+- `statsAggregate` schema bumped to v2: new top-level `urlFocusMs` map, and each daily bucket now also carries `domainFocusMs` and `urlFocusMs` so the time-range filter has per-day granularity. Old buckets are backfilled lazily on first write. `clearStatsAggregate` resets the new keys too
+- New i18n keys in all five locales: `statsUrlFocusTimeTitle`, `statsRangeAll`, `statsRange7d`, `statsRange1d`. The existing `statsFocusTimeTitle` lost the trailing "(All Time)" suffix now that a range selector is right next to it
+
 ## [1.9.0] - 2026-05-13
 
 ### Added
