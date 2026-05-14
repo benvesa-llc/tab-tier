@@ -4,9 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.13.5] - 2026-05-13
+## [1.13.6] - 2026-05-13
 
 ### Changed
+- Bar-chart rows whose domain/URL no longer has an active `tabRecords` entry (you closed every tab from that site long ago, but `statsAggregate` still has its focus time / count) now also get a favicon. Stored favicons from `_faviconByDomain` / `_faviconByUrl` are still preferred; when absent, the row falls back to Chrome's **built-in favicon API** (`chrome.runtime.getURL("/_favicon/?pageUrl=…&size=32")`). The new `"favicon"` permission was added to `manifest.json` to enable this. No third-party favicon service is contacted — the icon comes from Chrome's own cache (or a built-in placeholder if the cache has nothing)
 - Tab Management opens with the table sorted by **Elapsed ascending** by default (recently-used at the top, oldest at the bottom) instead of by `currentTier`. Initial `sortCol` switched from `"currentTier"` to `"elapsed"`. Clicking another column header still works the same way
 
 ### Fixed

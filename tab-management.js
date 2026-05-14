@@ -1139,12 +1139,36 @@ function rebuildFaviconMaps() {
   }
 }
 
-// EN: Build the HTML for a bar-label: optional favicon img + text span with ellipsis.
-// TR: Bar etiketi HTML'i: opsiyonel favicon img + ellipsis'li metin span.
-function barLabelInner(text, faviconUrl) {
+// EN: Build a Chrome built-in favicon URL for a page. Uses the browser's own favicon cache
+//     (no third-party service, no network call from our extension). Requires the "favicon"
+//     manifest permission; returns Chrome's default placeholder if the icon isn't cached.
+// TR: Bir sayfa için Chrome'un built-in favicon URL'sini üret. Tarayıcının kendi favicon
+//     cache'ini kullanır (3. parti servis yok, eklentimizden ağ çağrısı yok). manifest'te
+//     "favicon" iznini ister; ikon cache'te yoksa Chrome varsayılan placeholder döndürür.
+function chromeFaviconUrl(pageUrl) {
+  try {
+    const url = new URL(chrome.runtime.getURL("/_favicon/"));
+    url.searchParams.set("pageUrl", pageUrl);
+    url.searchParams.set("size", "32");
+    return url.toString();
+  } catch (_) {
+    return "";
+  }
+}
+
+// EN: Build the HTML for a bar-label: favicon img + text span with ellipsis.
+//     When no stored favicon is available, fall back to Chrome's favicon API so rows that
+//     show up only in `statsAggregate` (e.g. tabs the user has closed long ago) still get
+//     a recognisable icon. `pageUrlHint` should be a full URL like `https://example.com/...`.
+// TR: Bar etiketi HTML'i: favicon img + ellipsis'li metin span.
+//     Saklı favicon yoksa Chrome favicon API'sine düş — yalnızca statsAggregate'te kalan
+//     (örn. uzun zaman önce kapatılmış tabların) satırlar bile tanınabilir bir ikon alır.
+//     `pageUrlHint` `https://example.com/...` formatında tam bir URL olmalı.
+function barLabelInner(text, faviconUrl, pageUrlHint) {
   const safeText = escHtml(text);
-  if (faviconUrl) {
-    return `<img class="bar-favicon" src="${escHtml(faviconUrl)}" width="14" height="14" alt=""><span class="bar-label-text">${safeText}</span>`;
+  const finalFav = faviconUrl || (pageUrlHint ? chromeFaviconUrl(pageUrlHint) : "");
+  if (finalFav) {
+    return `<img class="bar-favicon" src="${escHtml(finalFav)}" width="14" height="14" alt=""><span class="bar-label-text">${safeText}</span>`;
   }
   return `<span class="bar-label-text">${safeText}</span>`;
 }
@@ -1291,7 +1315,7 @@ function renderTopDomains(sorted, total) {
       const fav = _faviconByDomain.get(d);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav)}</span>
+        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav, "https://" + d)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (c / max) * 100)}%"></div>
@@ -1369,7 +1393,7 @@ function renderFocusTime(range, agg) {
       const fav = _faviconByDomain.get(d);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav)}</span>
+        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav, "https://" + d)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
@@ -1402,7 +1426,7 @@ function renderUrlFocusTime(range, agg) {
       const fav = _faviconByUrl.get(u);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(u)}">${barLabelInner(u, fav)}</span>
+        <span class="bar-label" title="${escHtml(u)}">${barLabelInner(u, fav, u)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--blue)"></div>
