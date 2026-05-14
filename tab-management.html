@@ -382,11 +382,35 @@
       }
 
       /* ── Statistics view ── */
+      .stats-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 12px;
+      }
       .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 16px;
       }
+      .stat-card { position: relative; }
+      .stat-card[draggable="true"] { cursor: grab; }
+      .stat-card[draggable="true"]:active { cursor: grabbing; }
+      .stat-card.dragging {
+        opacity: 0.4;
+        transform: scale(0.99);
+      }
+      .stat-card.drag-over-top    { box-shadow: 0 -3px 0 0 var(--accent); }
+      .stat-card.drag-over-bottom { box-shadow:  0 3px 0 0 var(--accent); }
+      .drag-handle {
+        display: inline-block;
+        color: var(--overlay);
+        font-size: 14px;
+        cursor: grab;
+        user-select: none;
+        padding: 0 4px;
+        flex-shrink: 0;
+      }
+      .drag-handle:hover { color: var(--accent); }
       .stat-card {
         background: var(--mantle);
         border: 1px solid var(--surface0);
@@ -654,25 +678,29 @@
     </div><!-- /#recordsView -->
 
     <div id="statsView" style="display:none">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>__MSG_statsTierTitle__</h3>
+      <div class="stats-toolbar">
+        <button id="statsResetOrderBtn" class="btn-secondary" type="button">__MSG_statsResetOrderBtn__</button>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card" data-card-id="tier-donut">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsTierTitle__</h3></div>
           <div id="statsTierDonut"></div>
         </div>
-        <div class="stat-card">
-          <h3>__MSG_statsActiveRatioTitle__</h3>
+        <div class="stat-card" data-card-id="active-ratio">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsActiveRatioTitle__</h3></div>
           <div id="statsActiveRatio"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
-          <h3>__MSG_statsTopDomainsTitle__</h3>
+        <div class="stat-card" data-card-id="top-domains">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsTopDomainsTitle__</h3></div>
           <div id="statsTopDomains"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
-          <h3>__MSG_statsOldestTitle__</h3>
+        <div class="stat-card" data-card-id="longest-lived">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsOldestTitle__</h3></div>
           <div id="statsOldest"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
+        <div class="stat-card" data-card-id="focus-time">
           <div class="stat-card-header">
+            <span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span>
             <h3>__MSG_statsFocusTimeTitle__</h3>
             <div class="stat-range" data-target="statsFocusTime">
               <button class="range-btn active" data-range="all">__MSG_statsRangeAll__</button>
@@ -682,8 +710,9 @@
           </div>
           <div id="statsFocusTime"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
+        <div class="stat-card" data-card-id="url-focus-time">
           <div class="stat-card-header">
+            <span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span>
             <h3>__MSG_statsUrlFocusTimeTitle__</h3>
             <div class="stat-range" data-target="statsUrlFocusTime">
               <button class="range-btn active" data-range="all">__MSG_statsRangeAll__</button>
@@ -693,12 +722,12 @@
           </div>
           <div id="statsUrlFocusTime"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
-          <h3>__MSG_statsHourlyTitle__</h3>
+        <div class="stat-card" data-card-id="hourly">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsHourlyTitle__</h3></div>
           <div id="statsHourly"></div>
         </div>
-        <div class="stat-card" style="grid-column: 1 / -1">
-          <h3>__MSG_statsDailyTitle__</h3>
+        <div class="stat-card" data-card-id="daily">
+          <div class="stat-card-header"><span class="drag-handle" title="__MSG_dragHandleTitle__">⋮⋮</span><h3>__MSG_statsDailyTitle__</h3></div>
           <div id="statsDaily"></div>
         </div>
       </div>

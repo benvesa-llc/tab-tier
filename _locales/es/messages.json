@@ -287,6 +287,8 @@
   "statsRangeAll":          { "message": "Todo" },
   "statsRange7d":           { "message": "7d" },
   "statsRange1d":           { "message": "24h" },
+  "statsResetOrderBtn":     { "message": "↺ Restablecer orden" },
+  "dragHandleTitle":        { "message": "Arrastra para reordenar" },
   "statsHourlyTitle":   { "message": "Actividad por Hora (Todo el Tiempo, 0–23h)" },
   "statsDailyTitle":    { "message": "Últimos 30 Días — Pestañas Abiertas y Archivadas" },
   "statsDailyOpened":   { "message": "Abiertas" },

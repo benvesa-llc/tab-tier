@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.10.2] - 2026-05-13
+## [1.11.0] - 2026-05-13
+
+### Added
+- Statistics cards are now **drag-and-drop reorderable**. Each card has a `⋮⋮` grab handle in its header; grab any card and drop it where you want it. Layout switched from a 2-column responsive grid to a single column so reordering is always unambiguous. A small `↺ Reset order` button at the top right of the Statistics view restores the default sequence. The chosen order is saved to `settings.statsCardOrder` and applied on every visit; new cards added in future releases are appended at the end so they're discoverable. New i18n keys `statsResetOrderBtn` and `dragHandleTitle` in all five locales
 
 ### Fixed
 - Top Domains (by tab count) card now uses the same "label · track · value" flex layout as the focus-time cards — the numeric count sits to the right of the bar instead of being absolutely positioned over the fill. CSS `.bar-count` switched to `flex: 0 0 auto; min-width: 40px; text-align: right`, matching `.focus-bar-time`. All bar-chart cards (counts and focus-times) now look consistent and never overlap their value labels onto the coloured fill

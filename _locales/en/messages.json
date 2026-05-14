@@ -312,6 +312,8 @@
   "statsRangeAll":          { "message": "All" },
   "statsRange7d":           { "message": "7d" },
   "statsRange1d":           { "message": "24h" },
+  "statsResetOrderBtn":     { "message": "↺ Reset order" },
+  "dragHandleTitle":        { "message": "Drag to reorder" },
   "statsHourlyTitle":   { "message": "Activity by Hour (All Time, 0–23h)" },
   "statsDailyTitle":    { "message": "Last 30 Days — Tabs Opened & Archived" },
   "statsDailyOpened":   { "message": "Opened" },

@@ -228,6 +228,8 @@
   "statsRangeAll":          { "message": "Gesamt" },
   "statsRange7d":           { "message": "7T" },
   "statsRange1d":           { "message": "24h" },
+  "statsResetOrderBtn":     { "message": "↺ Reihenfolge zurücksetzen" },
+  "dragHandleTitle":        { "message": "Zum Umsortieren ziehen" },
   "statsHourlyTitle":   { "message": "Aktivität pro Stunde (gesamt, 0–23 Uhr)" },
   "statsDailyTitle":    { "message": "Letzte 30 Tage — geöffnet & archiviert" },
   "statsDailyOpened":   { "message": "Geöffnet" },

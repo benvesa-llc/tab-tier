@@ -791,9 +791,131 @@ document.querySelectorAll(".view-tab").forEach((btn) => {
     document.querySelectorAll(".view-tab").forEach((b) => b.classList.toggle("active", b === btn));
     document.getElementById("recordsView").style.display = view === "records" ? "" : "none";
     document.getElementById("statsView").style.display   = view === "stats"   ? "" : "none";
-    if (view === "stats") renderStats();
+    if (view === "stats") {
+      applyStatsCardOrder();
+      bindStatsCardDragDrop();
+      renderStats();
+    }
   });
 });
+
+// =============================================================================
+// EN: Drag-and-drop reordering for Statistics cards.
+//     Each .stat-card has a data-card-id; on drop, the new order is saved to
+//     settings.statsCardOrder. applyStatsCardOrder() reads the saved order and
+//     re-appends children of #statsGrid accordingly. Cards that aren't in the
+//     saved order (e.g. new ones added in a future release) are appended at the
+//     end so they're discoverable.
+// TR: İstatistik kartları için sürükle-bırak yeniden sıralama.
+//     Her .stat-card'da data-card-id var; bırakınca yeni sıra
+//     settings.statsCardOrder'a kaydedilir. applyStatsCardOrder() kaydedilmiş
+//     sırayı okuyup #statsGrid çocuklarını ona göre yeniden ekler. Kaydedilmiş
+//     sırada olmayan kartlar (gelecekte eklenenler) sona eklenir ki kaybolmasın.
+// =============================================================================
+const DEFAULT_STATS_CARD_ORDER = [
+  "tier-donut",
+  "active-ratio",
+  "top-domains",
+  "longest-lived",
+  "focus-time",
+  "url-focus-time",
+  "hourly",
+  "daily",
+];
+
+async function applyStatsCardOrder() {
+  const grid = document.getElementById("statsGrid");
+  if (!grid) return;
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  const saved = Array.isArray(settings.statsCardOrder) && settings.statsCardOrder.length
+    ? settings.statsCardOrder
+    : DEFAULT_STATS_CARD_ORDER;
+  const cards = Array.from(grid.querySelectorAll(".stat-card[data-card-id]"));
+  const byId = new Map(cards.map((c) => [c.dataset.cardId, c]));
+  // EN: Append in saved order; any card not in saved list (added in a later release) goes after | TR: Kayıtlı sırada ekle; listede olmayan (sonraki sürümde eklenmiş) kart sona gider
+  for (const id of saved) {
+    const c = byId.get(id);
+    if (c) { grid.appendChild(c); byId.delete(id); }
+  }
+  for (const [, c] of byId) grid.appendChild(c);
+}
+
+async function saveStatsCardOrder() {
+  const grid = document.getElementById("statsGrid");
+  if (!grid) return;
+  const order = Array.from(grid.querySelectorAll(".stat-card[data-card-id]"))
+    .map((c) => c.dataset.cardId);
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  await chrome.storage.local.set({ settings: { ...settings, statsCardOrder: order } });
+}
+
+let _statsDragBound = false;
+function bindStatsCardDragDrop() {
+  const grid = document.getElementById("statsGrid");
+  if (!grid || _statsDragBound) return;
+  _statsDragBound = true;
+
+  let dragged = null;
+
+  grid.querySelectorAll(".stat-card[data-card-id]").forEach((card) => {
+    card.setAttribute("draggable", "true");
+
+    card.addEventListener("dragstart", (e) => {
+      dragged = card;
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", card.dataset.cardId); } catch (_) {}
+    });
+
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      grid.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach((c) => {
+        c.classList.remove("drag-over-top", "drag-over-bottom");
+      });
+      dragged = null;
+      saveStatsCardOrder().catch(() => {});
+    });
+
+    card.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (!dragged || dragged === card) return;
+      const rect = card.getBoundingClientRect();
+      const before = e.clientY < rect.top + rect.height / 2;
+      // Clear other indicators first
+      grid.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach((c) => {
+        if (c !== card) c.classList.remove("drag-over-top", "drag-over-bottom");
+      });
+      card.classList.toggle("drag-over-top", before);
+      card.classList.toggle("drag-over-bottom", !before);
+    });
+
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("drag-over-top", "drag-over-bottom");
+    });
+
+    card.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!dragged || dragged === card) return;
+      const rect = card.getBoundingClientRect();
+      const before = e.clientY < rect.top + rect.height / 2;
+      if (before) grid.insertBefore(dragged, card);
+      else grid.insertBefore(dragged, card.nextSibling);
+      card.classList.remove("drag-over-top", "drag-over-bottom");
+    });
+  });
+
+  // EN: Reset order button — clear settings.statsCardOrder and re-apply default | TR: Sıfırla butonu — settings.statsCardOrder'ı temizle ve default'a dön
+  const resetBtn = document.getElementById("statsResetOrderBtn");
+  if (resetBtn && !resetBtn._bound) {
+    resetBtn._bound = true;
+    resetBtn.addEventListener("click", async () => {
+      const { settings = {} } = await chrome.storage.local.get("settings");
+      await chrome.storage.local.set({ settings: { ...settings, statsCardOrder: [] } });
+      await applyStatsCardOrder();
+    });
+  }
+}
 
 // EN: Render all stats cards. The first four use the in-memory allRecords
 //     snapshot (synchronous). The last three pull from the persistent

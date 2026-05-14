@@ -73,6 +73,10 @@ const DefaultSettings = {
   // TR: Her timerCheck alarmında "Tier + Geçen Süre" ile sekmeleri otomatik sırala. Varsayılan kapalı —
   //     kullanıcı gezerken sekmelerin altından kayması rahatsız edici, Ayarlar'dan opt-in.
   autoSortByElapsed: false,
+  // EN: User-customized order of Statistics cards (drag-drop persisted). Empty array = default order.
+  // TR: İstatistik kartlarının kullanıcı tarafından özelleştirilen sırası (sürükle-bırak ile kaydedilir).
+  //     Boş dizi = varsayılan sıra.
+  statsCardOrder: [],
   initialized: false,
 };
 
