@@ -876,26 +876,35 @@ async function saveStatsCardWidth(cardId, width) {
   await chrome.storage.local.set({ settings: { ...settings, statsCardWidths: next } });
 }
 
-// EN: User-resizable label column for bar charts. Mouse-drag on any `.bar-resize`
-//     handle updates `--bar-label-width` on the stats grid for ALL bar rows (one
-//     setting applies globally), persisted to `settings.statsBarLabelWidth`.
+// EN: User-resizable label column for bar charts, PER CARD. Mouse-drag on any `.bar-resize`
+//     handle updates `--bar-label-width` on its parent `.stat-card` only — other cards keep
+//     their own width. Persisted in `settings.statsBarLabelWidths` as { cardId: px }.
 //     Range clamped to [80, 480] pixels so it can't disappear or eat the whole card.
-// TR: Bar grafiklerinde kullanıcı tarafından genişletilebilir etiket sütunu. `.bar-resize`
-//     tutamacında mouse sürükleme `--bar-label-width`'i tüm bar satırları için günceller
-//     (tek ayar global). `settings.statsBarLabelWidth`'e kaydedilir. [80, 480] piksel arasında
-//     sınırlandırılır — yok olmasın ya da kartı tamamen yutmasın.
-let _barResize = null; // EN: { startX, startWidth, grid } | TR: { startX, startWidth, grid }
+// TR: Bar grafiklerinde KART BAZINDA kullanıcı tarafından genişletilebilir etiket sütunu.
+//     `.bar-resize` tutamacında mouse sürükleme yalnızca **kendi** `.stat-card`'ının
+//     `--bar-label-width`'ini günceller — diğer kartlar kendi genişliklerini korur.
+//     `settings.statsBarLabelWidths` içinde { cardId: px } olarak kaydedilir. [80, 480] aralığı.
+let _barResize = null; // EN: { startX, startWidth, card } | TR: { startX, startWidth, card }
 
 async function bindBarLabelResize() {
   const grid = document.getElementById("statsGrid");
   if (!grid) return;
 
-  // Apply saved width on every (re)bind so a fresh stats-view open picks up persisted size.
+  // EN: Apply saved per-card widths on every (re)bind so a fresh stats-view open picks them up.
+  // TR: Her (yeniden) bağlamada kayıtlı kart-başına genişlikleri uygula; stats yeniden açıldığında değerler gelir.
   try {
     const { settings = {} } = await chrome.storage.local.get("settings");
-    const saved = settings.statsBarLabelWidth;
-    if (typeof saved === "number" && saved >= 80 && saved <= 480) {
-      grid.style.setProperty("--bar-label-width", saved + "px");
+    const widths = (settings.statsBarLabelWidths && typeof settings.statsBarLabelWidths === "object")
+      ? settings.statsBarLabelWidths
+      : {};
+    for (const card of grid.querySelectorAll(".stat-card[data-card-id]")) {
+      const id = card.dataset.cardId;
+      const w = widths[id];
+      if (typeof w === "number" && w >= 80 && w <= 480) {
+        card.style.setProperty("--bar-label-width", w + "px");
+      } else {
+        card.style.removeProperty("--bar-label-width");
+      }
     }
   } catch (_) {}
 
@@ -905,9 +914,11 @@ async function bindBarLabelResize() {
   grid.addEventListener("mousedown", (e) => {
     const handle = e.target.closest(".bar-resize");
     if (!handle) return;
-    const cs = getComputedStyle(grid);
+    const card = handle.closest(".stat-card[data-card-id]");
+    if (!card) return;
+    const cs = getComputedStyle(card);
     const cur = parseInt(cs.getPropertyValue("--bar-label-width")) || 180;
-    _barResize = { startX: e.clientX, startWidth: cur, grid };
+    _barResize = { startX: e.clientX, startWidth: cur, card };
     document.body.classList.add("bar-resizing");
     e.preventDefault();
   });
@@ -916,18 +927,20 @@ async function bindBarLabelResize() {
     if (!_barResize) return;
     const delta = e.clientX - _barResize.startX;
     const next = Math.max(80, Math.min(480, _barResize.startWidth + delta));
-    _barResize.grid.style.setProperty("--bar-label-width", next + "px");
+    _barResize.card.style.setProperty("--bar-label-width", next + "px");
   });
 
   document.addEventListener("mouseup", async () => {
     if (!_barResize) return;
-    const cs = getComputedStyle(_barResize.grid);
+    const cs = getComputedStyle(_barResize.card);
     const finalW = parseInt(cs.getPropertyValue("--bar-label-width")) || 180;
+    const cardId = _barResize.card.dataset.cardId;
     _barResize = null;
     document.body.classList.remove("bar-resizing");
     try {
       const { settings = {} } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({ settings: { ...settings, statsBarLabelWidth: finalW } });
+      const widths = { ...(settings.statsBarLabelWidths || {}), [cardId]: finalW };
+      await chrome.storage.local.set({ settings: { ...settings, statsBarLabelWidths: widths } });
     } catch (_) {}
   });
 }
@@ -1020,10 +1033,14 @@ function bindStatsCardDragDrop() {
     resetBtn.addEventListener("click", async () => {
       const { settings = {} } = await chrome.storage.local.get("settings");
       await chrome.storage.local.set({
-        settings: { ...settings, statsCardOrder: [], statsCardWidths: {}, statsBarLabelWidth: 0 },
+        settings: { ...settings, statsCardOrder: [], statsCardWidths: {}, statsBarLabelWidths: {} },
       });
       const grid = document.getElementById("statsGrid");
-      if (grid) grid.style.removeProperty("--bar-label-width");
+      if (grid) {
+        for (const card of grid.querySelectorAll(".stat-card[data-card-id]")) {
+          card.style.removeProperty("--bar-label-width");
+        }
+      }
       await applyStatsCardOrder();
     });
   }
@@ -1036,6 +1053,12 @@ function bindStatsCardDragDrop() {
 //     anlık görüntüsünü kullanır (senkron). Son üçü kalıcı `statsAggregate`
 //     storage anahtarından çekilir (asenkron, background.js tarafından doldurulur).
 async function renderStats() {
+  // EN: Rebuild favicon lookup tables from the current allRecords snapshot so bar-chart
+  //     labels can prepend the matching site icon. First record per domain / per URL wins.
+  // TR: Bar grafik etiketlerine site ikonu eklenebilsin diye mevcut allRecords'tan favicon
+  //     lookup tablolarını yeniden kur. Domain / URL başına ilk kayıt kazanır.
+  rebuildFaviconMaps();
+
   // EN: Distribution-style cards (tier donut, active/archived ratio, longest-lived) include only
   //     records that reflect the live browser state — open tabs + T4 archives. Closed-but-not-T4
   //     records are user history; counting them as "in T1/T2/T3" would over-report tabs that
@@ -1086,6 +1109,53 @@ async function renderStats() {
 
 // EN: Cached aggregate so range buttons can re-render without another storage read | TR: Range butonları yeniden render için aggregate cache'i
 let _statsAggCache = null;
+// EN: Domain→favicon and url(normalized)→favicon maps built from allRecords. Used to prepend
+//     favicons in bar-chart labels. Only stored favicons (no 3rd-party services for privacy).
+// TR: allRecords'tan üretilen domain→favicon ve normalize-url→favicon haritaları. Bar grafiği
+//     etiketlerine favicon eklemek için. Gizlilik açısından yalnızca saklanan favicon'lar (3.
+//     parti servis çağrısı yok).
+let _faviconByDomain = new Map();
+let _faviconByUrl = new Map();
+
+function rebuildFaviconMaps() {
+  _faviconByDomain = new Map();
+  _faviconByUrl = new Map();
+  for (const r of allRecords) {
+    const fav = (r.favicon || "").trim();
+    if (!fav) continue;
+    const d = (r.domain || "").trim();
+    if (d && !_faviconByDomain.has(d)) _faviconByDomain.set(d, fav);
+    // EN: Normalize URL the same way background.js does for stats keys | TR: URL'yi background.js'in stat anahtarlarıyla aynı normalize et
+    let urlKey = "";
+    if (r.url) {
+      try {
+        const u = new URL(r.url);
+        urlKey = u.protocol + "//" + u.host + u.pathname;
+      } catch (_) { urlKey = r.url; }
+    }
+    if (urlKey && !_faviconByUrl.has(urlKey)) _faviconByUrl.set(urlKey, fav);
+  }
+}
+
+// EN: Build the HTML for a bar-label: optional favicon img + text span with ellipsis.
+// TR: Bar etiketi HTML'i: opsiyonel favicon img + ellipsis'li metin span.
+function barLabelInner(text, faviconUrl) {
+  const safeText = escHtml(text);
+  if (faviconUrl) {
+    return `<img class="bar-favicon" src="${escHtml(faviconUrl)}" width="14" height="14" alt=""><span class="bar-label-text">${safeText}</span>`;
+  }
+  return `<span class="bar-label-text">${safeText}</span>`;
+}
+
+// EN: Hide bar favicons that fail to load — keeps the row from showing a broken-image
+//     placeholder in the 14×14 slot. Call right after innerHTML is set on the host.
+// TR: Yüklenemeyen bar favicon'ları gizle — 14×14 alanda bozuk-görsel placeholder
+//     çıkmasın. innerHTML set edildikten hemen sonra çağrılır.
+function hideBrokenFavicons(host) {
+  host.querySelectorAll(".bar-favicon").forEach((img) => {
+    img.addEventListener("error", () => { img.style.display = "none"; });
+  });
+}
 // EN: Per-card range selection (all / 7d / 1d). Persists in-memory while Stats view is open. | TR: Kart başına range seçimi (all / 7d / 1d)
 const _focusRange = { domain: "all", url: "all" };
 
@@ -1216,9 +1286,10 @@ function renderTopDomains(sorted, total) {
   host.innerHTML = sorted
     .map(([d, c]) => {
       const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+      const fav = _faviconByDomain.get(d);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (c / max) * 100)}%"></div>
@@ -1227,6 +1298,7 @@ function renderTopDomains(sorted, total) {
       </div>`;
     })
     .join("");
+  hideBrokenFavicons(host);
 }
 
 // EN: Format an age-in-ms as "Nd Hh" or "Hh Mm" using localized unit tokens.
@@ -1292,9 +1364,10 @@ function renderFocusTime(range, agg) {
   host.innerHTML = entries
     .map(([d, ms]) => {
       const pct = total > 0 ? Math.round((ms / total) * 100) : 0;
+      const fav = _faviconByDomain.get(d);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(d)}">${escHtml(d)}</span>
+        <span class="bar-label" title="${escHtml(d)}">${barLabelInner(d, fav)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--green)"></div>
@@ -1303,6 +1376,7 @@ function renderFocusTime(range, agg) {
       </div>`;
     })
     .join("");
+  hideBrokenFavicons(host);
 }
 
 // EN: Per-URL focus time (top 10) — mirrors renderFocusTime but with URLs as labels.
@@ -1323,9 +1397,10 @@ function renderUrlFocusTime(range, agg) {
   host.innerHTML = entries
     .map(([u, ms]) => {
       const pct = total > 0 ? Math.round((ms / total) * 100) : 0;
+      const fav = _faviconByUrl.get(u);
       return `
       <div class="bar-row">
-        <span class="bar-label" title="${escHtml(u)}">${escHtml(u)}</span>
+        <span class="bar-label" title="${escHtml(u)}">${barLabelInner(u, fav)}</span>
         <span class="bar-resize" title="${escHtml(i18n("resizeBarLabelTitle"))}"></span>
         <div class="bar-track">
           <div class="bar-fill" style="width:${Math.max(2, (ms / max) * 100)}%; background:var(--blue)"></div>
@@ -1334,6 +1409,7 @@ function renderUrlFocusTime(range, agg) {
       </div>`;
     })
     .join("");
+  hideBrokenFavicons(host);
 }
 
 function renderHourlyActivity(hourly) {

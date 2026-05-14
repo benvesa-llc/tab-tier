@@ -80,18 +80,53 @@ const DefaultSettings = {
   // EN: Per-card width in quarters (1=¼, 2=½, 3=¾, 4=full). Empty object = use defaults from tab-management.js.
   // TR: Çeyrek bazlı kart genişlikleri (1=¼, 2=½, 3=¾, 4=tam). Boş obje = tab-management.js'teki varsayılanlar.
   statsCardWidths: {},
-  // EN: User-set width (in px) of the bar-label column on Statistics bar charts. Falsy = default 180.
-  // TR: İstatistik bar grafiklerinde etiket sütunu genişliği (px). Boş ise default 180.
-  statsBarLabelWidth: 0,
+  // EN: Per-card label-column width (px) on Statistics bar charts. { cardId: px } — each card
+  //     can be resized independently. Missing entry / out-of-range value falls back to 180.
+  // TR: İstatistik bar grafiklerinde kart başına etiket sütunu genişliği (px).
+  //     { cardId: px } — her kart bağımsız boyutlanabilir. Eksik / hatalı değer 180'e döner.
+  statsBarLabelWidths: {},
   initialized: false,
 };
 
 // EN: Currently active tab ID (in-memory only, not in storage) | TR: Şu an aktif tab ID'si (sadece bellekte)
 let currentActiveTabId = null;
 
-// EN: Tab IDs currently being moved by the extension — onUpdated must not overwrite lastFocusEnd for these
-// TR: Extension tarafından taşınan tab ID'leri — bunlar için onUpdated lastFocusEnd yazmamalı
+// EN: Tab IDs currently being moved by the extension — onUpdated must not overwrite lastFocusEnd
+//     for these. A late-firing onUpdated (Chrome's async event scheduling can deliver the event
+//     after our move's await has already resolved and the calling code has cleared the flag)
+//     would otherwise hit the "user drag" branch and reset lastFocusEnd to now. To prevent that
+//     we additionally track a per-tab expiry timestamp; isExtensionMove() returns true while
+//     the Set has the id OR the expiry is still in the future. clearExtensionMove() only removes
+//     from the Set — the expiry entry naturally times out via EXT_MOVE_GRACE_MS.
+// TR: Extension'ın taşıdığı tab ID'leri — bunlar için onUpdated lastFocusEnd'i yazmamalı. Geç
+//     ateşleyen onUpdated (Chrome'un async event schedule'ı bizim move'un await'i çözüldükten ve
+//     çağıran kod flag'i temizledikten SONRA event'i ulaştırabiliyor) "user drag" dalına düşüp
+//     lastFocusEnd'i now'a sıfırlardı. Bunu önlemek için her tab başına bir expiry zaman damgası
+//     daha tutuyoruz; isExtensionMove() Set'te varsa VEYA expiry hâlâ gelecekteyse true döner.
+//     clearExtensionMove() yalnız Set'ten siler — expiry kaydı EXT_MOVE_GRACE_MS sonra düşer.
 const extensionMovingTabs = new Set();
+const extensionMovingExpiry = new Map(); // tabId → expiry timestamp (ms)
+const EXT_MOVE_GRACE_MS = 3000;
+
+function markExtensionMove(tabId) {
+  extensionMovingTabs.add(tabId);
+  extensionMovingExpiry.set(tabId, Date.now() + EXT_MOVE_GRACE_MS);
+}
+
+function isExtensionMove(tabId) {
+  if (extensionMovingTabs.has(tabId)) return true;
+  const exp = extensionMovingExpiry.get(tabId);
+  if (exp) {
+    if (exp > Date.now()) return true;
+    extensionMovingExpiry.delete(tabId);
+  }
+  return false;
+}
+
+function clearExtensionMove(tabId) {
+  // EN: Remove from Set only — keep expiry entry for the grace period | TR: Yalnızca Set'ten sil — expiry kaydı grace süresi için kalır
+  extensionMovingTabs.delete(tabId);
+}
 
 // EN: Per-window mutex — serializes group find-or-create to prevent duplicate groups
 //     when multiple tabs are moved to the same tier concurrently (e.g. session restore).
@@ -368,7 +403,7 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
 
     // EN: Mark this tab as being moved by the extension so onUpdated won't reset lastFocusEnd
     // TR: Bu tab'ı extension tarafından taşınıyor olarak işaretle; onUpdated lastFocusEnd'i sıfırlamasın
-    extensionMovingTabs.add(tabId);
+    markExtensionMove(tabId);
 
     // EN: Acquire per-window lock before querying/creating groups to prevent
     //     concurrent calls from each seeing "no group yet" and creating duplicates.
@@ -401,8 +436,10 @@ async function moveTabToTierGroup(tabId, tier, cachedSettings, _attempt = 0) {
     }
   } catch (e) {
     // EN: Always clean up the moving-flag on error so future onUpdated events are not ignored
+    //     (the grace-period expiry still protects late events from this attempt)
     // TR: Hata durumunda taşıma bayrağını temizle; sonraki onUpdated olayları yoksayılmasın
-    extensionMovingTabs.delete(tabId);
+    //     (bu denemeden kaynaklı geç event'ler grace expiry tarafından hâlâ korunur)
+    clearExtensionMove(tabId);
 
     // EN: Retry up to 3 times if the browser rejects the group change (tab being dragged/edited)
     // TR: Tarayıcı grup değişikliğini reddederse (sürükleme vb.) 3 kez yeniden dene
@@ -527,7 +564,7 @@ async function sortTabsInWindow(windowId, sortType) {
   //     user-drag sayar ve lastFocusEnd'i Date.now()'a sıfırlar — Apply sonrası 4-5 uyuyan
   //     tab "aynı taze zaman damgasıyla T1'de" görünüyordu. Önceden set'lenen flag korur.
   const allMovingIds = finalOrder.map((t) => t.id);
-  allMovingIds.forEach((id) => extensionMovingTabs.add(id));
+  allMovingIds.forEach((id) => markExtensionMove(id));
 
   try {
     // EN: Move the T0 group to the front first so that individual tabs.move calls
@@ -575,8 +612,11 @@ async function sortTabsInWindow(windowId, sortType) {
     // İç sayfaları "Diğer" grubuna topla
     await groupInternalTabs(windowId);
   } finally {
-    // EN: Clean up any flags still in the set after all moves settle | TR: Tüm hareketler bittikten sonra sette kalan flag'leri temizle
-    allMovingIds.forEach((id) => extensionMovingTabs.delete(id));
+    // EN: Clean up flags from the Set; grace expiry on each tab still absorbs any late-firing
+    //     onUpdated events for ~3 seconds, so the user-drag branch can't reset lastFocusEnd.
+    // TR: Set'ten flag'leri temizle; her tabın grace expiry'si ~3 saniye boyunca geç gelen
+    //     onUpdated event'lerini soğurur, user-drag dalı lastFocusEnd'i sıfırlayamaz.
+    allMovingIds.forEach((id) => clearExtensionMove(id));
   }
 
   log(
@@ -1872,7 +1912,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         //     Bunu kullanıcı sürüklemesi saymak her sekmenin sayacını sıfırlar. Bunun yerine
         //     gerçek groupId'yi içeren sonraki olayı bekle; sekme farklı bir tier grubuna
         //     girerse o olay güncellemeyi yapar. Sekme grubsuz kalırsa timerCheck halleder.
-        if (extensionMovingTabs.has(tabId)) {
+        if (isExtensionMove(tabId)) {
           log("onUpdated ungrouped (extension move, ignored)", tabId);
         } else {
           log("onUpdated ungrouped (skipped lastFocusEnd reset — may be wake event)", tabId);
@@ -1885,12 +1925,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             tabRecords[tabId].currentTier = tier;
             tabRecords[tabId].isPinned = tier === 0;
             if (tier !== 0) {
-              if (extensionMovingTabs.has(tabId)) {
+              if (isExtensionMove(tabId)) {
                 // EN: Extension moved this tab (tier transition) — do NOT touch lastFocusEnd,
-                //     the original inactivity timestamp must be preserved.
-                // TR: Bu tab'ı extension taşıdı (tier geçişi) — lastFocusEnd'e dokunma,
-                //     orijinal hareketsizlik zaman damgası korunmalı.
-                extensionMovingTabs.delete(tabId);
+                //     the original inactivity timestamp must be preserved. Grace-period entry
+                //     in extensionMovingExpiry lives on for ~3s to catch late-firing onUpdateds.
+                // TR: Bu tab'ı extension taşıdı (tier geçişi) — lastFocusEnd'e dokunma, orijinal
+                //     hareketsizlik zaman damgası korunmalı. extensionMovingExpiry'deki grace
+                //     kaydı ~3 sn boyunca duruyor — geç ateşleyen onUpdated'ları soğurur.
+                clearExtensionMove(tabId);
               } else {
                 // EN: User manually dragged tab to a different group — sync lastFocusEnd
                 // TR: Kullanıcı tab'ı farklı gruba sürükledi — lastFocusEnd'i senkronize et

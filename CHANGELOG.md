@@ -4,7 +4,16 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.13.1] - 2026-05-13
+## [1.13.4] - 2026-05-13
+
+### Fixed
+- Tabs the user never clicked could oscillate `T1 → T2 → T1 → T2 …` once an hour, each transition logging `tier T1→T2` and then `tier T2→T1` with a fresh `lastFocusEnd`. Root cause: `chrome.tabs.onUpdated` for the group change fired AFTER `sortTabsInWindow.finally` (or `moveTabToTierGroup`'s success path) had already cleared the `extensionMovingTabs` flag, so the handler took the "user drag" branch and reset `lastFocusEnd` to `Date.now()`. Next `timerCheck` saw elapsed < 60 min → demoted back to T1, then the natural inactivity drift promoted to T2 again, and the cycle repeated. Fix: keep a parallel `extensionMovingExpiry` Map alongside the Set; `isExtensionMove(tabId)` returns true while the Set has it OR the per-tab expiry is in the future (3-second grace). `markExtensionMove` adds to both; `clearExtensionMove` removes from the Set only — the expiry naturally times out, so late-firing onUpdated events still recognize the move as the extension's, not as a user drag
+
+### Changed
+- Bar-chart label-column resize is now **per-card** instead of global. Dragging the handle in one card (e.g. Top Domains) only adjusts that card's label column; the focus-time and URL-focus-time cards keep their own widths. Storage key renamed from `statsBarLabelWidth` (single number) to `statsBarLabelWidths` (object keyed by card-id), and the CSS variable `--bar-label-width` is now set on each `.stat-card` instead of the parent grid. The "↺ Reset order" button now clears the per-card map and removes the inline CSS variable from every card
+
+### Added
+- Each row in **Top Domains**, **Top Domains by Focus Time** and **Top URLs by Focus Time** now shows a 14×14 favicon in front of the label. Favicons come from `tabRecords` (first stored favicon per domain / per normalized URL); no third-party favicon service is contacted, so privacy is preserved. Rows whose record never had a favicon just render text — no broken-image placeholders since `hideBrokenFavicons()` removes failed images after each render. Row height is unaffected: the favicon is 14px and label flex-aligned to center
 
 ### Changed
 - The resize handle between a bar chart's label column and the bar itself is now visible at rest (a thin 2px gray line, brightens to accent on hover and widens to 3px while dragging). Previously it was transparent and only revealed itself on hover, so the resize feature was hidden — users had to know it existed to find it
