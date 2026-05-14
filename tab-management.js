@@ -163,22 +163,31 @@ async function loadData() {
 // ─── Summary cards ────────────────────────────────────────────────────────────
 
 function renderSummary() {
+  // EN: T0-T3 counts reflect only LIVE tabs (the tab is actually open in the browser).
+  //     Closed-but-not-T4 records (their tab was closed but we kept the record) are tallied
+  //     into a separate `closedCount` so the per-tier numbers stay honest. T4 archives are
+  //     always counted under T4.
+  // TR: T0-T3 sayıları yalnızca CANLI sekmeleri yansıtır (sekme tarayıcıda gerçekten açık).
+  //     Kapalı-ama-T4-olmayan kayıtlar (sekme kapatıldı ama kayıt tutuldu) ayrı `closedCount`'a
+  //     toplanır, böylece tier başına sayılar dürüst kalır. T4 arşivler her zaman T4 altında sayılır.
   const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
   let staleNull = 0;
-  let missingInBrowser = 0;
+  let closedCount = 0;
 
   for (const r of allRecords) {
-    counts[r.currentTier] = (counts[r.currentTier] || 0) + 1;
+    if (r.currentTier === 4) {
+      counts[4]++;
+    } else if (openTabIds.has(r.tabId)) {
+      counts[r.currentTier] = (counts[r.currentTier] || 0) + 1;
+    } else {
+      closedCount++;
+    }
     // EN: Stale: lastFocusEnd=null but not actually active | TR: Stale: aktif görünüyor ama gerçekte aktif değil
     if (r.lastFocusEnd === null && !activeTabIds.has(r.tabId)) staleNull++;
-    // EN: In records but not in browser (excluding T4) | TR: Kayıtta var, browserde yok (T4 hariç)
-    if (r.currentTier !== 4 && !openTabIds.has(r.tabId)) missingInBrowser++;
   }
 
   const warnings = [];
   if (staleNull > 0) warnings.push(i18n("staleWarning", [staleNull]));
-  if (missingInBrowser > 0)
-    warnings.push(i18n("missingWarning", [missingInBrowser]));
 
   const rows = [
     [i18n("sumTotal"), allRecords.length],
@@ -187,6 +196,7 @@ function renderSummary() {
     [TIER_LABELS[2], counts[2]],
     [TIER_LABELS[3], counts[3]],
     [TIER_LABELS[4], counts[4]],
+    ...(closedCount > 0 ? [[i18n("sumClosedLabel"), closedCount]] : []),
     [i18n("sumInternalLabel"), i18n("sumInternalValue", [internalTabCount])],
     ...(warnings.length ? [["⚠️", warnings.join(" · ")]] : []),
   ];
@@ -792,13 +802,28 @@ document.querySelectorAll(".view-tab").forEach((btn) => {
 //     anlık görüntüsünü kullanır (senkron). Son üçü kalıcı `statsAggregate`
 //     storage anahtarından çekilir (asenkron, background.js tarafından doldurulur).
 async function renderStats() {
-  const total = allRecords.length;
+  // EN: Distribution-style cards (tier donut, active/archived ratio, longest-lived) include only
+  //     records that reflect the live browser state — open tabs + T4 archives. Closed-but-not-T4
+  //     records are user history; counting them as "in T1/T2/T3" would over-report tabs that
+  //     don't consume any resources. Top Domains stays on the full list because per-domain
+  //     browsing history is meaningful regardless of whether the tab is currently open.
+  // TR: Dağılım kartları (tier donut, aktif/arşiv oranı, en uzun yaşayan) yalnızca canlı tarayıcı
+  //     durumunu yansıtan kayıtları sayar — açık sekmeler + T4 arşivleri. Kapalı-ama-T4-olmayan
+  //     kayıtlar kullanıcı geçmişi; bunları "T1/T2/T3'te" saymak kaynak kullanmayan sekmeleri abartır.
+  //     Top Domain'ler tam listede kalır çünkü domain bazlı geçmiş, sekme açık olsun olmasın anlamlı.
+  const liveRecords = allRecords.filter(
+    (r) => r.currentTier === 4 || openTabIds.has(r.tabId)
+  );
+  const total = liveRecords.length;
   const tierCounts = [0, 0, 0, 0, 0];
   const domainCounts = new Map();
 
-  for (const r of allRecords) {
+  for (const r of liveRecords) {
     const t = Number.isInteger(r.currentTier) ? r.currentTier : 1;
     if (t >= 0 && t <= 4) tierCounts[t]++;
+  }
+  // Top Domains over the full record set (history)
+  for (const r of allRecords) {
     const d = (r.domain || "—").trim() || "—";
     domainCounts.set(d, (domainCounts.get(d) || 0) + 1);
   }
@@ -806,7 +831,7 @@ async function renderStats() {
   renderTierDonut(tierCounts, total);
   renderActiveRatio(tierCounts, total);
   renderTopDomains([...domainCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10));
-  renderOldestTabs([...allRecords].filter((r) => r.createdAt).sort((a, b) => a.createdAt - b.createdAt).slice(0, 8));
+  renderOldestTabs([...liveRecords].filter((r) => r.createdAt).sort((a, b) => a.createdAt - b.createdAt).slice(0, 8));
 
   // EN: Aggregate-driven cards — read once and pass to each renderer | TR: Toplam veri kartları — bir kez oku ve her renderer'a aktar
   try {

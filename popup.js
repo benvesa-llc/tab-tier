@@ -192,10 +192,24 @@ function sortRecords(records) {
     });
   }
   if (currentSort === "elapsed") {
-    // EN: T0 first, then ascending elapsed (least recently used last), secondary: lastFocusEnd asc
-    // TR: T0 önce, sonra artan elapsed (en uzun süre önce odaklanılan en sonda), ikincil: lastFocusEnd artan
-    const elapsedOf = (r) => r.currentTier === 0 ? -1 : r.lastFocusEnd == null ? 0 : Date.now() - r.lastFocusEnd;
+    // EN: Tier first, then ascending elapsed inside each tier — matches what `Apply to Tabs`
+    //     does in the browser (background can't interleave tiers without Chrome re-grouping
+    //     them on physical proximity, so the popup must show the same order as the apply).
+    //     T0 stays at the top (smallest tier number); within T0, recently-focused first.
+    // TR: Önce tier, sonra her tier içinde artan elapsed — `Tablara Uygula`'nın browser'da
+    //     yaptığıyla aynı (background, tier'ları iç içe sıralayamaz; Chrome fiziksel yakınlık
+    //     nedeniyle otomatik regrouping yapar). Popup'ın Apply ile aynı sırayı göstermesi şart.
+    //     T0 en üstte (en küçük tier numarası); T0 içinde son odaklananlar önce.
+    const now = Date.now();
+    const elapsedOf = (r) => r.lastFocusEnd == null ? 0 : now - r.lastFocusEnd;
     return [...records].sort((a, b) => {
+      const ta = a.currentTier ?? 1;
+      const tb = b.currentTier ?? 1;
+      if (ta !== tb) return ta - tb;
+      if (ta === 0) {
+        // T0: most-recently focused first (highest lastFocusEnd)
+        return (b.lastFocusEnd ?? 0) - (a.lastFocusEnd ?? 0);
+      }
       const ea = elapsedOf(a), eb = elapsedOf(b);
       if (ea !== eb) return ea - eb;
       return (b.lastFocusEnd ?? 0) - (a.lastFocusEnd ?? 0);

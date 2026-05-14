@@ -4,6 +4,24 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.8.9] - 2026-05-13
+
+### Fixed
+- `↕ Apply to Tabs` (sort) no longer collapses 4-5 sleeping tabs into "T1 with the same just-now timestamp". `sortTabsInWindow` was setting `extensionMovingTabs` only around the T0 group move; the per-tab `chrome.tabs.move` loop ran without it. While a tab transited between two tabs of a different tier-color group, Chrome auto-assigned it to that adjacent group and fired `onUpdated(groupId)`. The handler, seeing no flag, took the **user-drag** branch and reset `lastFocusEnd` to `Date.now()` (and changed `currentTier`) for every affected tab. Fix: pre-add every tab-ID we're about to shuffle to `extensionMovingTabs` BEFORE the first `tabs.move`, wrap the entire move+regroup+internal-group flow in a try/finally, and clear the flags in `finally`. Same physical reorder, but the intermediate group reassignments are correctly recognized as extension moves and the records' inactivity timestamps stay intact
+- Popup's "Elapsed" sort now matches what `↕ Apply to Tabs` actually does in the browser. Previously the popup sorted purely by inactivity time across all tiers, but the apply step had to keep each tier contiguous (otherwise Chrome auto-regroups tabs based on physical proximity and the tier groups break). Now both surfaces use the same "tier first, then elapsed inside the tier" order, and the button label is renamed accordingly: `Tier + Elapsed` / `Tier + Geçen Süre` / `Nivel + Transcurrido` / `Stufe + Inaktivität` / `Niveau + Inactivité`. No more surprise reorder after clicking Apply
+
+### Changed
+- Tab Management summary tier counts (T0-T3) and the Statistics distribution charts now reflect only the **live** state of the browser — open tabs plus T4 archives. Closed-but-not-T4 records (history-kept tabs) used to inflate the per-tier numbers, which the user reads as "this many tabs are running in T1/T2" and that's not what those records represent any more (since 1.5.5, closed tabs intentionally keep their previous tier). The new layout:
+  - **Summary row**: `T1: N` is now the count of tabs that are actually open in the browser AND in T1; same for T2, T3. T4 is unchanged (always archived). A new row `○ Closed: N` (new `sumClosedLabel` i18n key in all five locales — `○ Closed / ○ Kapalı / ○ Cerradas / ○ Geschlossen / ○ Fermés`) tallies records whose tab is no longer in the browser but whose tier history is preserved. The redundant `missingWarning` line is gone (it was bundled into the `⚠️` row before and duplicated the same information)
+  - **Statistics → Tier Distribution donut** and **Active vs Archived** now compute over `liveRecords = open tabs + T4 archives`. Closed-but-not-T4 records are excluded — they don't consume browser resources, so showing them in a performance-oriented distribution chart was misleading
+  - **Statistics → Longest-Lived Tabs** now only lists open tabs. A closed record isn't "lived" any more
+  - **Statistics → Top Domains** still counts every record (open + closed + T4), because per-domain browsing history is meaningful even after the tab is closed
+
+## [1.8.6] - 2026-05-11
+
+### Changed
+- Tab Management's "missing" status (shown when a record is kept but the tab isn't open in the browser) is renamed and restyled so it no longer looks like an error. The `statusMissing` i18n string changes from `✗ missing` (red) to `○ closed` (neutral subtext gray), and the per-locale wording follows: TR `○ kapalı`, ES `○ cerrada`, DE `○ geschlossen`, FR `○ fermé`. The empty-circle glyph visually pairs with the existing `● active` filled dot, and the gray colour matches the actual semantic — the record is intentionally preserved (1.5.5 behaviour), not lost. CSS `.status-missing` color switches from `var(--red)` to `var(--subtext)` in `tab-management.html`
+
 ## [1.8.5] - 2026-05-10
 
 ### Fixed

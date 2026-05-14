@@ -459,53 +459,71 @@ async function sortTabsInWindow(windowId, sortType) {
   const finalOrder = [...sortedT0, ...sorted, ...internalTabs];
   const startIndex = browserPinned.length;
 
-  // EN: Move the T0 group to the front first so that individual tabs.move calls
-  //     land within the group's span — Chrome keeps grouped tabs in their group
-  //     only when the target index is inside the group's current contiguous range.
-  // TR: T0 grubunu önce öne taşı; böylece tabs.move çağrıları grubun aralığı
-  //     içinde kalır — Chrome, hedef indeks grubun aralığındaysa sekmeyi grupta tutar.
-  const allGroups = await chrome.tabGroups.query({ windowId });
-  const t0Group = allGroups.find(g => g.color === TIER_GROUP_COLORS[0]);
-  if (t0Group && sortedT0.length > 0) {
-    sortedT0.forEach(t => extensionMovingTabs.add(t.id));
-    try {
-      await chrome.tabGroups.move(t0Group.id, { index: startIndex });
-    } catch (e) {
-      log("sortTabsInWindow t0Group move error:", e?.message);
-    } finally {
-      sortedT0.forEach(t => extensionMovingTabs.delete(t.id));
+  // EN: Mark every tab that we're about to shuffle as an "extension move" BEFORE the first
+  //     tabs.move call. Without this flag set, chrome.tabs.move can land a tab momentarily
+  //     between two tabs of a different tier group; Chrome auto-assigns it to that adjacent
+  //     group based on physical proximity and fires onUpdated(groupId) with the new color.
+  //     Our onUpdated handler, seeing no flag, would treat it as a user drag and reset the
+  //     tab's lastFocusEnd to Date.now() — making 4-5 sleeping tabs collapse to "T1 with the
+  //     same fresh timestamp" after Apply. The pre-set flag keeps lastFocusEnd intact.
+  // TR: Karıştıracağımız tüm tabları ilk tabs.move'dan ÖNCE "extension move" olarak işaretle.
+  //     Bu flag olmadan, chrome.tabs.move bir tabı kısa süreliğine farklı bir tier grubunun
+  //     iki tabı arasına bırakabilir; Chrome fiziksel yakınlığa göre o gruba otomatik atar
+  //     ve yeni renkle onUpdated(groupId) ateşler. onUpdated handler, flag göremeyince
+  //     user-drag sayar ve lastFocusEnd'i Date.now()'a sıfırlar — Apply sonrası 4-5 uyuyan
+  //     tab "aynı taze zaman damgasıyla T1'de" görünüyordu. Önceden set'lenen flag korur.
+  const allMovingIds = finalOrder.map((t) => t.id);
+  allMovingIds.forEach((id) => extensionMovingTabs.add(id));
+
+  try {
+    // EN: Move the T0 group to the front first so that individual tabs.move calls
+    //     land within the group's span — Chrome keeps grouped tabs in their group
+    //     only when the target index is inside the group's current contiguous range.
+    // TR: T0 grubunu önce öne taşı; böylece tabs.move çağrıları grubun aralığı
+    //     içinde kalır — Chrome, hedef indeks grubun aralığındaysa sekmeyi grupta tutar.
+    const allGroups = await chrome.tabGroups.query({ windowId });
+    const t0Group = allGroups.find((g) => g.color === TIER_GROUP_COLORS[0]);
+    if (t0Group && sortedT0.length > 0) {
+      try {
+        await chrome.tabGroups.move(t0Group.id, { index: startIndex });
+      } catch (e) {
+        log("sortTabsInWindow t0Group move error:", e?.message);
+      }
     }
-  }
 
-  for (let i = 0; i < finalOrder.length; i++) {
-    try {
-      await chrome.tabs.move(finalOrder[i].id, { index: startIndex + i });
-    } catch (e) {
-      log("sortTabsInWindow move error:", e?.message);
+    for (let i = 0; i < finalOrder.length; i++) {
+      try {
+        await chrome.tabs.move(finalOrder[i].id, { index: startIndex + i });
+      } catch (e) {
+        log("sortTabsInWindow move error:", e?.message);
+      }
     }
-  }
 
-  // Tier gruplarını yeniden ata (önce T0, sonra T1/T2/T3)
-  const updatedTabs = await chrome.tabs.query({ windowId });
-  const tier0Tabs = updatedTabs.filter(
-    (t) => tabRecords[t.id]?.currentTier === 0,
-  );
-  const tierRest = updatedTabs.filter(
-    (t) =>
-      tabRecords[t.id] &&
-      tabRecords[t.id].currentTier >= 1 &&
-      tabRecords[t.id].currentTier <= 3,
-  );
+    // Tier gruplarını yeniden ata (önce T0, sonra T1/T2/T3)
+    const updatedTabs = await chrome.tabs.query({ windowId });
+    const tier0Tabs = updatedTabs.filter(
+      (t) => tabRecords[t.id]?.currentTier === 0,
+    );
+    const tierRest = updatedTabs.filter(
+      (t) =>
+        tabRecords[t.id] &&
+        tabRecords[t.id].currentTier >= 1 &&
+        tabRecords[t.id].currentTier <= 3,
+    );
 
-  for (const tab of tier0Tabs) {
-    await moveTabToTierGroup(tab.id, 0, settings);
-  }
-  for (const tab of tierRest) {
-    await moveTabToTierGroup(tab.id, tabRecords[tab.id].currentTier, settings);
-  }
+    for (const tab of tier0Tabs) {
+      await moveTabToTierGroup(tab.id, 0, settings);
+    }
+    for (const tab of tierRest) {
+      await moveTabToTierGroup(tab.id, tabRecords[tab.id].currentTier, settings);
+    }
 
-  // İç sayfaları "Diğer" grubuna topla
-  await groupInternalTabs(windowId);
+    // İç sayfaları "Diğer" grubuna topla
+    await groupInternalTabs(windowId);
+  } finally {
+    // EN: Clean up any flags still in the set after all moves settle | TR: Tüm hareketler bittikten sonra sette kalan flag'leri temizle
+    allMovingIds.forEach((id) => extensionMovingTabs.delete(id));
+  }
 
   log(
     "sortTabsInWindow done, t0:",
