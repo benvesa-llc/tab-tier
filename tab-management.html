@@ -392,7 +392,21 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
       }
-      .stat-card { position: relative; grid-column: span 4; }
+      .stat-card {
+        position: relative;
+        grid-column: span 4;
+        display: flex;
+        flex-direction: column;
+      }
+      /* EN: First child after the header is the chart container — let it grow into the empty
+              vertical space when grid auto-stretches the card to match its row's tallest item.
+              Combined with `.donut-wrap { height: 100% }` and `.ratio-grid { align-content: center }`
+              this vertically centers the content of donut and active-ratio cards.
+         TR: Header'dan sonraki ilk eleman grafik konteyneridir — grid aynı satırın en uzun
+              elemanına eşitlemek için kartı stretch ettiğinde boşluğa yayılsın. `.donut-wrap`
+              ve `.ratio-grid`'in `height: 100%` / `align-content: center` ayarlarıyla birlikte
+              donut ve active-ratio kartlarının içeriği dikey ortalanır. */
+      .stat-card > .stat-card-header + div { flex: 1; min-height: 0; }
       .stat-card[data-width="1"] { grid-column: span 1; }
       .stat-card[data-width="2"] { grid-column: span 2; }
       .stat-card[data-width="3"] { grid-column: span 3; }
@@ -487,8 +501,28 @@
         background: var(--mantle);
         color: var(--accent);
       }
-      .donut-wrap { display: flex; align-items: center; gap: 16px; }
-      .donut-svg { width: 140px; height: 140px; flex: 0 0 140px; }
+      /* EN: Donut layout — center within whatever vertical space the card has, and let the SVG
+              scale up when the card is wider than the legend needs. Grid auto-stretches cards in
+              the same row to equal height, so narrow donut cards previously had a big empty band
+              below; centering pushes the content into the visual middle and a responsive SVG
+              eats the remaining slack.
+         TR: Donut yerleşimi — kartın sahip olduğu dikey alan içinde ortala ve SVG'yi kart
+              genişledikçe büyüt. Grid aynı satırdaki kartları eşit yüksekliğe çekiyor; dar donut
+              kartlarda eskiden altta büyük boşluk kalıyordu. Ortalama içeriği görsel merkeze
+              alır, responsive SVG kalan boşluğu yutar. */
+      .donut-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        height: 100%;
+      }
+      .donut-svg {
+        width: clamp(120px, 35%, 200px);
+        height: auto;
+        aspect-ratio: 1;
+        flex-shrink: 0;
+      }
       .donut-center { font-size: 18px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: middle; }
       .donut-legend { flex: 1; font-size: 12px; }
       .donut-legend-item {
@@ -591,6 +625,8 @@
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         text-align: center;
+        align-content: center;
+        height: 100%;
       }
       .ratio-cell { padding: 8px; }
       .ratio-num { font-size: 32px; font-weight: 700; color: var(--accent); line-height: 1.2; }

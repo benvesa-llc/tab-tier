@@ -1055,11 +1055,13 @@ function bindStatsCardDragDrop() {
 //     anlık görüntüsünü kullanır (senkron). Son üçü kalıcı `statsAggregate`
 //     storage anahtarından çekilir (asenkron, background.js tarafından doldurulur).
 async function renderStats() {
-  // EN: Rebuild favicon lookup tables from the current allRecords snapshot so bar-chart
-  //     labels can prepend the matching site icon. First record per domain / per URL wins.
-  // TR: Bar grafik etiketlerine site ikonu eklenebilsin diye mevcut allRecords'tan favicon
-  //     lookup tablolarını yeniden kur. Domain / URL başına ilk kayıt kazanır.
-  rebuildFaviconMaps();
+  // EN: Rebuild favicon lookup tables from current allRecords AND the persistent domainFavicons
+  //     cache. First pass = fresh records; second pass = cache (covers closed domains still in
+  //     statsAggregate). Async because we read storage in the second pass.
+  // TR: Favicon lookup'ları hem mevcut allRecords'tan hem de kalıcı domainFavicons cache'inden
+  //     kur. İlk geçiş = taze kayıtlar; ikinci geçiş = cache (statsAggregate'te kalan kapalı
+  //     domainleri kapsar). İkinci geçiş storage okuduğu için async.
+  await rebuildFaviconMaps();
 
   // EN: Distribution-style cards (tier donut, active/archived ratio, longest-lived) include only
   //     records that reflect the live browser state — open tabs + T4 archives. Closed-but-not-T4
@@ -1119,15 +1121,16 @@ let _statsAggCache = null;
 let _faviconByDomain = new Map();
 let _faviconByUrl = new Map();
 
-function rebuildFaviconMaps() {
+async function rebuildFaviconMaps() {
   _faviconByDomain = new Map();
   _faviconByUrl = new Map();
+  // EN: First pass — favicons from current tab records (freshest, includes URL-specific icons)
+  // TR: İlk geçiş — mevcut tab kayıtlarından favicon'lar (en taze, URL-özel ikonlar dahil)
   for (const r of allRecords) {
     const fav = (r.favicon || "").trim();
     if (!fav) continue;
     const d = (r.domain || "").trim();
     if (d && !_faviconByDomain.has(d)) _faviconByDomain.set(d, fav);
-    // EN: Normalize URL the same way background.js does for stats keys | TR: URL'yi background.js'in stat anahtarlarıyla aynı normalize et
     let urlKey = "";
     if (r.url) {
       try {
@@ -1137,6 +1140,16 @@ function rebuildFaviconMaps() {
     }
     if (urlKey && !_faviconByUrl.has(urlKey)) _faviconByUrl.set(urlKey, fav);
   }
+  // EN: Second pass — persistent domain favicon cache for domains whose tab records are gone
+  //     (long-closed sites that still appear in statsAggregate). Doesn't overwrite fresh values.
+  // TR: İkinci geçiş — tab kayıtları silinmiş domainler için kalıcı favicon cache'i
+  //     (statsAggregate'te hâlâ olan uzun zamandır kapanmış siteler). Taze değerleri ezmez.
+  try {
+    const { domainFavicons = {} } = await chrome.storage.local.get("domainFavicons");
+    for (const [d, fav] of Object.entries(domainFavicons)) {
+      if (!_faviconByDomain.has(d)) _faviconByDomain.set(d, fav);
+    }
+  } catch (_) {}
 }
 
 // EN: Build a Chrome built-in favicon URL for a page. Uses the browser's own favicon cache

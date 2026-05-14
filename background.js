@@ -220,6 +220,37 @@ function statsDayKey(d = new Date()) {
 //     (`github.com/anthropics/anthropic-sdk-python` ile `…-typescript` ayrı kalsın), ama
 //     arama sorguları ve hash'ler atılır — URL kümesini şişirir ve potansiyel hassas veriyi
 //     stat depolamasına sızdırırdı.
+// EN: Persistent domain → favicon cache so the Statistics view can still draw an icon next to
+//     a domain whose live tab record has been closed and garbage-collected. Without this, a
+//     domain only present in `statsAggregate` falls back to Chrome's built-in favicon API,
+//     which only knows the icon if Chrome itself currently caches it — short-lived tabs miss.
+//     Writes are debounced 500ms so a burst of favicon updates collapses into a single set().
+// TR: Kalıcı domain → favicon önbelleği. Canlı tab kaydı silinmiş bir domain'in İstatistikler'de
+//     hâlâ ikon görmesi için. Bu olmadan yalnızca statsAggregate'te kalan domainler Chrome'un
+//     built-in favicon API'sine düşer; Chrome o anda cache'te tutuyorsa ikon gelir, kısa ömürlü
+//     tablar kaçırılır. Yazmalar 500ms debounce — favicon güncelleme patlamaları tek set()'e iner.
+let _domainFaviconCache = null;
+let _domainFaviconWriteTimer = null;
+
+async function rememberDomainFavicon(domain, favicon) {
+  if (!domain || !favicon) return;
+  try {
+    if (!_domainFaviconCache) {
+      const { domainFavicons = {} } = await chrome.storage.local.get("domainFavicons");
+      _domainFaviconCache = domainFavicons;
+    }
+    if (_domainFaviconCache[domain] === favicon) return;
+    _domainFaviconCache[domain] = favicon;
+    if (!_domainFaviconWriteTimer) {
+      _domainFaviconWriteTimer = setTimeout(async () => {
+        _domainFaviconWriteTimer = null;
+        try { await chrome.storage.local.set({ domainFavicons: _domainFaviconCache }); }
+        catch (_) {}
+      }, 500);
+    }
+  } catch (_) {}
+}
+
 function normalizeUrlForStats(url) {
   if (!url) return "—";
   try {
@@ -1798,6 +1829,21 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
   } catch (e) {
     log("onRemoved error:", e?.message);
   }
+});
+
+// EN: Pure favicon-caching listener — fires whenever a tab reports a new favIconUrl.
+//     Independent of the main onUpdated handler so it can't be short-circuited by URL/group checks.
+//     Persists into the `domainFavicons` cache (debounced) so the Statistics view can show icons
+//     for domains whose live tab record has been deleted (long-closed sites in statsAggregate).
+// TR: Yalnızca favicon önbellekleme dinleyicisi — bir tab yeni favIconUrl bildirdiğinde tetiklenir.
+//     Ana onUpdated handler'ından bağımsız çalışır; URL/grup kontrolleri tarafından kısa devre
+//     edilemez. Canlı tab kaydı silinmiş domainler için (statsAggregate'te kalan uzun zamandır
+//     kapanmış siteler) İstatistikler'de hâlâ ikon görünebilmesi için `domainFavicons` cache'ine
+//     (debounced) yazar.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!changeInfo.favIconUrl || !tab.url) return;
+  const domain = extractDomain(tab.url);
+  if (domain) rememberDomainFavicon(domain, changeInfo.favIconUrl);
 });
 
 // =============================================================================

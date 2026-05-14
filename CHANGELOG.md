@@ -4,7 +4,11 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.13.6] - 2026-05-13
+## [1.13.7] - 2026-05-13
+
+### Added
+- Persistent `domainFavicons` storage cache. A dedicated `tabs.onUpdated` listener saves any `(domain → favIconUrl)` pair it observes, with debounced writes (500ms) so a burst of icon updates collapses to a single `chrome.storage.local.set`. Tab Management's `rebuildFaviconMaps` now reads this cache as a second-pass fallback after the live `tabRecords`, so a domain that survives only in `statsAggregate` (its tabs all closed long ago) still renders with the correct favicon instead of needing Chrome's built-in favicon API every time
+- Donut and Active/Archived ratio cards now vertically center their content inside the card; the donut SVG also auto-scales to ~35% of the card width (clamp 120–200px). When the grid stretches a narrow card to match its row's tallest sibling, the leftover space is absorbed by the chart instead of leaving a big empty band at the bottom. `.stat-card` becomes a flex column; the chart container after the header takes `flex: 1`, and `.donut-wrap` / `.ratio-grid` use `height: 100%` + center-alignment to fill it
 
 ### Changed
 - Bar-chart rows whose domain/URL no longer has an active `tabRecords` entry (you closed every tab from that site long ago, but `statsAggregate` still has its focus time / count) now also get a favicon. Stored favicons from `_faviconByDomain` / `_faviconByUrl` are still preferred; when absent, the row falls back to Chrome's **built-in favicon API** (`chrome.runtime.getURL("/_favicon/?pageUrl=…&size=32")`). The new `"favicon"` permission was added to `manifest.json` to enable this. No third-party favicon service is contacted — the icon comes from Chrome's own cache (or a built-in placeholder if the cache has nothing)
