@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.13.7] - 2026-05-13
+## [1.13.8] - 2026-05-13
+
+### Fixed
+- Bar-chart labels no longer shift left when a row's favicon is missing or fails to load. Each `barLabelInner` now emits a fixed-size 14×14 `.bar-favicon-slot` wrapper around the (optional) `<img>`; the slot reserves the space whether or not the icon is present, so domain/URL text stays vertically aligned across every row. Previously rows without a favicon rendered no `<img>` at all (no space reserved), and rows where `hideBrokenFavicons` set `display: none` on a broken image had the same problem
 
 ### Added
 - Persistent `domainFavicons` storage cache. A dedicated `tabs.onUpdated` listener saves any `(domain → favIconUrl)` pair it observes, with debounced writes (500ms) so a burst of icon updates collapses to a single `chrome.storage.local.set`. Tab Management's `rebuildFaviconMaps` now reads this cache as a second-pass fallback after the live `tabRecords`, so a domain that survives only in `statsAggregate` (its tabs all closed long ago) still renders with the correct favicon instead of needing Chrome's built-in favicon API every time

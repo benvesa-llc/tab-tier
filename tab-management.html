@@ -552,10 +552,20 @@
         gap: 6px;
         overflow: hidden;
       }
-      .bar-favicon {
+      /* EN: Fixed 14×14 slot reserves space whether or not the favicon img is present, so
+              labels in different rows stay aligned. Img inside the slot fills it.
+         TR: Sabit 14×14 slot, favicon img olsun olmasın yer ayırır; farklı satırlardaki
+              etiketler hizalı kalır. İçindeki img slotu doldurur. */
+      .bar-favicon-slot {
         width: 14px;
         height: 14px;
         flex-shrink: 0;
+        display: inline-block;
+      }
+      .bar-favicon {
+        width: 14px;
+        height: 14px;
+        display: block;
         border-radius: 2px;
         object-fit: contain;
       }

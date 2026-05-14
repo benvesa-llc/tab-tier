@@ -1169,21 +1169,24 @@ function chromeFaviconUrl(pageUrl) {
   }
 }
 
-// EN: Build the HTML for a bar-label: favicon img + text span with ellipsis.
-//     When no stored favicon is available, fall back to Chrome's favicon API so rows that
-//     show up only in `statsAggregate` (e.g. tabs the user has closed long ago) still get
-//     a recognisable icon. `pageUrlHint` should be a full URL like `https://example.com/...`.
-// TR: Bar etiketi HTML'i: favicon img + ellipsis'li metin span.
-//     Saklı favicon yoksa Chrome favicon API'sine düş — yalnızca statsAggregate'te kalan
-//     (örn. uzun zaman önce kapatılmış tabların) satırlar bile tanınabilir bir ikon alır.
-//     `pageUrlHint` `https://example.com/...` formatında tam bir URL olmalı.
+// EN: Build the HTML for a bar-label: a fixed 14×14 favicon SLOT + text span with ellipsis.
+//     The slot always reserves space whether or not the icon loads, so labels in different
+//     rows stay vertically aligned. Inside the slot we put an <img> when we have either a
+//     stored favicon or a Chrome built-in favicon URL fallback; if neither, the slot stays
+//     empty (still 14×14). hideBrokenFavicons() hides the inner <img> on load error — the
+//     surrounding slot keeps its width so alignment is preserved.
+// TR: Bar etiketi HTML'i: sabit 14×14 favicon SLOT + ellipsis'li metin span.
+//     İkon yüklensin yüklenmesin slot her zaman alan ayırır; farklı satırlardaki etiketler
+//     dikey hizalı kalır. Slot içine saklı favicon veya Chrome built-in fallback varsa <img>
+//     koyarız; hiçbiri yoksa slot boş kalır (yine 14×14). hideBrokenFavicons() yükleme
+//     hatasında iç <img>'i gizler — çevre slot genişliğini koruduğu için hizalama bozulmaz.
 function barLabelInner(text, faviconUrl, pageUrlHint) {
   const safeText = escHtml(text);
   const finalFav = faviconUrl || (pageUrlHint ? chromeFaviconUrl(pageUrlHint) : "");
-  if (finalFav) {
-    return `<img class="bar-favicon" src="${escHtml(finalFav)}" width="14" height="14" alt=""><span class="bar-label-text">${safeText}</span>`;
-  }
-  return `<span class="bar-label-text">${safeText}</span>`;
+  const slot = finalFav
+    ? `<span class="bar-favicon-slot"><img class="bar-favicon" src="${escHtml(finalFav)}" alt=""></span>`
+    : `<span class="bar-favicon-slot"></span>`;
+  return `${slot}<span class="bar-label-text">${safeText}</span>`;
 }
 
 // EN: Hide bar favicons that fail to load — keeps the row from showing a broken-image
