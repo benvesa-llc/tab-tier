@@ -24,7 +24,9 @@ let TIER_LABELS = {
 let allRecords = [];
 let openTabIds = new Set(); // EN: actually open tab IDs | TR: gerçekte açık tab ID'leri
 let activeTabIds = new Set(); // EN: currently focused tab IDs | TR: gerçekte aktif (focused) tab ID'leri
-let sortCol = "currentTier";
+// EN: Default sort is "elapsed ascending" — recently-used tabs at the top, oldest at the bottom.
+// TR: Varsayılan sıralama "elapsed artan" — yakın zamanda kullanılanlar üstte, eski olanlar altta.
+let sortCol = "elapsed";
 let sortDir = 1; // EN: 1 = asc, -1 = desc | TR: 1 = artan, -1 = azalan
 let filterText = "";
 let pageSize = -1;   // EN: rows per page; -1 = auto-fit viewport, 0 = show all | TR: sayfa başına satır; -1 = otomatik, 0 = tümünü göster

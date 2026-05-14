@@ -4,7 +4,10 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
-## [1.13.4] - 2026-05-13
+## [1.13.5] - 2026-05-13
+
+### Changed
+- Tab Management opens with the table sorted by **Elapsed ascending** by default (recently-used at the top, oldest at the bottom) instead of by `currentTier`. Initial `sortCol` switched from `"currentTier"` to `"elapsed"`. Clicking another column header still works the same way
 
 ### Fixed
 - Tabs the user never clicked could oscillate `T1 → T2 → T1 → T2 …` once an hour, each transition logging `tier T1→T2` and then `tier T2→T1` with a fresh `lastFocusEnd`. Root cause: `chrome.tabs.onUpdated` for the group change fired AFTER `sortTabsInWindow.finally` (or `moveTabToTierGroup`'s success path) had already cleared the `extensionMovingTabs` flag, so the handler took the "user drag" branch and reset `lastFocusEnd` to `Date.now()`. Next `timerCheck` saw elapsed < 60 min → demoted back to T1, then the natural inactivity drift promoted to T2 again, and the cycle repeated. Fix: keep a parallel `extensionMovingExpiry` Map alongside the Set; `isExtensionMove(tabId)` returns true while the Set has it OR the per-tab expiry is in the future (3-second grace). `markExtensionMove` adds to both; `clearExtensionMove` removes from the Set only — the expiry naturally times out, so late-firing onUpdated events still recognize the move as the extension's, not as a user drag
