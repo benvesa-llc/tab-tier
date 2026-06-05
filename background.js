@@ -2388,6 +2388,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
               })),
             });
           }
+          // EN: Order the groups themselves: lowest tier in each group first (so T0 duplicate
+          //     groups float to the top), then alphabetical by the representative entry's
+          //     title. entries[0] is the representative because it's the one auto-selected as
+          //     "keep" — lowest-tier most-recently-used record for that URL.
+          // TR: Grupları kendi aralarında sırala: her grubun en düşük tier'ı önce gelsin
+          //     (T0 kopya grupları en üste çıksın), sonra temsilci girişin başlığına göre
+          //     alfabetik. entries[0] temsilcidir — "saklanacak" olarak otomatik seçilen,
+          //     URL için en düşük tier'lı + en son kullanılan kayıt.
+          groups.sort((a, b) => {
+            const tierDiff = (a.entries[0].currentTier ?? 99) - (b.entries[0].currentTier ?? 99);
+            if (tierDiff !== 0) return tierDiff;
+            return (a.entries[0].title || "").localeCompare(b.entries[0].title || "");
+          });
           sendResponse({ ok: true, groups });
         } catch (e) {
           sendResponse({ ok: false, error: e?.message });

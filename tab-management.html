@@ -139,6 +139,17 @@
       tbody tr:hover { background: var(--hover2); }
 
       td { padding: 7px 10px; vertical-align: middle; }
+      /* EN: Force every body cell onto a single line. Variable row heights (caused by a long
+              domain or status text wrapping) broke the auto-fit pagination calc, which uses
+              the first row's measured height — uneven rows meant the last row could overflow
+              the viewport. Cells that need width caps (.url-cell, .title-cell, .domain-cell)
+              still use max-width + overflow:hidden + text-overflow:ellipsis to truncate.
+         TR: Her body hücresi tek satırda kalsın. Değişken satır yüksekliği (uzun domain veya
+              durum metninin sarması) otomatik sayfalama hesabını bozuyordu — ilk satırın
+              ölçülen yüksekliği baz alındığı için son satır viewport'u taşırabiliyordu.
+              Genişlik sınırı gereken hücreler (.url-cell, .title-cell, .domain-cell) hâlâ
+              max-width + overflow:hidden + text-overflow:ellipsis ile kırpıyor. */
+      tbody td { white-space: nowrap; }
 
       .tier-badge {
         display: inline-block;
@@ -147,7 +158,18 @@
         font-size: 11px;
         font-weight: 700;
         color: #1e1e2e;
+        /* EN: Never wrap the tier label ("T1: Hot" → no break between "T1:" and "Hot") when the
+                column is narrow on a small viewport. The cell itself stays nowrap too (.tier-cell).
+           TR: Tier etiketini ("T1: Sıcak" → "T1:" ile "Sıcak" arasında satır kırılması olmasın)
+                küçük ekranda kolon dar olsa bile sarma. Hücrenin kendisi de nowrap kalır (.tier-cell). */
+        white-space: nowrap;
       }
+      /* EN: Tier td also gets nowrap as a safety belt — narrow viewports must not let the badge
+              break onto a second line. The badge already has nowrap, this guarantees the cell
+              tracks its full intrinsic width.
+         TR: Tier hücresi de güvenlik amaçlı nowrap alır — dar ekranda badge ikinci satıra
+              kaymamalı. Badge'in zaten nowrap'i var; hücre de tam içerik genişliğini takip etsin. */
+      .tier-cell { white-space: nowrap; }
       .tier-0 { background: #f38ba8; }
       .tier-1 { background: #fab387; }
       .tier-2 { background: #f9e2af; }
@@ -161,7 +183,13 @@
         white-space: nowrap;
         color: var(--sky);
       }
-      .domain-cell { color: var(--green); font-weight: 600; }
+      .domain-cell {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--green);
+        font-weight: 600;
+      }
       .title-cell {
         max-width: 200px;
         overflow: hidden;

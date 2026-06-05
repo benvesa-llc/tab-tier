@@ -4,6 +4,17 @@ All notable changes to Tab Tier will be documented in this file.
 
 > **Format rule:** One entry per day. Heading is the date with the highest version released on that day in brackets. Changes are grouped under the three category headings — `### Added`, `### Changed`, `### Fixed` — and only the categories with items are shown. Newest dates on top.
 
+## [1.13.11] - 2026-05-17
+
+### Changed
+- Duplicate preview now orders the groups themselves by tier ascending (T0 groups first), then by the representative entry's title alphabetically. Backend's `FIND_DUPLICATES` handler used to return groups in `Object.entries` iteration order (effectively the order URLs first entered storage) — important duplicates (T0/T1) could be buried below archived ones. The within-group entry sort (tier then `lastFocusEnd` desc) is unchanged, so `autoKeepKey` still picks the most-recently-used record at the lowest tier
+- Domain column in Tab Management now truncates with an ellipsis (max-width 200px) and shows the full domain on hover (`title` attribute), matching the existing behaviour of the URL and Title columns. Long domains used to push the cell wider and pull the table out of the viewport
+- Every `tbody td` in Tab Management gets `white-space: nowrap` as a baseline; cells with width caps (`.url-cell`, `.title-cell`, `.domain-cell`) still truncate via `overflow: hidden; text-overflow: ellipsis`
+
+### Fixed
+- Auto-fit pagination on Tab Management no longer overflows the viewport when a row's content would have wrapped. The Auto calculation uses the first row's measured height as the row-height for every other row, so variable row heights (a long domain wrapping, a long status string wrapping) caused the last row to slide below the bottom pagination bar. Forcing every `tbody td` to a single line makes row heights uniform — the first-row measurement is now accurate for the whole page
+- Tab Management Tier column no longer wraps to two lines (e.g. `T1:` on top, `Sıcak` below) on narrow viewports. The tier `<td>` gains a `tier-cell` class with `white-space: nowrap`, so the cell tracks the badge's full intrinsic width even when the table is squeezed — the badge already had `white-space: nowrap`, the cell-level rule is a belt-and-suspenders fix matching the pattern used by `.time-cell`, `.url-cell`, and `.title-cell`
+
 ## [1.13.8] - 2026-05-13
 
 ### Added

@@ -335,9 +335,9 @@ function renderTable() {
         <td class="cb-col">${cbHtml}</td>
         <td style="text-align:center;font-size:15px;cursor:pointer" class="toggle-fixed" data-tabid="${r.tabId}" data-tier="${tier}" title="${isT0 ? i18n('unfixTab') : i18n('fixTab')}">${isT0 ? "📌" : "—"}</td>
         <td class="tabid-cell">${r.tabId}${isStale ? ` <span class="status-stale">${i18n("staleLabel")}</span>` : ""}</td>
-        <td><span class="${badgeClass}">${label}</span></td>
+        <td class="tier-cell"><span class="${badgeClass}">${label}</span></td>
         <td>${openCell}</td>
-        <td class="domain-cell">${escHtml(r.domain || "—")}</td>
+        <td class="domain-cell" title="${escHtml(r.domain || "")}">${escHtml(r.domain || "—")}</td>
         <td class="title-cell" title="${escHtml(r.title || "")}">${escHtml(r.title || "—")}</td>
         <td style="width:28px;text-align:center;padding:4px 6px">${r.favicon ? `<img src="${escHtml(r.favicon)}" width="20" height="20" style="border-radius:3px;vertical-align:middle;object-fit:contain" class="favicon-img">` : ""}</td>
         <td class="url-cell" title="${escHtml(r.url || "")}">
